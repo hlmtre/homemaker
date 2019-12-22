@@ -1,0 +1,10 @@
+[package]
+name = "homemaker"
+version = "0.0.1"
+authors = ["Matt Weller <hellmitre@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+serde = "1.0.104" 
+serde_json = "1.0.44"
+dirs = "2.0.2"
