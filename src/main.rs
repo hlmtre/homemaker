@@ -11,15 +11,14 @@ fn main() {
 }
 
 fn ensure_config_dir() {
-  let our_folder = Path::new("homemaker");
   let conf_dir = dirs::config_dir();
   let mut _a = match conf_dir {
     Some(p) => {
-      match fs::create_dir_all(p.join(our_folder)) {
+      match fs::create_dir_all(p.join(Path::new("homemaker"))) {
         Ok(r) => r,
         Err(err) => panic!("Couldn't create {}. Error: {}", p.display(), err.to_string()),
       };
     },
-    None    => panic!("No $HOME/.config found!"),
+    None => panic!("No $HOME/.config found!"),
   };
 }
