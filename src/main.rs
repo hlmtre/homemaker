@@ -19,21 +19,24 @@ fn main() {
   let args: Vec<String> = env::args().collect();
   println!("{:?}", args);
   match args.get(2) {
-    Some(second) => get_config(PathBuf::from(&second)),
-    None => get_config(ensure_config_dir())
+    Some(second) => parse_config(get_config(PathBuf::from(&second)).ok().unwrap()),
+    None => parse_config(get_config(ensure_config_dir().ok().unwrap()).ok().unwrap())
   };
 }
 
-fn ensure_config_dir() -> Result<PathBuf, io::Error> {
+fn ensure_config_dir() -> Result<PathBuf, &'static str> {
   let conf_dir = dirs::config_dir();
   let mut _a = match conf_dir {
     Some(p) => { // if something
-      match fs::create_dir_all(p.join(Path::new("homemaker"))) {
-        Ok(PathBuf::from(p.join(Path::new("homemaker"))))
-      };
+      let whole_path = p.join(Path::new("homemaker"));
+      let _r = fs::create_dir_all(&whole_path);
+      match _r {
+        Ok(()) => return Ok(PathBuf::from(&whole_path)),
+        Err(e) => return Err("Couldn't create config dir!")
+      }
     },
     // if dirs::config_path() call doesn't return anything
-    None => return (),
+    None => return Err("Couldn't get config directory from $XDG"),
   };
 }
 
@@ -42,6 +45,6 @@ fn get_config(config_file_path: PathBuf) -> Result<std::fs::File, io::Error> {
   Ok(file_handle)
 }
 
-fn parse_config(file_handle: fs::File) -> Result<Vec<ManagedObject>, io::Error> {
+fn parse_config(file_handle: fs::File) -> Result<Vec<ManagedObject>, &'static str> {
   Ok(Vec::new())
 }
