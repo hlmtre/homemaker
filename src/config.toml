@@ -1,0 +1,4 @@
+[tmux.conf]
+source = "~/dotfiles/.tmux.conf"
+destination = "~"
+method = "symlink"
