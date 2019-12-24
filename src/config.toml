@@ -1,4 +1,9 @@
-[tmux.conf]
-source = "~/dotfiles/.tmux.conf"
-destination = "~"
-method = "symlink"
+[ManagedObject]
+source = '~/dotfiles/.tmux.conf'
+destination = '~'
+method = 'symlink'
+
+[ManagedObject]
+source = '~/dotfiles/fish.fish'
+destination = '~/.config/fish/'
+method = 'symlink'

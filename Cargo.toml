@@ -5,6 +5,6 @@ authors = ["Matt Weller <hellmitre@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-# serde = "1.0.104" 
+serde = { version = "1.0", features = ["derive"] }
 toml = "0.5"
-dirs = "2.0.2"
+dirs = "2.0"
