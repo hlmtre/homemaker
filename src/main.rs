@@ -8,6 +8,8 @@ use std::path::{Path, PathBuf};
 use std::fs;
 use std::env;
 use std::io;
+use std::io::Read;
+use std::string::String;
 
 struct ManagedObject {
   source: PathBuf,
@@ -45,6 +47,13 @@ fn get_config(config_file_path: PathBuf) -> Result<std::fs::File, io::Error> {
   Ok(file_handle)
 }
 
-fn parse_config(file_handle: fs::File) -> Result<Vec<ManagedObject>, &'static str> {
-  Ok(Vec::new())
+fn parse_config(mut file_handle: fs::File) -> Result<Vec<ManagedObject>, String> {
+  let mut contents = String::new();
+  let _a = match file_handle.read_to_string(&mut contents) {
+    Ok(_r) => { 
+      let v: Vec<ManagedObject> = Vec::new();
+      return Ok(v);
+    },
+    Err(e) => return Err(e.to_string()),
+  };
 }
