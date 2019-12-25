@@ -24,10 +24,20 @@ struct ManagedObject {
 
 fn main() {
   let args: Vec<String> = env::args().collect();
-  let _a = match args.get(1) {
+  let a = match args.get(1) {
     Some(second) => parse_config(get_config(PathBuf::from(&second)).ok().unwrap()),
     None => parse_config(get_config(ensure_config_dir().ok().unwrap()).ok().unwrap())
   };
+//  let c = a.ok(); // get the Config out
+//  println!("config: {}", a);
+//  loop {
+//    match c.objects.iter().next() {
+//      Some(x) => {
+//        println!("{}", x.source);
+//      },
+//      None => { break }
+//    }
+//  }
 }
 
 fn ensure_config_dir() -> Result<PathBuf, &'static str> {
@@ -54,20 +64,24 @@ fn get_config(config_file_path: PathBuf) -> Result<std::fs::File, io::Error> {
 
 fn parse_config(mut file_handle: fs::File) -> Result<Config, String> {
   let mut contents = String::new();
-  //let mut v: Vec<ManagedObject> = Vec::new();
-  //let _f = r#"
-  //[ManagedObject]
-  //source = '~/.dotfiles/.tmux.conf'
-  //destination = '~'
-  //method = 'symlink'"#;
-  let _a = match file_handle.read_to_string(&mut contents) {
-    Ok(_r) => { 
-      //println!("contents: \n{}", &contents);
-      match toml::from_str(contents.as_str()) {
-        Ok(r)
-      };
-      return Ok(c);
-    },
-    Err(e) => return Err(e.to_string()),
+  match file_handle.read_to_string(&mut contents) {
+    Ok(_a) => &contents,
+    Err(_e) => return Err(String::from("Couldn't read file contents!"))
   };
+//  let t = r#"title = 'pls'
+//
+//            [tmux.conf]
+//            source = '~/dotfiles/.tmux.conf'
+//            destination = '~'
+//            method = 'symlink'
+//
+//            [fish.fish]
+//            source = '~/dotfiles/fish.fish'
+//            destination = '~/.config/fish/fish.fish'
+//            method = 'symlink'"#;
+  let c: Config = match toml::from_str(contents.as_str()) {
+    Ok(c) => c,
+    Err(e) => { println!("error: {}", e.to_string()); return Err(e.to_string()) },
+  };
+  Ok(c)
 }
