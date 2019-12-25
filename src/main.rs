@@ -12,7 +12,7 @@ use std::string::String;
 
 #[derive(Serialize, Deserialize)]
 struct Config {
-  ManagedObject: ManagedObject
+  objects: Vec<ManagedObject>
 }
 
 #[derive(Serialize, Deserialize)]
@@ -63,7 +63,9 @@ fn parse_config(mut file_handle: fs::File) -> Result<Config, String> {
   let _a = match file_handle.read_to_string(&mut contents) {
     Ok(_r) => { 
       //println!("contents: \n{}", &contents);
-      let c: Config = toml::from_str(contents.as_str()).ok().unwrap();
+      match toml::from_str(contents.as_str()) {
+        Ok(r)
+      };
       return Ok(c);
     },
     Err(e) => return Err(e.to_string()),
