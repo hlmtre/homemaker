@@ -9,14 +9,15 @@ use std::env;
 use std::io;
 use std::io::Read;
 use std::string::String;
+use std::collections::BTreeMap;
 
 #[derive(Serialize, Deserialize)]
-struct Config {
-  objects: Vec<ManagedObject>
+struct Config <'a>{
+  objects: BTreeMap<&'a str, ManagedObject<'a>>
 }
 
 #[derive(Serialize, Deserialize)]
-struct ManagedObject {
+struct ManagedObject<'a>{
   source: String,
   destination: String,
   method: String,
