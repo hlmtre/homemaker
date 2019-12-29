@@ -13,14 +13,15 @@ use std::string::String;
 
 #[derive(Serialize, Deserialize)]
 struct Config<'a> {
+  #[serde(borrow)]
   objects: BTreeMap<&'a str, ManagedObject<'a>>,
 }
 
 #[derive(Serialize, Deserialize)]
 struct ManagedObject<'a> {
-  source: String,
-  destination: String,
-  method: String,
+  source: &'a str,
+  destination: &'a str,
+  method: &'a str,
 }
 
 fn main() {
@@ -64,7 +65,7 @@ fn get_config(config_file_path: PathBuf) -> Result<std::fs::File, io::Error> {
   Ok(file_handle)
 }
 
-fn parse_config(mut file_handle: fs::File) -> Result<Config, String> {
+fn parse_config<'a>(mut file_handle: fs::File) -> Result<Config<'a>, String> {
   let mut contents = String::new();
   match file_handle.read_to_string(&mut contents) {
     Ok(_a) => &contents,
