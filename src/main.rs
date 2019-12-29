@@ -2,19 +2,44 @@ extern crate dirs;
 extern crate serde;
 extern crate toml;
 
-use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use serde::{Deserialize, Serialize, Deserializer};
 use std::env;
 use std::fs;
 use std::io;
-use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::string::String;
+use std::fmt;
+use toml::value;
 
-#[derive(Serialize, Deserialize)]
-struct Config<'a> {
-  #[serde(borrow)]
-  objects: BTreeMap<&'a str, ManagedObject<'a>>,
+#[derive(Deserialize)]
+struct Config {
+    #[serde(rename = "file", deserialize_with = "deserialize_files")]
+    files: Vec<(String, value::Value)>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            files: Vec::new(),
+        }
+    }
+}
+
+fn deserialize_files<'de, D>(deserializer: D) -> Result<Vec<(String, value::Value)>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let mut files: Vec<(String, value::Value)> = Vec::new();
+    let raw_files: Vec<value::Table> = Deserialize::deserialize(deserializer)?;
+    for mut entry in raw_files {
+        if let Some(name) = entry.remove("file") {
+            if let Some(name) = name.as_str() {
+                files.push((name.to_owned(), value::Value::Table(entry)))
+            }
+        }
+    }
+
+    Ok(files)
 }
 
 #[derive(Serialize, Deserialize)]
@@ -24,23 +49,29 @@ struct ManagedObject<'a> {
   method: &'a str,
 }
 
+impl fmt::Display for ManagedObject<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+      write!(f, "source: {}, destination: {}, method: {}", self.source, self.destination, self.method)
+    }
+}
+
 fn main() {
   let args: Vec<String> = env::args().collect();
-  let co = String::new();
+  let mut co = String::new();
   let a = match args.get(1) {
-    Some(second) => parse_config(get_config(PathBuf::from(&second)).ok().unwrap(), &co),
-    None => parse_config(get_config(ensure_config_dir().ok().unwrap()).ok().unwrap(), &co),
+    Some(second) => parse_config(get_config(PathBuf::from(&second)).ok().unwrap(), &mut co),
+    None => parse_config(get_config(ensure_config_dir().ok().unwrap()).ok().unwrap(), &mut co),
   };
-  //  let c = a.ok(); // get the Config out
-  //  println!("config: {}", a);
-  //  loop {
-  //    match c.objects.iter().next() {
-  //      Some(x) => {
-  //        println!("{}", x.source);
-  //      },
-  //      None => { break }
-  //    }
-  //  }
+    let c = a.ok(); // get the Config out
+    println!("config: {}", c.unwrap());
+    //loop {
+    //  match c.objects.iter().next() {
+    //    Some(x) => {
+    //      println!("{}", x.1);
+    //    },
+    //    None => { break }
+    //  }
+    //}
 }
 
 fn ensure_config_dir() -> Result<PathBuf, &'static str> {
@@ -60,35 +91,8 @@ fn ensure_config_dir() -> Result<PathBuf, &'static str> {
   };
 }
 
-fn get_config(config_file_path: PathBuf) -> Result<std::fs::File, io::Error> {
+fn get_config(config_file_path: PathBuf) -> Result<Config, io::Error> {
   let file_handle = fs::File::open(&config_file_path)?;
   println!("file: {}", &config_file_path.to_str().unwrap());
   Ok(file_handle)
-}
-
-fn parse_config<'a>(mut file_handle: fs::File, &co: String) -> Result<Config<'a>, String> {
-  //let mut contents = String::new();
-  match file_handle.read_to_string(co) {
-    Ok(_a) => co,
-    Err(_e) => return Err(String::from("Couldn't read file contents!")),
-  };
-  //  let t = r#"title = 'pls'
-  //
-  //            [tmux.conf]
-  //            source = '~/dotfiles/.tmux.conf'
-  //            destination = '~'
-  //            method = 'symlink'
-  //
-  //            [fish.fish]
-  //            source = '~/dotfiles/fish.fish'
-  //            destination = '~/.config/fish/fish.fish'
-  //            method = 'symlink'"#;
-  let c: Config = match toml::from_str(co.as_str()) {
-    Ok(c) => c,
-    Err(e) => {
-      println!("error: {}", e.to_string());
-      return Err(e.to_string());
-    }
-  };
-  Ok(c)
 }

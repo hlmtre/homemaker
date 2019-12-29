@@ -1,9 +1,9 @@
-[tmux.conf]
+[[file]]
 source = '~/dotfiles/.tmux.conf'
 destination = '~'
 method = 'symlink'
 
-[fish.fish]
+[[file]]
 source = '~/dotfiles/fish.fish'
 destination = '~/.config/fish/fish.fish'
 method = 'symlink'
