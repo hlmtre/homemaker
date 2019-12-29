@@ -26,9 +26,10 @@ struct ManagedObject<'a> {
 
 fn main() {
   let args: Vec<String> = env::args().collect();
+  let co = String::new();
   let a = match args.get(1) {
-    Some(second) => parse_config(get_config(PathBuf::from(&second)).ok().unwrap()),
-    None => parse_config(get_config(ensure_config_dir().ok().unwrap()).ok().unwrap()),
+    Some(second) => parse_config(get_config(PathBuf::from(&second)).ok().unwrap(), &co),
+    None => parse_config(get_config(ensure_config_dir().ok().unwrap()).ok().unwrap(), &co),
   };
   //  let c = a.ok(); // get the Config out
   //  println!("config: {}", a);
@@ -65,10 +66,10 @@ fn get_config(config_file_path: PathBuf) -> Result<std::fs::File, io::Error> {
   Ok(file_handle)
 }
 
-fn parse_config<'a>(mut file_handle: fs::File) -> Result<Config<'a>, String> {
-  let mut contents = String::new();
-  match file_handle.read_to_string(&mut contents) {
-    Ok(_a) => &contents,
+fn parse_config<'a>(mut file_handle: fs::File, &co: String) -> Result<Config<'a>, String> {
+  //let mut contents = String::new();
+  match file_handle.read_to_string(co) {
+    Ok(_a) => co,
     Err(_e) => return Err(String::from("Couldn't read file contents!")),
   };
   //  let t = r#"title = 'pls'
@@ -82,7 +83,7 @@ fn parse_config<'a>(mut file_handle: fs::File) -> Result<Config<'a>, String> {
   //            source = '~/dotfiles/fish.fish'
   //            destination = '~/.config/fish/fish.fish'
   //            method = 'symlink'"#;
-  let c: Config = match toml::from_str(contents.as_str()) {
+  let c: Config = match toml::from_str(co.as_str()) {
     Ok(c) => c,
     Err(e) => {
       println!("error: {}", e.to_string());
