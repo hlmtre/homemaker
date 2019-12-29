@@ -1,9 +1,11 @@
 [[file]]
+name = 'tmux.conf'
 source = '~/dotfiles/.tmux.conf'
 destination = '~'
 method = 'symlink'
 
 [[file]]
+name = 'fish.fish'
 source = '~/dotfiles/fish.fish'
 destination = '~/.config/fish/fish.fish'
 method = 'symlink'
