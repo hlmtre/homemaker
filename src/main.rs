@@ -51,6 +51,7 @@ fn main() {
     };
     loop {
       match a.files.iter().next() {
+        println!("hi");
         Some(x) => {
           println!("{}", x.1);
         },
@@ -66,7 +67,7 @@ where
   let mut files: Vec<(String, value::Value)> = Vec::new();
   let raw_files: Vec<value::Table> = Deserialize::deserialize(deserializer)?;
   for mut entry in raw_files {
-    println!("vec: {}", entry.get("source").unwrap());
+    println!("file '{}': source: {}, target: {}", entry.get("name").unwrap(), entry.get("source").unwrap(), entry.get("destination").unwrap());
     if let Some(name) = entry.remove("file") {
       if let Some(name) = name.as_str() {
         files.push((name.to_owned(), value::Value::Table(entry)))
