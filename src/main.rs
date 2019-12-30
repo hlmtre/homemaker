@@ -51,7 +51,6 @@ fn main() {
     };
     loop {
       match a.files.iter().next() {
-        println!("hi");
         Some(x) => {
           println!("{}", x.1);
         },
