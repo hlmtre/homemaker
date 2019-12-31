@@ -44,19 +44,25 @@ fn main() {
     let a: Config = match args.get(1) {
         Some(second) => deserialize_file(&second).unwrap(),
         None => {
-            let _p: PathBuf = ensure_config_dir()
+          let _p: PathBuf = ensure_config_dir()
               .map_err(|e| panic!("Couldn't ensure config dir: {}", e)).unwrap();
           deserialize_file(_p.to_str().unwrap()).unwrap()
         },
     };
-    loop {
-      match a.files.iter().next() {
-        Some(x) => {
-          println!("{}", x.1);
-        },
-        None => { break }
-      }
+    let mut counter = 0;
+    for element in a.clone().files.iter() {
+      println!("{}: {}", counter, element.1);
+      counter+=1;
     }
+//    println!("{}", a.clone().files.pop().unwrap().1);
+//    loop {
+//      match a.files.iter().next() {
+//        Some(x) => {
+//          println!("{}", x.1);
+//        },
+//        None => { break }
+//      }
+//    }
 }
 
 fn deserialize_files<'de, D>(deserializer: D) -> Result<Vec<(String, value::Value)>, D::Error>
@@ -66,10 +72,9 @@ where
   let mut files: Vec<(String, value::Value)> = Vec::new();
   let raw_files: Vec<value::Table> = Deserialize::deserialize(deserializer)?;
   for mut entry in raw_files {
-    println!("file '{}': source: {}, target: {}", entry.get("name").unwrap(), entry.get("source").unwrap(), entry.get("destination").unwrap());
     if let Some(name) = entry.remove("file") {
       if let Some(name) = name.as_str() {
-        files.push((name.to_owned(), value::Value::Table(entry)))
+          files.push((name.to_owned(), value::Value::Table(entry)));
       }
     }
   }
