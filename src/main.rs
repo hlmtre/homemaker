@@ -83,7 +83,7 @@ where
 
 /*
 let config: Config = deserialize_file(matches.value_of("config").unwrap())?;
- */
+*/
 
 fn deserialize_file(file: &str) -> Result<Config, String> {
   let mut contents = String::new();
