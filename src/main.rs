@@ -54,15 +54,6 @@ fn main() {
       println!("{}: {}", counter, element.1);
       counter+=1;
     }
-//    println!("{}", a.clone().files.pop().unwrap().1);
-//    loop {
-//      match a.files.iter().next() {
-//        Some(x) => {
-//          println!("{}", x.1);
-//        },
-//        None => { break }
-//      }
-//    }
 }
 
 fn deserialize_files<'de, D>(deserializer: D) -> Result<Vec<(String, value::Value)>, D::Error>
