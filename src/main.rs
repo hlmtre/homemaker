@@ -65,21 +65,24 @@ where
   for mut entry in raw_files {
     if let Some(name) = entry.remove("file") {
       if let Some(name) = name.as_str() {
-          files.push((name.to_owned(), value::Value::Table(entry)));
+        files.push((name.to_owned(), value::Value::Table(entry)));
       }
     }
   }
   Ok(files)
 }
 
-/*
-let config: Config = deserialize_file(matches.value_of("config").unwrap())?;
-*/
+fn open_config(file: PathBuf) -> io::Result<fs::File> {
+  let x = fs::File::open(file.to_owned())?;
+  Ok(x)
+}
 
 fn deserialize_file(file: &str) -> Result<Config, String> {
   let mut contents = String::new();
-  println!("file: {}", &file);
-  let mut file = BufReader::new(fs::File::open(file).ok().unwrap());
+  let mut _file = PathBuf::from(file);
+  _file.push("config.toml");
+  println!("file: {}\n", fs::canonicalize(&file).ok().unwrap().to_string_lossy());
+  let mut file = BufReader::new(open_config(_file).unwrap());
   match file.read_to_string(&mut contents) {
       Ok(v) => v,
       Err(_e) => 0
