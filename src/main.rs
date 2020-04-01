@@ -92,10 +92,19 @@ fn ensure_config_dir() -> Result<PathBuf, &'static str> {
   let mut _a = match conf_dir {
     Some(p) => {
       // if something
+      // creates a PathBuf from $XDG_CONFIG_DIR
       let whole_path = p.join(Path::new("homemaker"));
       let _r = fs::create_dir_all(&whole_path);
       match _r {
-        Ok(()) => return Ok(PathBuf::from(&whole_path)),
+        /*
+          then when we return it, do the entire config dir path (/home/hlmtre/.config)
+           and add our config file to the end of the PathBuf
+           ```
+            Ok(("/home/hlmtre/.config").join("config.toml"))
+          ```
+           sort of as a pseudocodey example
+        */
+        Ok(()) => return Ok(PathBuf::from(&whole_path.join("config.toml"))),
         Err(_e) => return Err("Couldn't create config dir!"),
       }
     }
