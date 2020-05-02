@@ -14,6 +14,8 @@ use std::path::{Path, PathBuf};
 use std::string::String;
 use toml::value;
 
+mod mgmt;
+
 #[derive(Serialize, Deserialize)]
 struct ManagedObject<'a> {
     source: &'a str,

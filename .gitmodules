@@ -1,0 +1,3 @@
+[submodule "symlinktest"]
+	path = symlinktest
+	url = ./symlinktest
