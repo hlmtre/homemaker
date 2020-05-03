@@ -16,14 +16,14 @@ use toml::value;
 
 mod mgmt;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct ManagedObject<'a> {
     source: &'a str,
     destination: &'a str,
     method: &'a str,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 struct Config {
   #[serde(rename = "file", deserialize_with = "deserialize_files")]
   files: Vec<(String, value::Value)>,
@@ -35,14 +35,35 @@ impl Default for Config {
   }
 }
 
+/*
 impl fmt::Display for Config {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "hello")
+      let _t = r#"
+        file = 'fish'
+        source = '~/dotfiles/.config/fish'
+        destination = '~/.config/fish'
+        method = 'symlink'
+        "#;
+      let mut mos: Vec<ManagedObject> = Vec::new();
+      //mos.push(toml::from_str(_t).unwrap());
+      let mut s = String::new();
+      for e in self.files.iter() {
+        match e.1.as_str() {
+          Some(_j) => mos.push(toml::from_str(e.1.as_str().unwrap()).ok().unwrap()),
+          None => continue
+        };
+      }
+      //write!(f, "{}", s);
+      write!(f, "{}", mos.pop().unwrap().source)
     }
 }
+*/
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    /*
+      accept either a config passed as arg 1 or try to open the default config location
+    */
     let a: Config = match args.get(1) {
         Some(second) => deserialize_file(&second).unwrap(),
         None => {
@@ -51,11 +72,7 @@ fn main() {
           deserialize_file(_p.to_str().unwrap()).unwrap()
         },
     };
-    let mut counter = 0;
-    for element in a.clone().files.iter() {
-      println!("{}: {}", counter, element.1);
-      counter+=1;
-    }
+    println!("{:#?}", a);
 }
 
 fn deserialize_files<'de, D>(deserializer: D) -> Result<Vec<(String, value::Value)>, D::Error>
@@ -90,6 +107,7 @@ fn deserialize_file(file: &str) -> Result<Config, String> {
 }
 
 fn ensure_config_dir() -> Result<PathBuf, &'static str> {
+  // get /home/<username>/.config, if exists...
   let conf_dir = dirs::config_dir();
   let mut _a = match conf_dir {
     Some(p) => {

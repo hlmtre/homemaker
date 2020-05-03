@@ -5,7 +5,7 @@ destination = '~'
 method = 'symlink'
 
 [[file]]
-file = 'fish.fish'
-source = '~/dotfiles/fish.fish'
-destination = '~/.config/fish/fish.fish'
+file = 'fish'
+source = '~/dotfiles/.config/fish'
+destination = '~/.config/fish'
 method = 'symlink'
