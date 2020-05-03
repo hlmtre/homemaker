@@ -17,13 +17,19 @@ use toml::value;
 mod mgmt;
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ManagedObject<'a> {
-    source: &'a str,
-    destination: &'a str,
-    method: &'a str,
+struct ManagedObject {
+    source: String,
+    destination: String,
+    method: String,
 }
 
-#[derive(Deserialize, Clone, Debug)]
+impl Default for ManagedObject {
+  fn default() -> Self {
+    ManagedObject { source: String::from(""), destination: String::from(""), method: String::from("") }
+  }
+}
+
+#[derive(Deserialize, Clone)]
 struct Config {
   #[serde(rename = "file", deserialize_with = "deserialize_files")]
   files: Vec<(String, value::Value)>,
@@ -36,28 +42,37 @@ impl Default for Config {
 }
 
 /*
+  this is all such terrible rust please don't look at it
+*/
 impl fmt::Display for Config {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-      let _t = r#"
-        file = 'fish'
-        source = '~/dotfiles/.config/fish'
-        destination = '~/.config/fish'
-        method = 'symlink'
-        "#;
       let mut mos: Vec<ManagedObject> = Vec::new();
-      //mos.push(toml::from_str(_t).unwrap());
+      let mut mo = ManagedObject::default();
       let mut s = String::new();
-      for e in self.files.iter() {
-        match e.1.as_str() {
-          Some(_j) => mos.push(toml::from_str(e.1.as_str().unwrap()).ok().unwrap()),
-          None => continue
-        };
+      for _f in self.files.iter() {
+        s.push_str(&_f.0);
+        s.push_str(&": ");
+        match _f.1.get("source") {
+          None => (),
+          Some(_x) => s.push_str(_x.as_str().unwrap())
+        }
+        match _f.1.get("method") {
+          None => (),
+          Some(_x) => {
+            if _x.as_str().unwrap() == "symlink" {
+              s.push_str(&" => ")
+            }
+          }
+        }
+        match _f.1.get("destination") {
+          None => (),
+          Some(_x) => s.push_str(_x.as_str().unwrap())
+        }
+        s.push_str("\n");
       }
-      //write!(f, "{}", s);
-      write!(f, "{}", mos.pop().unwrap().source)
+      write!(f, "{}", s)
     }
 }
-*/
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -72,7 +87,7 @@ fn main() {
           deserialize_file(_p.to_str().unwrap()).unwrap()
         },
     };
-    println!("{:#?}", a);
+    println!("{}", a);
 }
 
 fn deserialize_files<'de, D>(deserializer: D) -> Result<Vec<(String, value::Value)>, D::Error>
