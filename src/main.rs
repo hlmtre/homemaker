@@ -3,122 +3,29 @@ extern crate serde;
 extern crate toml;
 
 //use serde::de::DeserializeOwned;
-use serde::{Deserialize, Deserializer, Serialize};
 use std::env;
-use std::fmt;
 use std::fs;
 use std::io;
-use std::io::prelude::*;
-use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::string::String;
-use toml::value;
 
 mod mgmt;
-
-#[derive(Serialize, Deserialize, Debug)]
-struct ManagedObject {
-    source: String,
-    destination: String,
-    method: String,
-}
-
-impl Default for ManagedObject {
-  fn default() -> Self {
-    ManagedObject { source: String::from(""), destination: String::from(""), method: String::from("") }
-  }
-}
-
-#[derive(Deserialize, Clone)]
-struct Config {
-  #[serde(rename = "file", deserialize_with = "deserialize_files")]
-  files: Vec<(String, value::Value)>,
-}
-
-impl Default for Config {
-  fn default() -> Self {
-    Config { files: Vec::new() }
-  }
-}
-
-/*
-  this is all such terrible rust please don't look at it
-*/
-impl fmt::Display for Config {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-      let mut mos: Vec<ManagedObject> = Vec::new();
-      let mut mo = ManagedObject::default();
-      let mut s = String::new();
-      for _f in self.files.iter() {
-        s.push_str(&_f.0);
-        s.push_str(&": ");
-        match _f.1.get("source") {
-          None => (),
-          Some(_x) => s.push_str(_x.as_str().unwrap())
-        }
-        match _f.1.get("method") {
-          None => (),
-          Some(_x) => {
-            if _x.as_str().unwrap() == "symlink" {
-              s.push_str(&" => ")
-            }
-          }
-        }
-        match _f.1.get("destination") {
-          None => (),
-          Some(_x) => s.push_str(_x.as_str().unwrap())
-        }
-        s.push_str("\n");
-      }
-      write!(f, "{}", s)
-    }
-}
+mod config;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     /*
       accept either a config passed as arg 1 or try to open the default config location
     */
-    let a: Config = match args.get(1) {
-        Some(second) => deserialize_file(&second).unwrap(),
+    let a: config::config::Config = match args.get(1) {
+        Some(second) => config::config::deserialize_file(&second).unwrap(),
         None => {
           let _p: PathBuf = ensure_config_dir()
               .map_err(|e| panic!("Couldn't ensure config dir: {}", e)).unwrap();
-          deserialize_file(_p.to_str().unwrap()).unwrap()
+          config::config::deserialize_file(_p.to_str().unwrap()).unwrap()
         },
     };
     println!("{}", a);
-}
-
-fn deserialize_files<'de, D>(deserializer: D) -> Result<Vec<(String, value::Value)>, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  let mut files: Vec<(String, value::Value)> = Vec::new();
-  let raw_files: Vec<value::Table> = Deserialize::deserialize(deserializer)?;
-  for mut entry in raw_files {
-    if let Some(name) = entry.remove("file") {
-      if let Some(name) = name.as_str() {
-          files.push((name.to_owned(), value::Value::Table(entry)));
-      }
-    }
-  }
-  Ok(files)
-}
-
-/*
-let config: Config = deserialize_file(matches.value_of("config").unwrap())?;
-*/
-
-fn deserialize_file(file: &str) -> Result<Config, String> {
-  let mut contents = String::new();
-  println!("file: {}", &file);
-  let mut file = BufReader::new(fs::File::open(file).ok().unwrap());
-  match file.read_to_string(&mut contents) {
-      Ok(v) => v,
-      Err(_e) => 0
-  };
-  toml::from_str(&contents).or_else(|e| Err(e.to_string()))
 }
 
 fn ensure_config_dir() -> Result<PathBuf, &'static str> {
@@ -148,7 +55,7 @@ fn ensure_config_dir() -> Result<PathBuf, &'static str> {
   };
 }
 
-fn get_config(config_file_path: PathBuf) -> Result<Config, io::Error> {
+fn get_config(config_file_path: PathBuf) -> Result<config::config::Config, io::Error> {
   let file_handle = fs::File::open(&config_file_path)?;
   println!("file: {}", &config_file_path.to_str().unwrap());
   let mut contents = String::new();
