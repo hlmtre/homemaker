@@ -5,7 +5,7 @@ extern crate toml;
 //use serde::de::DeserializeOwned;
 use std::env;
 use std::fs;
-use std::io;
+//use std::io;
 use std::path::{Path, PathBuf};
 use std::string::String;
 
@@ -17,12 +17,12 @@ fn main() {
     /*
       accept either a config passed as arg 1 or try to open the default config location
     */
-    let a: config::config::Config = match args.get(1) {
-        Some(second) => config::config::deserialize_file(&second).unwrap(),
+    let a: config::Config = match args.get(1) {
+        Some(second) => config::deserialize_file(&second).unwrap(),
         None => {
           let _p: PathBuf = ensure_config_dir()
               .map_err(|e| panic!("Couldn't ensure config dir: {}", e)).unwrap();
-          config::config::deserialize_file(_p.to_str().unwrap()).unwrap()
+          config::deserialize_file(_p.to_str().unwrap()).unwrap()
         },
     };
     println!("{}", a);
@@ -55,9 +55,11 @@ fn ensure_config_dir() -> Result<PathBuf, &'static str> {
   };
 }
 
+/*
 fn get_config(config_file_path: PathBuf) -> Result<config::config::Config, io::Error> {
   let file_handle = fs::File::open(&config_file_path)?;
   println!("file: {}", &config_file_path.to_str().unwrap());
   let mut contents = String::new();
   Ok(toml::from_str(&contents).unwrap())
 }
+*/
