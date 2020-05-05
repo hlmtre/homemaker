@@ -1,11 +1,8 @@
 extern crate dirs;
-extern crate serde;
-extern crate toml;
 
-//use serde::de::DeserializeOwned;
 use std::env;
 use std::fs;
-//use std::io;
+use std::process::exit;
 use std::path::{Path, PathBuf};
 use std::string::String;
 
@@ -22,7 +19,13 @@ fn main() {
         None => {
           let _p: PathBuf = ensure_config_dir()
               .map_err(|e| panic!("Couldn't ensure config dir: {}", e)).unwrap();
-          config::deserialize_file(_p.to_str().unwrap()).unwrap()
+          match config::deserialize_file(_p.to_str().unwrap()) {
+            Ok(c) => c,
+            Err(e) => {
+              println!("Couldn't open assumed config file {}. Error: {}", _p.to_string_lossy(), e);
+              exit(1)
+            }
+          }
         },
     };
     println!("{}", a);

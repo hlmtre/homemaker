@@ -1,8 +1,10 @@
 extern crate serde;
+extern crate toml;
 
 use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 use std::fs;
+use std::io;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::string::String;
@@ -100,13 +102,21 @@ where
 let config: Config = deserialize_file(matches.value_of("config").unwrap())?;
 */
 
+fn open_config(file: &str) -> io::Result<fs::File> {
+  fs::File::open(file)
+}
+
 pub fn deserialize_file(file: &str) -> Result<Config, String> {
   let mut contents = String::new();
-  println!("file: {}", &file);
-  let mut file = BufReader::new(fs::File::open(file).ok().unwrap());
-  match file.read_to_string(&mut contents) {
+  let g = match open_config(file) {
+    Ok(_a) => _a,
+    Err(e) => return Err(e.to_string())
+  };
+  let mut file_contents = BufReader::new(g);
+  match file_contents.read_to_string(&mut contents) {
     Ok(v) => v,
     Err(_e) => 0
   };
+  println!("file: {}", &file);
   toml::from_str(&contents).or_else(|e| Err(e.to_string()))
 }
