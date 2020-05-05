@@ -47,16 +47,11 @@ impl Default for Config {
 impl fmt::Display for Config {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
       let mut mos: Vec<ManagedObject> = Vec::new();
-      let mut s = String::new();
       for _f in self.files.iter() {
         let mut mo = ManagedObject::default();
-        s.push_str("\n");
-        s.push_str(&_f.0);
-        s.push_str(&": ");
         match _f.1.get("source") {
           None => (),
           Some(_x) =>  {
-            s.push_str(_x.as_str().unwrap());
             mo.source = String::from(_x.as_str().unwrap());
           }
         }
@@ -64,7 +59,6 @@ impl fmt::Display for Config {
           None => (),
           Some(_x) => {
             if _x.as_str().unwrap() == "symlink" {
-              s.push_str(&" => ");
               mo.method = String::from("symlink");
             }
           }
@@ -72,7 +66,6 @@ impl fmt::Display for Config {
         match _f.1.get("destination") {
           None => (),
           Some(_x) => {
-            s.push_str(_x.as_str().unwrap());
             mo.destination = String::from(_x.as_str().unwrap());
           }
         }

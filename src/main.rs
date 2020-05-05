@@ -15,7 +15,16 @@ fn main() {
       accept either a config passed as arg 1 or try to open the default config location
     */
     let a: config::Config = match args.get(1) {
-        Some(second) => config::deserialize_file(&second).unwrap(),
+      Some(second) => {
+        match config::deserialize_file(&second) {
+          Ok(c) => c,
+          Err(e) => {
+            println!("Couldn't open specified config file {}. Error: {}", &second, e);
+            exit(1)
+          }
+        }
+
+      },
         None => {
           let _p: PathBuf = ensure_config_dir()
               .map_err(|e| panic!("Couldn't ensure config dir: {}", e)).unwrap();
