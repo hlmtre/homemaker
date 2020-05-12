@@ -10,34 +10,38 @@ mod mgmt;
 mod config;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    /*
-      accept either a config passed as arg 1 or try to open the default config location
-    */
-    let a: config::Config = match args.get(1) {
-      Some(second) => {
-        match config::deserialize_file(&second) {
+  let args: Vec<String> = env::args().collect();
+  /*
+    accept either a config passed as arg 1 or try to open the default config location
+  */
+  let a: config::Config = match args.get(1) {
+    Some(second) => {
+      match config::deserialize_file(&second) {
+        Ok(c) => c,
+        Err(e) => {
+          println!("Couldn't open specified config file {}. Error: {}", &second, e);
+          exit(1)
+        }
+      }
+
+    },
+      None => {
+        let _p: PathBuf = ensure_config_dir()
+            .map_err(|e| panic!("Couldn't ensure config dir: {}", e)).unwrap();
+        match config::deserialize_file(_p.to_str().unwrap()) {
           Ok(c) => c,
           Err(e) => {
-            println!("Couldn't open specified config file {}. Error: {}", &second, e);
+            println!("Couldn't open assumed config file {}. Error: {}", _p.to_string_lossy(), e);
             exit(1)
           }
         }
-
       },
-        None => {
-          let _p: PathBuf = ensure_config_dir()
-              .map_err(|e| panic!("Couldn't ensure config dir: {}", e)).unwrap();
-          match config::deserialize_file(_p.to_str().unwrap()) {
-            Ok(c) => c,
-            Err(e) => {
-              println!("Couldn't open assumed config file {}. Error: {}", _p.to_string_lossy(), e);
-              exit(1)
-            }
-          }
-        },
-    };
-    println!("{}", a);
+  };
+  // call worker for objects in Config a here
+  println!("{}", a);
+  for mo in config::as_managed_objects(a) {
+    mgmt::perform_operation_on(mo);
+  }
 }
 
 fn ensure_config_dir() -> Result<PathBuf, &'static str> {

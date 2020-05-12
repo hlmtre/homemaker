@@ -12,9 +12,9 @@ use toml::value;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ManagedObject {
-    source: String,
-    destination: String,
-    method: String,
+  pub source: String,
+  pub destination: String,
+  pub method: String,
 }
 
 impl fmt::Display for ManagedObject {
@@ -32,7 +32,7 @@ impl Default for ManagedObject {
 #[derive(Deserialize, Clone)]
 pub struct Config {
   #[serde(rename = "file", deserialize_with = "deserialize_files")]
-  files: Vec<(String, value::Value)>,
+  pub files: Vec<(String, value::Value)>,
 }
 
 impl Default for Config {
@@ -89,6 +89,35 @@ where
     }
   }
   Ok(files)
+}
+
+pub fn as_managed_objects(config: Config) -> Vec<ManagedObject> {
+  let mut mos: Vec<ManagedObject> = Vec::new();
+  for _f in config.files.iter() {
+    let mut mo = ManagedObject::default();
+    match _f.1.get("source") {
+      None => (),
+      Some(_x) =>  {
+        mo.source = String::from(_x.as_str().unwrap());
+      }
+    }
+    match _f.1.get("method") {
+      None => (),
+      Some(_x) => {
+        if _x.as_str().unwrap() == "symlink" {
+          mo.method = String::from("symlink");
+        }
+      }
+    }
+    match _f.1.get("destination") {
+      None => (),
+      Some(_x) => {
+        mo.destination = String::from(_x.as_str().unwrap());
+      }
+    }
+    mos.push(mo);
+  }
+  return mos;
 }
 
 /*
