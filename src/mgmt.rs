@@ -16,9 +16,7 @@ pub fn perform_operation_on(mo: ManagedObject) -> std::io::Result<()> {
     _s =>  {
       let source: String = mo.source;
       let destination: String = mo.destination;
-      //return symlink_file(source, destination);
-      println!("Would symlink {} to {}", source, destination);
-      return Ok(())
+      return symlink_file(source, destination);
     },
   };
 }

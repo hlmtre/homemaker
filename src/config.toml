@@ -1,7 +1,7 @@
 [[file]]
 file = 'tmux.conf'
 source = '~/dotfiles/.tmux.conf'
-destination = '~'
+destination = '~/.tmux.conf'
 method = 'symlink'
 
 [[file]]
