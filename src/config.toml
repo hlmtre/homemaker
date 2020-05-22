@@ -9,3 +9,17 @@ file = 'fish'
 source = '~/dotfiles/.config/fish'
 destination = '~/.config/fish'
 method = 'symlink'
+
+[[task]]
+task = 'zt'
+dependencies = 'maim, slop'
+
+[[task]]
+task = 'slop'
+source = '~/dotfiles/zt/slop'
+solution = 'cd ~/dotfiles/zt/slop; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./; make && sudo make install'
+
+[[task]]
+task = 'maim'
+source = '~/dotfiles/zt/maim'
+solution = 'cd ~/dotfiles/zt/maim; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./; make && sudo make install'
