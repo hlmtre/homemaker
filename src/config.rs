@@ -15,23 +15,32 @@ pub struct ManagedObject {
   pub source: String,
   pub destination: String,
   pub method: String,
+  pub task: String,
+  pub solution: String,
+  pub dependencies: Vec<String>
 }
 
 impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{} {} {}", self.source, self.method, self.destination)
+    write!(f, "{} {} {} {} {}", self.source, self.method, self.destination, self.task, self.solution)
   }
 }
 
 impl Default for ManagedObject {
   fn default() -> Self {
-    ManagedObject { source: String::from(""), destination: String::from(""), method: String::from("") }
+    ManagedObject { source: String::from(""),
+                    destination: String::from(""),
+                    method: String::from(""),
+                    task: String::from(""),
+                    solution: String::from(""),
+                    dependencies: Vec::new()
+    }
   }
 }
 
 #[derive(Deserialize, Clone)]
 pub struct Config {
-  #[serde(rename = "file", deserialize_with = "deserialize_files")]
+  #[serde(deserialize_with = "deserialize_files")]
   pub files: Vec<(String, value::Value)>,
 }
 
@@ -81,8 +90,19 @@ where
 {
   let mut files: Vec<(String, value::Value)> = Vec::new();
   let raw_files: Vec<value::Table> = Deserialize::deserialize(deserializer)?;
+  println!("HI!");
+  let raw_tasks = raw_files.clone();
   for mut entry in raw_files {
     if let Some(name) = entry.remove("file") {
+      println!("{}", name);
+      if let Some(name) = name.as_str() {
+        files.push((name.to_owned(), value::Value::Table(entry)));
+      }
+    }
+  }
+  for mut entry in raw_tasks {
+    if let Some(name) = entry.remove("task") {
+      println!("{}", name);
       if let Some(name) = name.as_str() {
         files.push((name.to_owned(), value::Value::Table(entry)));
       }
@@ -95,6 +115,18 @@ pub fn as_managed_objects(config: Config) -> Vec<ManagedObject> {
   let mut mos: Vec<ManagedObject> = Vec::new();
   for _f in config.files.iter() {
     let mut mo = ManagedObject::default();
+    match _f.1.get("solution") {
+      None => (),
+      Some(_x) =>  {
+        mo.solution = String::from(_x.as_str().unwrap());
+      }
+    }
+    match _f.1.get("task") {
+      None => (),
+      Some(_x) =>  {
+        mo.task = String::from(_x.as_str().unwrap());
+      }
+    }
     match _f.1.get("source") {
       None => (),
       Some(_x) =>  {
