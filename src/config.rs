@@ -12,6 +12,7 @@ use toml::value;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ManagedObject {
+  pub name: String,
   pub source: String,
   pub file: String,
   pub destination: String,
@@ -25,8 +26,8 @@ impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
       f,
-      "{} {} {} {} {} {}",
-      self.file, self.source, self.method, self.destination, self.task, self.solution
+      "{} {} {} {} {} {} {}",
+      self.name, self.file, self.source, self.method, self.destination, self.task, self.solution
     )
   }
 }
@@ -34,6 +35,7 @@ impl fmt::Display for ManagedObject {
 impl Default for ManagedObject {
   fn default() -> Self {
     ManagedObject {
+      name: String::from(""),
       source: String::from(""),
       destination: String::from(""),
       method: String::from(""),
@@ -65,6 +67,7 @@ impl fmt::Display for Config {
     let mut mos: Vec<ManagedObject> = Vec::new();
     for _f in self.files.iter() {
       let mut mo = ManagedObject::default();
+      mo.name = _f.0.to_owned();
       match _f.1.get("file") {
         None => (),
         Some(_x) => {
@@ -126,7 +129,6 @@ where
   let raw_tasks = raw_files.clone();
   for mut entry in raw_files {
     if let Some(name) = entry.remove("file") {
-      println!("{}", name);
       if let Some(name) = name.as_str() {
         files.push((name.to_owned(), value::Value::Table(entry)));
       }
@@ -134,7 +136,6 @@ where
   }
   for mut entry in raw_tasks {
     if let Some(name) = entry.remove("task") {
-      println!("{}", name);
       if let Some(name) = name.as_str() {
         files.push((name.to_owned(), value::Value::Table(entry)));
       }
@@ -147,6 +148,7 @@ pub fn as_managed_objects(config: Config) -> Vec<ManagedObject> {
   let mut mos: Vec<ManagedObject> = Vec::new();
   for _f in config.files.iter() {
     let mut mo = ManagedObject::default();
+    mo.name = _f.0.to_owned();
     match _f.1.get("solution") {
       None => (),
       Some(_x) => {
@@ -203,6 +205,8 @@ pub fn deserialize_file(file: &str) -> Result<Config, String> {
     Ok(v) => v,
     Err(_e) => 0,
   };
-  println!("file: {}", &file);
+  if cfg!(debug_assertions) {
+    println!("file: {}", &file);
+  }
   toml::from_str(&contents).or_else(|e| Err(e.to_string()))
 }

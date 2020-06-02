@@ -38,7 +38,9 @@ fn main() {
       },
   };
   // call worker for objects in Config a here
-  println!("{}", a);
+  if cfg!(debug_assertions) {
+    println!("{}", a);
+  }
   for mo in config::as_managed_objects(a) {
     mgmt::perform_operation_on(mo);
   }
@@ -70,12 +72,3 @@ fn ensure_config_dir() -> Result<PathBuf, &'static str> {
     None => return Err("Couldn't get config directory from $XDG"),
   };
 }
-
-/*
-fn get_config(config_file_path: PathBuf) -> Result<config::config::Config, io::Error> {
-  let file_handle = fs::File::open(&config_file_path)?;
-  println!("file: {}", &config_file_path.to_str().unwrap());
-  let mut contents = String::new();
-  Ok(toml::from_str(&contents).unwrap())
-}
-*/
