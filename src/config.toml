@@ -1,25 +1,25 @@
-[[file]]
+[[obj]]
 file = 'tmux.conf'
 source = '~/dotfiles/.tmux.conf'
 destination = '~/.tmux.conf'
 method = 'symlink'
 
-[[file]]
+[[obj]]
 file = 'fish'
 source = '~/dotfiles/.config/fish'
 destination = '~/.config/fish'
 method = 'symlink'
 
-[[task]]
+[[obj]]
 task = 'zt'
 dependencies = 'maim, slop'
 
-[[task]]
+[[obj]]
 task = 'slop'
 source = '~/dotfiles/zt/slop'
 solution = 'cd ~/dotfiles/zt/slop; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./; make && sudo make install'
 
-[[task]]
+[[obj]]
 task = 'maim'
 source = '~/dotfiles/zt/maim'
 solution = 'cd ~/dotfiles/zt/maim; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./; make && sudo make install'

@@ -13,34 +13,41 @@ use toml::value;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ManagedObject {
   pub source: String,
+  pub file: String,
   pub destination: String,
   pub method: String,
   pub task: String,
   pub solution: String,
-  pub dependencies: Vec<String>
+  pub dependencies: Vec<String>,
 }
 
 impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{} {} {} {} {}", self.source, self.method, self.destination, self.task, self.solution)
+    write!(
+      f,
+      "{} {} {} {} {} {}",
+      self.file, self.source, self.method, self.destination, self.task, self.solution
+    )
   }
 }
 
 impl Default for ManagedObject {
   fn default() -> Self {
-    ManagedObject { source: String::from(""),
-                    destination: String::from(""),
-                    method: String::from(""),
-                    task: String::from(""),
-                    solution: String::from(""),
-                    dependencies: Vec::new()
+    ManagedObject {
+      source: String::from(""),
+      destination: String::from(""),
+      method: String::from(""),
+      task: String::from(""),
+      file: String::from(""),
+      solution: String::from(""),
+      dependencies: Vec::new(),
     }
   }
 }
 
 #[derive(Deserialize, Clone)]
 pub struct Config {
-  #[serde(deserialize_with = "deserialize_files")]
+  #[serde(rename = "obj", deserialize_with = "deserialize_files")]
   pub files: Vec<(String, value::Value)>,
 }
 
@@ -54,34 +61,60 @@ impl Default for Config {
   this is all such terrible rust please don't look at it
 */
 impl fmt::Display for Config {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-      let mut mos: Vec<ManagedObject> = Vec::new();
-      for _f in self.files.iter() {
-        let mut mo = ManagedObject::default();
-        match _f.1.get("source") {
-          None => (),
-          Some(_x) =>  {
-            mo.source = String::from(_x.as_str().unwrap());
-          }
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    let mut mos: Vec<ManagedObject> = Vec::new();
+    for _f in self.files.iter() {
+      let mut mo = ManagedObject::default();
+      match _f.1.get("file") {
+        None => (),
+        Some(_x) => {
+          mo.file = String::from(_x.as_str().unwrap());
         }
-        match _f.1.get("method") {
-          None => (),
-          Some(_x) => {
-            if _x.as_str().unwrap() == "symlink" {
-              mo.method = String::from("symlink");
-            }
-          }
-        }
-        match _f.1.get("destination") {
-          None => (),
-          Some(_x) => {
-            mo.destination = String::from(_x.as_str().unwrap());
-          }
-        }
-        mos.push(mo);
       }
-      write!(f, "{:#?}", mos)
+      match _f.1.get("source") {
+        None => (),
+        Some(_x) => {
+          mo.source = String::from(_x.as_str().unwrap());
+        }
+      }
+      match _f.1.get("method") {
+        None => (),
+        Some(_x) => {
+          if _x.as_str().unwrap() == "symlink" {
+            mo.method = String::from("symlink");
+          }
+        }
+      }
+      match _f.1.get("destination") {
+        None => (),
+        Some(_x) => {
+          mo.destination = String::from(_x.as_str().unwrap());
+        }
+      }
+      match _f.1.get("solution") {
+        None => (),
+        Some(_x) => {
+          mo.solution = String::from(_x.as_str().unwrap());
+        }
+      }
+      match _f.1.get("task") {
+        None => (),
+        Some(_x) => {
+          mo.task = String::from(_x.as_str().unwrap());
+        }
+      }
+      match _f.1.get("dependencies") {
+        None => (),
+        Some(_x) => {
+          let _f = _x.as_str().unwrap();
+          // thanks https://stackoverflow.com/a/37547426
+          mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
+        }
+      }
+      mos.push(mo);
     }
+    write!(f, "{:#?}", mos)
+  }
 }
 
 pub fn deserialize_files<'de, D>(deserializer: D) -> Result<Vec<(String, value::Value)>, D::Error>
@@ -90,7 +123,6 @@ where
 {
   let mut files: Vec<(String, value::Value)> = Vec::new();
   let raw_files: Vec<value::Table> = Deserialize::deserialize(deserializer)?;
-  println!("HI!");
   let raw_tasks = raw_files.clone();
   for mut entry in raw_files {
     if let Some(name) = entry.remove("file") {
@@ -117,19 +149,19 @@ pub fn as_managed_objects(config: Config) -> Vec<ManagedObject> {
     let mut mo = ManagedObject::default();
     match _f.1.get("solution") {
       None => (),
-      Some(_x) =>  {
+      Some(_x) => {
         mo.solution = String::from(_x.as_str().unwrap());
       }
     }
     match _f.1.get("task") {
       None => (),
-      Some(_x) =>  {
+      Some(_x) => {
         mo.task = String::from(_x.as_str().unwrap());
       }
     }
     match _f.1.get("source") {
       None => (),
-      Some(_x) =>  {
+      Some(_x) => {
         mo.source = String::from(_x.as_str().unwrap());
       }
     }
@@ -164,12 +196,12 @@ pub fn deserialize_file(file: &str) -> Result<Config, String> {
   let mut contents = String::new();
   let g = match open_config(file) {
     Ok(_a) => _a,
-    Err(e) => return Err(e.to_string())
+    Err(e) => return Err(e.to_string()),
   };
   let mut file_contents = BufReader::new(g);
   match file_contents.read_to_string(&mut contents) {
     Ok(v) => v,
-    Err(_e) => 0
+    Err(_e) => 0,
   };
   println!("file: {}", &file);
   toml::from_str(&contents).or_else(|e| Err(e.to_string()))
