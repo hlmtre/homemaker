@@ -126,16 +126,13 @@ where
 {
   let mut files: Vec<(String, value::Value)> = Vec::new();
   let raw_files: Vec<value::Table> = Deserialize::deserialize(deserializer)?;
-  let raw_tasks = raw_files.clone();
   for mut entry in raw_files {
     if let Some(name) = entry.remove("file") {
       if let Some(name) = name.as_str() {
         files.push((name.to_owned(), value::Value::Table(entry)));
       }
     }
-  }
-  for mut entry in raw_tasks {
-    if let Some(name) = entry.remove("task") {
+    else if let Some(name) = entry.remove("task") {
       if let Some(name) = name.as_str() {
         files.push((name.to_owned(), value::Value::Table(entry)));
       }
