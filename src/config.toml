@@ -18,8 +18,10 @@ dependencies = 'maim, slop'
 task = 'slop'
 source = '~/dotfiles/zt/slop'
 solution = 'cd ~/dotfiles/zt/slop; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./; make && sudo make install'
+method = 'execute'
 
 [[obj]]
 task = 'maim'
 source = '~/dotfiles/zt/maim'
 solution = 'cd ~/dotfiles/zt/maim; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./; make && sudo make install'
+method = 'execute'

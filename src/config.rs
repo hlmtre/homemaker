@@ -83,9 +83,7 @@ impl fmt::Display for Config {
       match _f.1.get("method") {
         None => (),
         Some(_x) => {
-          if _x.as_str().unwrap() == "symlink" {
-            mo.method = String::from("symlink");
-          }
+          mo.method = String::from(_x.as_str().unwrap());
         }
       }
       match _f.1.get("destination") {
@@ -167,9 +165,7 @@ pub fn as_managed_objects(config: Config) -> Vec<ManagedObject> {
     match _f.1.get("method") {
       None => (),
       Some(_x) => {
-        if _x.as_str().unwrap() == "symlink" {
-          mo.method = String::from("symlink");
-        }
+        mo.method = String::from(_x.as_str().unwrap());
       }
     }
     match _f.1.get("destination") {
