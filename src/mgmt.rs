@@ -3,17 +3,28 @@ extern crate shellexpand;
 use crate::config::ManagedObject;
 use std::os::unix::fs;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
+use std::io::{BufRead, BufReader, Error, ErrorKind};
 
-// fs::symlink(Path::new(shellexpand::tilde("~/a.txt").to_mut()), Path::new(shellexpand::tilde("~/b.txt").to_mut()))?;
 fn symlink_file(source: String, target: String) -> std::io::Result<()> {
   fs::symlink(Path::new(shellexpand::tilde(&source).to_mut()), Path::new(shellexpand::tilde(&target).to_mut()))?;
   Ok(())
 }
 
 fn execute_solution(solution: String) -> std::io::Result<()> {
-  let output = Command::new("bash").arg("-c").arg(solution).output().expect("LKJALKJ");
-  println!("{:#?}", output);
+  // marginally adapted but mostly stolen from
+  // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html
+
+  let output = Command::new("bash").arg("-c").arg(solution)
+    .stdout(Stdio::piped())
+    .spawn()?
+    .stdout
+    .ok_or_else(|| Error::new(ErrorKind::Other, "Couldn't capture stdout"))?;
+  let reader = BufReader::new(output);
+  reader
+    .lines()
+    .filter_map(|line| line.ok())
+    .for_each(|line| println!("{}", line));
   Ok(())
 }
 
@@ -27,6 +38,7 @@ pub fn perform_operation_on(mo: ManagedObject) -> std::io::Result<()> {
     },
     "execute" => {
       let cmd: String = mo.solution;
+      println!("Executing `{}` for task `{}`", cmd, mo.name.to_owned());
       return execute_solution(cmd);
     },
     _ => {
