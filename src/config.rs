@@ -10,7 +10,7 @@ use std::io::BufReader;
 use std::string::String;
 use toml::value;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ManagedObject {
   pub name: String,
   pub source: String,

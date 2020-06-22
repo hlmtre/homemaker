@@ -5,6 +5,7 @@ use std::os::unix::fs;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader, Error, ErrorKind};
+use termion::{color};
 
 fn symlink_file(source: String, target: String) -> std::io::Result<()> {
   fs::symlink(Path::new(shellexpand::tilde(&source).to_mut()), Path::new(shellexpand::tilde(&target).to_mut()))?;
@@ -21,6 +22,8 @@ fn execute_solution(solution: String) -> std::io::Result<()> {
     .stdout
     .ok_or_else(|| Error::new(ErrorKind::Other, "Couldn't capture stdout"))?;
   let reader = BufReader::new(output);
+  // reset to white from whatever was before (green or red)
+  println!("{}", color::Fg(color::Reset));
   reader
     .lines()
     .filter_map(|line| line.ok())
@@ -38,7 +41,7 @@ pub fn perform_operation_on(mo: ManagedObject) -> std::io::Result<()> {
     },
     "execute" => {
       let cmd: String = mo.solution;
-      println!("Executing `{}` for task `{}`", cmd, mo.name.to_owned());
+      println!("{}Executing `{}` for task `{}`", color::Fg(color::Green), cmd, mo.name.to_owned());
       return execute_solution(cmd);
     },
     _ => {
