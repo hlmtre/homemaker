@@ -10,6 +10,7 @@ use termion::{color};
 
 mod mgmt;
 mod config;
+mod hmerror;
 
 fn main() {
   let args: Vec<String> = env::args().collect();

@@ -1,6 +1,8 @@
 extern crate serde;
 extern crate toml;
 
+use crate::hmerror::HMError;
+
 use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 use std::fs;
@@ -20,14 +22,15 @@ pub struct ManagedObject {
   pub task: String,
   pub solution: String,
   pub dependencies: Vec<String>,
+  pub satisfied: bool,
 }
 
 impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
       f,
-      "{} {} {} {} {} {} {}",
-      self.name, self.file, self.source, self.method, self.destination, self.task, self.solution
+      "{} {} {} {} {} {} {} {}",
+      self.name, self.file, self.source, self.method, self.destination, self.task, self.solution, self.satisfied
     )
   }
 }
@@ -43,6 +46,7 @@ impl Default for ManagedObject {
       file: String::from(""),
       solution: String::from(""),
       dependencies: Vec::new(),
+      satisfied: false,
     }
   }
 }
@@ -116,6 +120,10 @@ impl fmt::Display for Config {
     }
     write!(f, "{:#?}", mos)
   }
+}
+
+pub fn get_mo(n: String) -> Result<ManagedObject, HMError>{
+  unimplemented!("not done")
 }
 
 pub fn deserialize_files<'de, D>(deserializer: D) -> Result<Vec<(String, value::Value)>, D::Error>

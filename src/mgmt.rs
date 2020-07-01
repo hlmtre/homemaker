@@ -44,8 +44,14 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<()> {
       let source: String = mo.source;
       let destination: String = mo.destination;
       return symlink_file(source, destination);
-    },
+    }
     "execute" => {
+//      if !mo.dependencies.is_empty() {
+//        for d in mo.dependencies
+//        {
+//
+//        }
+//      }
       let cmd: String = mo.solution;
       println!("{}Executing `{}` for task `{}`", color::Fg(color::Green), cmd, mo.name.to_owned());
       return execute_solution(cmd);
