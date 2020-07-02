@@ -3,14 +3,14 @@ extern crate termion;
 
 use std::env;
 use std::fs;
-use std::process::exit;
 use std::path::{Path, PathBuf};
+use std::process::exit;
 use std::string::String;
-use termion::{color};
+use termion::color;
 
-mod mgmt;
 mod config;
 mod hmerror;
+mod mgmt;
 
 fn main() {
   let args: Vec<String> = env::args().collect();
@@ -18,27 +18,35 @@ fn main() {
     accept either a config passed as arg 1 or try to open the default config location
   */
   let a: config::Config = match args.get(1) {
-    Some(second) => {
-      match config::deserialize_file(&second) {
+    Some(second) => match config::deserialize_file(&second) {
+      Ok(c) => c,
+      Err(e) => {
+        eprintln!(
+          "{}Couldn't open specified config file {}. Error: {}",
+          color::Fg(color::Red),
+          &second,
+          e
+        );
+        exit(1)
+      }
+    },
+    None => {
+      let _p: PathBuf = ensure_config_dir()
+        .map_err(|e| panic!("{}Couldn't ensure config dir: {}", color::Fg(color::Red), e))
+        .unwrap();
+      match config::deserialize_file(_p.to_str().unwrap()) {
         Ok(c) => c,
         Err(e) => {
-          eprintln!("{}Couldn't open specified config file {}. Error: {}", color::Fg(color::Red), &second, e);
+          eprintln!(
+            "{}Couldn't open assumed config file {}. Error: {}",
+            color::Fg(color::Red),
+            _p.to_string_lossy(),
+            e
+          );
           exit(1)
         }
       }
-
-    },
-      None => {
-        let _p: PathBuf = ensure_config_dir()
-            .map_err(|e| panic!("{}Couldn't ensure config dir: {}", color::Fg(color::Red), e)).unwrap();
-        match config::deserialize_file(_p.to_str().unwrap()) {
-          Ok(c) => c,
-          Err(e) => {
-            eprintln!("{}Couldn't open assumed config file {}. Error: {}", color::Fg(color::Red), _p.to_string_lossy(), e);
-            exit(1)
-          }
-        }
-      },
+    }
   };
   // call worker for objects in Config a here
   //if cfg!(debug_assertions) {
@@ -46,10 +54,14 @@ fn main() {
   //}
   #[allow(unused_must_use)]
   for mo in config::as_managed_objects(a) {
-    mgmt::perform_operation_on(mo.clone())
-      .map_err(|e|
-               eprintln!("{}Failed to perform operation on {:#?}. \nError: {}\n",
-                        color::Fg(color::Red), mo.clone(), e));
+    mgmt::perform_operation_on(mo.clone()).map_err(|e| {
+      eprintln!(
+        "{}Failed to perform operation on {:#?}. \nError: {}\n",
+        color::Fg(color::Red),
+        mo.clone(),
+        e
+      )
+    });
   }
 }
 
