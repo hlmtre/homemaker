@@ -4,12 +4,11 @@ extern crate toml;
 use crate::hmerror::HMError;
 
 use serde::{Deserialize, Deserializer, Serialize};
-use std::fmt;
-use std::fs;
-use std::io;
-use std::io::prelude::*;
-use std::io::BufReader;
-use std::string::String;
+use std::{
+  fmt, fs, io,
+  io::{prelude::*, BufReader},
+  string::String,
+};
 use toml::value;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -30,7 +29,14 @@ impl fmt::Display for ManagedObject {
     write!(
       f,
       "{} {} {} {} {} {} {} {}",
-      self.name, self.file, self.source, self.method, self.destination, self.task, self.solution, self.satisfied
+      self.name,
+      self.file,
+      self.source,
+      self.method,
+      self.destination,
+      self.task,
+      self.solution,
+      self.satisfied
     )
   }
 }
@@ -122,7 +128,7 @@ impl fmt::Display for Config {
   }
 }
 
-pub fn get_mo(n: String) -> Result<ManagedObject, HMError>{
+pub fn get_mo(n: String) -> Result<ManagedObject, HMError> {
   unimplemented!("not done")
 }
 
@@ -137,8 +143,7 @@ where
       if let Some(name) = name.as_str() {
         files.push((name.to_owned(), value::Value::Table(entry)));
       }
-    }
-    else if let Some(name) = entry.remove("task") {
+    } else if let Some(name) = entry.remove("task") {
       if let Some(name) = name.as_str() {
         files.push((name.to_owned(), value::Value::Table(entry)));
       }
