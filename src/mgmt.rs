@@ -5,8 +5,10 @@ use crate::config::ManagedObject;
 use std::io::{BufRead, BufReader, Error, ErrorKind, Result};
 use std::os::unix::fs;
 use std::path::Path;
-use std::process::{Command, Stdio};
-use std::thread;
+use std::{
+  process::{Command, Stdio},
+  thread,
+};
 
 use termion::color;
 
