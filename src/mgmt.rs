@@ -1,8 +1,11 @@
 extern crate shellexpand;
 
-use crate::config::ManagedObject;
+use crate::{
+  config::ManagedObject,
+  hmerror::{ErrorKind, HMError},
+};
 
-use std::io::{BufRead, BufReader, Error, ErrorKind, Result};
+use std::io::{BufRead, BufReader, Error, Result};
 use std::os::unix::fs;
 use std::path::Path;
 use std::{
@@ -20,11 +23,11 @@ fn symlink_file(source: String, target: String) -> Result<()> {
   Ok(())
 }
 
-fn execute_solution(solution: String) -> Result<()> {
+fn execute_solution(solution: String) -> Result<(), ErrorKind> {
   // marginally adapted but mostly stolen from
   // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html
 
-  let child = thread::spawn(move || {
+  let child: thread::JoinHandle<Result<(), Error>> = thread::spawn(move || {
     let output = Command::new("bash")
       .arg("-c")
       .arg(solution)
@@ -44,7 +47,7 @@ fn execute_solution(solution: String) -> Result<()> {
   child.join().unwrap()
 }
 
-pub fn perform_operation_on(mo: ManagedObject) -> Result<()> {
+pub fn perform_operation_on(mo: ManagedObject) -> Result<(), ErrorKind> {
   let _s = mo.method.as_str();
   match _s {
     "symlink" => {

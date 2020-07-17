@@ -1,11 +1,12 @@
 extern crate dirs;
 extern crate termion;
 
-use std::env;
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::process::exit;
-use std::string::String;
+use std::{
+  env, fs,
+  path::{Path, PathBuf},
+  process::exit,
+  string::String,
+};
 use termion::color;
 
 mod config;
