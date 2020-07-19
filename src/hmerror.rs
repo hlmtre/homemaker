@@ -1,16 +1,42 @@
 use std::fmt;
+use std::io;
 
 #[derive(Debug)]
 pub enum HMError {
+  Io(io::Error),
   Regular(ErrorKind),
-  Custom(String)
+  Other(String),
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum ErrorKind {
-  DependencyUndefined,
+  DependencyUndefinedError,
   SolutionError,
-  ConfigError
+  ConfigError,
+  Other,
+}
+
+#[derive(Debug)]
+struct ConfigError {
+  LineNumber: i32,
+  Complaint: String,
+}
+
+#[derive(Debug)]
+struct SolutionError {
+  Complaint: String,
+}
+
+#[derive(Debug)]
+struct DependencyUndefinedError {
+  Dependency: String,
+  Dependent: String,
+}
+
+impl From<io::Error> for HMError {
+  fn from(err: io::Error) -> HMError {
+    HMError::Io(err)
+  }
 }
 
 impl ErrorKind {
@@ -18,7 +44,8 @@ impl ErrorKind {
     match *self {
       ErrorKind::ConfigError => "configuration error",
       ErrorKind::SolutionError => "solution error",
-      ErrorKind::DependencyUndefined => "dependency undefined"
+      ErrorKind::DependencyUndefinedError => "dependency undefined",
+      ErrorKind::Other => "other error",
     }
   }
 }
@@ -36,7 +63,8 @@ impl fmt::Display for HMError {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match *self {
       HMError::Regular(ref err) => write!(f, "A regular error occurred {:?}", err),
-      HMError::Custom(ref err) => write!(f, "A custom error occurred {:?}", err),
+      HMError::Other(ref err) => write!(f, "An error occurred {:?}", err),
+      HMError::Io(ref err) => err.fmt(f),
     }
   }
 }
