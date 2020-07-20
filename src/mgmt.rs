@@ -15,7 +15,7 @@ use std::{
 
 use termion::color;
 
-fn symlink_file(source: String, target: String) -> Result<()> {
+fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   fs::symlink(
     Path::new(shellexpand::tilde(&source).to_mut()),
     Path::new(shellexpand::tilde(&target).to_mut()),
@@ -23,7 +23,7 @@ fn symlink_file(source: String, target: String) -> Result<()> {
   Ok(())
 }
 
-fn execute_solution(solution: String) -> Result<ErrorKind> {
+fn execute_solution(solution: String) -> Result<(), ErrorKind> {
   // marginally adapted but mostly stolen from
   // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html
 
@@ -47,7 +47,7 @@ fn execute_solution(solution: String) -> Result<ErrorKind> {
   child.join().unwrap()
 }
 
-pub fn perform_operation_on(mo: ManagedObject) -> Result<ErrorKind> {
+pub fn perform_operation_on(mo: ManagedObject) -> Result<(), ErrorKind> {
   let _s = mo.method.as_str();
   match _s {
     "symlink" => {

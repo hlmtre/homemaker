@@ -1,6 +1,30 @@
 use std::fmt;
 use std::io;
 
+struct HomemakerError {
+  line_number: usize,
+  complaint: String,
+  encapsulated_error: Option<io::Error>,
+}
+
+impl fmt::Display for HomemakerError {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{}: {}", self.line_number, self.complaint);
+  }
+}
+
+impl fmt::Debug for HomemakerError {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(
+      f,
+      "HomemakerError {{ line_number: {}, complaint: {}, encapsulated_error: {} }}",
+      self.line_number,
+      self.complaint,
+      self.encapsulated_error.to_string()
+    )
+  }
+}
+
 #[derive(Debug)]
 pub enum HMError {
   Io(io::Error),
