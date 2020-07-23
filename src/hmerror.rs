@@ -52,19 +52,21 @@ pub enum ErrorKind {
 
 #[derive(Debug)]
 struct ConfigError {
-  LineNumber: i32,
-  Complaint: String,
+  line_number: i32,
+  complaint: String,
 }
 
 #[derive(Debug)]
 struct SolutionError {
-  Complaint: String,
+  line_number: i32,
+  complaint: String,
 }
 
 #[derive(Debug)]
 struct DependencyUndefinedError {
-  Dependency: String,
-  Dependent: String,
+  line_number: i32,
+  dependency: String,
+  dependent: String,
 }
 
 impl From<io::Error> for HMError {
@@ -102,3 +104,5 @@ impl fmt::Display for HMError {
     }
   }
 }
+
+pub type Result<T> = std::result::Result<T, HMError>;

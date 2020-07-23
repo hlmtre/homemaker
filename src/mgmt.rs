@@ -1,6 +1,9 @@
 extern crate shellexpand;
 
-use crate::{config::ManagedObject, hmerror::HomemakerError};
+use crate::{
+  config::ManagedObject,
+  hmerror::{ErrorKind as hmek, HMError, HomemakerError},
+};
 
 use std::io::{BufRead, BufReader, Error, ErrorKind};
 use std::os::unix::fs;
@@ -12,9 +15,9 @@ use std::{
 
 use termion::color;
 
-type Result<T> = std::result::Result<T, HomemakerError>;
+//type Result<T> = std::result::Result<T, HMError>;
 
-fn symlink_file(source: String, target: String) -> Result<()> {
+fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   fs::symlink(
     Path::new(shellexpand::tilde(&source).to_mut()),
     Path::new(shellexpand::tilde(&target).to_mut()),
@@ -22,11 +25,11 @@ fn symlink_file(source: String, target: String) -> Result<()> {
   Ok(())
 }
 
-fn execute_solution(solution: String) -> Result<()> {
+fn execute_solution(solution: String) -> Result<(), HMError> {
   // marginally adapted but mostly stolen from
   // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html
 
-  let child: thread::JoinHandle<Result<()>> = thread::spawn(move || {
+  let child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
     let output = Command::new("bash")
       .arg("-c")
       .arg(solution)
@@ -46,7 +49,7 @@ fn execute_solution(solution: String) -> Result<()> {
   child.join().unwrap()
 }
 
-pub fn perform_operation_on(mo: ManagedObject) -> Result<()> {
+pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
   let _s = mo.method.as_str();
   match _s {
     "symlink" => {
@@ -61,6 +64,7 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<()> {
       //
       //        }
       //      }
+      //Err(HMError::Regular(hmek::SolutionError))
       let cmd: String = mo.solution;
       println!(
         "{}Executing `{}` for task `{}`",
