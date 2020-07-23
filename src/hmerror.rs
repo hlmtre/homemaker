@@ -1,7 +1,7 @@
 use std::fmt;
 use std::io;
 
-struct HomemakerError {
+pub struct HomemakerError {
   line_number: usize,
   complaint: String,
   encapsulated_error: Option<io::Error>,
@@ -9,7 +9,7 @@ struct HomemakerError {
 
 impl fmt::Display for HomemakerError {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{}: {}", self.line_number, self.complaint);
+    write!(f, "{}: {}", self.line_number, self.complaint)
   }
 }
 
@@ -20,8 +20,18 @@ impl fmt::Debug for HomemakerError {
       "HomemakerError {{ line_number: {}, complaint: {}, encapsulated_error: {} }}",
       self.line_number,
       self.complaint,
-      self.encapsulated_error.to_string()
+      self.encapsulated_error.as_ref().unwrap().to_string()
     )
+  }
+}
+
+impl From<io::Error> for HomemakerError {
+  fn from(error: io::Error) -> Self {
+    HomemakerError {
+      line_number: 0,
+      complaint: error.to_string(),
+      encapsulated_error: Some(error),
+    }
   }
 }
 
@@ -92,5 +102,3 @@ impl fmt::Display for HMError {
     }
   }
 }
-
-pub type Result<T> = std::result::Result<T, HMError>;

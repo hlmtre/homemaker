@@ -1,11 +1,8 @@
 extern crate shellexpand;
 
-use crate::{
-  config::ManagedObject,
-  hmerror::{ErrorKind, HMError},
-};
+use crate::{config::ManagedObject, hmerror::HomemakerError};
 
-use std::io::{BufRead, BufReader, Error, Result};
+use std::io::{BufRead, BufReader, Error, ErrorKind};
 use std::os::unix::fs;
 use std::path::Path;
 use std::{
@@ -15,7 +12,9 @@ use std::{
 
 use termion::color;
 
-fn symlink_file(source: String, target: String) -> Result<(), HMError> {
+type Result<T> = std::result::Result<T, HomemakerError>;
+
+fn symlink_file(source: String, target: String) -> Result<()> {
   fs::symlink(
     Path::new(shellexpand::tilde(&source).to_mut()),
     Path::new(shellexpand::tilde(&target).to_mut()),
@@ -23,7 +22,7 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   Ok(())
 }
 
-fn execute_solution(solution: String) -> Result<(), ErrorKind> {
+fn execute_solution(solution: String) -> Result<()> {
   // marginally adapted but mostly stolen from
   // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html
 
@@ -34,7 +33,7 @@ fn execute_solution(solution: String) -> Result<(), ErrorKind> {
       .stdout(Stdio::piped())
       .spawn()?
       .stdout
-      .ok_or_else(|| Error::new(HMError::Io, "Couldn't capture stdout"))?;
+      .ok_or_else(|| Error::new(ErrorKind::Other, "Couldn't capture stdout"))?;
     let reader = BufReader::new(output);
     // reset to white from whatever was before (green or red)
     println!("{}", color::Fg(color::Reset));
@@ -47,7 +46,7 @@ fn execute_solution(solution: String) -> Result<(), ErrorKind> {
   child.join().unwrap()
 }
 
-pub fn perform_operation_on(mo: ManagedObject) -> Result<(), ErrorKind> {
+pub fn perform_operation_on(mo: ManagedObject) -> Result<()> {
   let _s = mo.method.as_str();
   match _s {
     "symlink" => {
