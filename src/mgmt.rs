@@ -13,7 +13,7 @@ use std::{
   thread,
 };
 
-use termion::color;
+use crossterm::{style::{Color, ResetColor, SetBackgroundColor, SetForegroundColor, Colorize, Colored}};
 
 //type Result<T> = std::result::Result<T, HMError>;
 
@@ -38,8 +38,6 @@ fn execute_solution(solution: String) -> Result<(), HMError> {
       .stdout
       .ok_or_else(|| Error::new(ErrorKind::Other, "Couldn't capture stdout"))?;
     let reader = BufReader::new(output);
-    // reset to white from whatever was before (green or red)
-    println!("{}", color::Fg(color::Reset));
     reader
       .lines()
       .filter_map(|line| line.ok())
@@ -68,7 +66,7 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
       let cmd: String = mo.solution;
       println!(
         "{}Executing `{}` for task `{}`",
-        color::Fg(color::Green),
+        Colored::ForegroundColor(Color::Red),
         cmd,
         mo.name.to_owned()
       );

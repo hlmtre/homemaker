@@ -1,13 +1,18 @@
 extern crate dirs;
-extern crate termion;
+extern crate crossterm;
 
 use std::{
   env, fs,
   path::{Path, PathBuf},
   process::exit,
   string::String,
+  io::{stdout, Write},
 };
-use termion::color;
+
+use crossterm::{
+  execute,
+  style::{Color, Colorize, Colored, SetBackgroundColor, SetForegroundColor, ResetColor},
+};
 
 mod config;
 mod hmerror;
@@ -22,28 +27,33 @@ fn main() {
     Some(second) => match config::deserialize_file(&second) {
       Ok(c) => c,
       Err(e) => {
+        execute!(stdout(), SetForegroundColor(Color::Red));
         eprintln!(
-          "{}Couldn't open specified config file {}. Error: {}",
-          color::Fg(color::Red),
+          "Couldn't open specified config file {}. Error: {}",
           &second,
           e
         );
+        execute!(stdout(), ResetColor);
         exit(1)
       }
     },
     None => {
       let _p: PathBuf = ensure_config_dir()
-        .map_err(|e| panic!("{}Couldn't ensure config dir: {}", color::Fg(color::Red), e))
+        .map_err(|e| {
+          execute!(stdout(), SetForegroundColor(Color::Red));
+          panic!("Couldn't ensure config dir: {}", e);
+        })
         .unwrap();
       match config::deserialize_file(_p.to_str().unwrap()) {
         Ok(c) => c,
         Err(e) => {
+          execute!(stdout(), SetForegroundColor(Color::Red));
           eprintln!(
-            "{}Couldn't open assumed config file {}. Error: {}",
-            color::Fg(color::Red),
+            "Couldn't open assumed config file {}. Error: {}",
             _p.to_string_lossy(),
             e
           );
+          execute!(stdout(), ResetColor);
           exit(1)
         }
       }
@@ -56,13 +66,14 @@ fn main() {
   #[allow(unused_must_use)]
   for mo in config::as_managed_objects(a) {
     mgmt::perform_operation_on(mo.clone()).map_err(|e| {
+      execute!(stdout(), SetForegroundColor(Color::Red));
       eprintln!(
-        "{}Failed to perform operation on {:#?}. \nError: {}\n",
-        color::Fg(color::Red),
+        "Failed to perform operation on {:#?}. \nError: {}\n",
         mo.clone(),
         e
       )
     });
+    execute!(stdout(), ResetColor);
   }
 }
 
