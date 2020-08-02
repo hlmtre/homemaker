@@ -8,7 +8,6 @@ use crate::{
 
 use std::fs::metadata;
 use std::io::{BufRead, BufReader, Error, ErrorKind};
-use std::os::unix::fs;
 use std::path::Path;
 use std::{
   process::{Command, Stdio},
