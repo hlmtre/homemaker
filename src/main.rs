@@ -1,17 +1,17 @@
-extern crate dirs;
 extern crate crossterm;
+extern crate dirs;
 
 use std::{
   env, fs,
+  io::{stdout, Write},
   path::{Path, PathBuf},
   process::exit,
   string::String,
-  io::{stdout, Write},
 };
 
 use crossterm::{
   execute,
-  style::{Color, Colorize, Colored, SetBackgroundColor, SetForegroundColor, ResetColor},
+  style::{Color, ResetColor, SetForegroundColor},
 };
 
 mod config;
@@ -27,33 +27,33 @@ fn main() {
     Some(second) => match config::deserialize_file(&second) {
       Ok(c) => c,
       Err(e) => {
-        execute!(stdout(), SetForegroundColor(Color::Red));
+        // if the platform doesn't support color, just don't set it
+        let _ = execute!(stdout(), SetForegroundColor(Color::Red));
         eprintln!(
           "Couldn't open specified config file {}. Error: {}",
-          &second,
-          e
+          &second, e
         );
-        execute!(stdout(), ResetColor);
+        let _ = execute!(stdout(), ResetColor);
         exit(1)
       }
     },
     None => {
       let _p: PathBuf = ensure_config_dir()
         .map_err(|e| {
-          execute!(stdout(), SetForegroundColor(Color::Red));
+          let _ = execute!(stdout(), SetForegroundColor(Color::Red));
           panic!("Couldn't ensure config dir: {}", e);
         })
         .unwrap();
       match config::deserialize_file(_p.to_str().unwrap()) {
         Ok(c) => c,
         Err(e) => {
-          execute!(stdout(), SetForegroundColor(Color::Red));
+          let _ = execute!(stdout(), SetForegroundColor(Color::Red));
           eprintln!(
             "Couldn't open assumed config file {}. Error: {}",
             _p.to_string_lossy(),
             e
           );
-          execute!(stdout(), ResetColor);
+          let _ = execute!(stdout(), ResetColor);
           exit(1)
         }
       }
@@ -66,14 +66,14 @@ fn main() {
   #[allow(unused_must_use)]
   for mo in config::as_managed_objects(a) {
     mgmt::perform_operation_on(mo.clone()).map_err(|e| {
-      execute!(stdout(), SetForegroundColor(Color::Red));
+      let _ = execute!(stdout(), SetForegroundColor(Color::Red));
       eprintln!(
         "Failed to perform operation on {:#?}. \nError: {}\n",
         mo.clone(),
         e
       )
     });
-    execute!(stdout(), ResetColor);
+    let _ = execute!(stdout(), ResetColor);
   }
 }
 
