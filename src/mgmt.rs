@@ -1,10 +1,12 @@
 extern crate shellexpand;
+extern crate symlink;
 
 use crate::{
   config::ManagedObject,
   hmerror::{ErrorKind as hmek, HMError, HomemakerError},
 };
 
+use std::fs::metadata;
 use std::io::{BufRead, BufReader, Error, ErrorKind};
 use std::os::unix::fs;
 use std::path::Path;
@@ -13,15 +15,27 @@ use std::{
   thread,
 };
 
-use crossterm::{style::{Color, ResetColor, SetBackgroundColor, SetForegroundColor, Colorize, Colored}};
-
-//type Result<T> = std::result::Result<T, HMError>;
+use crossterm::style::{
+  Color, Colored, Colorize, ResetColor, SetBackgroundColor, SetForegroundColor,
+};
+use symlink::{symlink_dir as sd, symlink_file as sf};
 
 fn symlink_file(source: String, target: String) -> Result<(), HMError> {
-  fs::symlink(
-    Path::new(shellexpand::tilde(&source).to_mut()),
-    Path::new(shellexpand::tilde(&target).to_mut()),
-  )?;
+  let md = match metadata(source.to_owned()) {
+    Ok(a) => a,
+    Err(e) => return Err(HMError::Io(e)),
+  };
+  if md.is_dir() {
+    sd(
+      Path::new(shellexpand::tilde(&source).to_mut()),
+      Path::new(shellexpand::tilde(&target).to_mut()),
+    )?;
+  } else if md.is_file() {
+    sf(
+      Path::new(shellexpand::tilde(&source).to_mut()),
+      Path::new(shellexpand::tilde(&target).to_mut()),
+    )?;
+  }
   Ok(())
 }
 
