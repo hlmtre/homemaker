@@ -7,16 +7,18 @@ use crate::{
 };
 
 use std::fs::metadata;
-use std::io::{BufRead, BufReader, Error, ErrorKind};
+use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
 use std::path::Path;
 use std::{
   process::{Command, Stdio},
   thread,
 };
 
-use crossterm::style::{
-  Color, Colored, Colorize, ResetColor, SetBackgroundColor, SetForegroundColor,
+use crossterm::{
+  execute,
+  style::{Color, ResetColor, SetForegroundColor},
 };
+
 use symlink::{symlink_dir as sd, symlink_file as sf};
 
 fn symlink_file(source: String, target: String) -> Result<(), HMError> {
@@ -77,16 +79,15 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
       //      }
       //Err(HMError::Regular(hmek::SolutionError))
       let cmd: String = mo.solution;
-      println!(
-        "{}Executing `{}` for task `{}`",
-        Colored::ForegroundColor(Color::Red),
-        cmd,
-        mo.name.to_owned()
-      );
+      let _ = execute!(stdout(), SetForegroundColor(Color::Red));
+      println!("Executing `{}` for task `{}`", cmd, mo.name.to_owned());
+      let _ = execute!(stdout(), ResetColor);
       return execute_solution(cmd);
     }
     _ => {
+      let _ = execute!(stdout(), SetForegroundColor(Color::Red));
       println!("{}", _s);
+      let _ = execute!(stdout(), ResetColor);
       return Ok(());
     }
   }
