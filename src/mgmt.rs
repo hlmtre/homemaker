@@ -79,13 +79,13 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
       //      }
       //Err(HMError::Regular(hmek::SolutionError))
       let cmd: String = mo.solution;
-      let _ = execute!(stdout(), SetForegroundColor(Color::Red));
+      let _ = execute!(stdout(), SetForegroundColor(Color::Green));
       println!("Executing `{}` for task `{}`", cmd, mo.name.to_owned());
       let _ = execute!(stdout(), ResetColor);
       return execute_solution(cmd);
     }
     _ => {
-      let _ = execute!(stdout(), SetForegroundColor(Color::Red));
+      let _ = execute!(stdout(), SetForegroundColor(Color::Green));
       println!("{}", _s);
       let _ = execute!(stdout(), ResetColor);
       return Ok(());
