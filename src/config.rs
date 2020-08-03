@@ -192,10 +192,6 @@ pub fn as_managed_objects(config: Config) -> Vec<ManagedObject> {
   return mos;
 }
 
-/*
-let config: Config = deserialize_file(matches.value_of("config").unwrap())?;
-*/
-
 fn open_config(file: &str) -> io::Result<fs::File> {
   fs::File::open(file)
 }

@@ -10,7 +10,7 @@ use std::fs::metadata;
 use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
 use std::path::Path;
 use std::{
-  process::{Command, Stdio},
+  process::{Command, ExitStatus, Stdio},
   thread,
 };
 
@@ -40,26 +40,29 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   Ok(())
 }
 
-fn execute_solution(solution: String) -> Result<(), HMError> {
+fn execute_solution(solution: String) -> Result<(ExitStatus), HMError> {
   // marginally adapted but mostly stolen from
   // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html
 
   let child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
-    let output = Command::new("bash")
+    let c = Command::new("bash")
       .arg("-c")
       .arg(solution)
       .stdout(Stdio::piped())
-      .spawn()?
-      .stdout
-      .ok_or_else(|| Error::new(ErrorKind::Other, "Couldn't capture stdout"))?;
+      .spawn()?;
+    let output = c.stdout.unwrap();
     let reader = BufReader::new(output);
     reader
       .lines()
       .filter_map(|line| line.ok())
       .for_each(|line| println!("{}", line));
-    Ok(())
+    match c.try_wait() {
+      Ok(Some(status)) => return Ok(status),
+      Ok(None) => return Ok(-1),
+      Err(e) => return e,
+    }
   });
-  child.join().unwrap()
+  child.join();
 }
 
 pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
