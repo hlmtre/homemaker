@@ -1,6 +1,8 @@
 use std::fmt;
 use std::io;
 
+use std::process::ExitStatus;
+
 pub struct HomemakerError {
   line_number: usize,
   complaint: String,
@@ -59,6 +61,7 @@ struct ConfigError {
 #[derive(Debug)]
 struct SolutionError {
   line_number: i32,
+  exit_status: ExitStatus,
   complaint: String,
 }
 

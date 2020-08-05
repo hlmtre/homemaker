@@ -3,7 +3,7 @@ extern crate symlink;
 
 use crate::{
   config::ManagedObject,
-  hmerror::{ErrorKind as hmek, HMError, HomemakerError},
+  hmerror::{ErrorKind as hmek, HMError},
 };
 
 use std::fs::metadata;
@@ -40,7 +40,7 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   Ok(())
 }
 
-fn execute_solution(solution: String) -> Result<(ExitStatus), HMError> {
+fn execute_solution(solution: String) -> Result<(), HMError> {
   // marginally adapted but mostly stolen from
   // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html
 
@@ -50,19 +50,20 @@ fn execute_solution(solution: String) -> Result<(ExitStatus), HMError> {
       .arg(solution)
       .stdout(Stdio::piped())
       .spawn()?;
-    let output = c.stdout.unwrap();
+    let output = &c.stdout.unwrap();
     let reader = BufReader::new(output);
     reader
       .lines()
       .filter_map(|line| line.ok())
       .for_each(|line| println!("{}", line));
     match c.try_wait() {
-      Ok(Some(status)) => return Ok(status),
-      Ok(None) => return Ok(-1),
-      Err(e) => return e,
+      Ok(Some(_)) => return Ok(()),
+      Ok(None) => return Ok(()),
+      Err(e) => return Err(HMError::Regular(hmek::SolutionError)),
     }
   });
   child.join();
+  Ok(())
 }
 
 pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
