@@ -28,11 +28,11 @@ impl fmt::Debug for HomemakerError {
 }
 
 impl From<io::Error> for HomemakerError {
-  fn from(error: io::Error) -> Self {
+  fn from(err: io::Error) -> Self {
     HomemakerError {
       line_number: 0,
-      complaint: error.to_string(),
-      encapsulated_error: Some(error),
+      complaint: err.to_string(),
+      encapsulated_error: Some(err),
     }
   }
 }

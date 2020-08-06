@@ -3,14 +3,14 @@ extern crate symlink;
 
 use crate::{
   config::ManagedObject,
-  hmerror::{ErrorKind as hmek, HMError},
+  hmerror::{ErrorKind as hmek, HMError, HomemakerError},
 };
 
 use std::fs::metadata;
 use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
 use std::path::Path;
 use std::{
-  process::{Command, ExitStatus, Stdio},
+  process::{Command, Stdio},
   thread,
 };
 
@@ -45,25 +45,21 @@ fn execute_solution(solution: String) -> Result<(), HMError> {
   // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html
 
   let child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
-    let c = Command::new("bash")
+    let output = Command::new("bash")
       .arg("-c")
       .arg(solution)
       .stdout(Stdio::piped())
-      .spawn()?;
-    let output = &c.stdout.unwrap();
+      .spawn()?
+      .stdout
+      .ok_or_else(|| Error::new(ErrorKind::Other, "Couldn't capture stdout"))?;
     let reader = BufReader::new(output);
     reader
       .lines()
       .filter_map(|line| line.ok())
       .for_each(|line| println!("{}", line));
-    match c.try_wait() {
-      Ok(Some(_)) => return Ok(()),
-      Ok(None) => return Ok(()),
-      Err(e) => return Err(HMError::Regular(hmek::SolutionError)),
-    }
+    Ok(())
   });
-  child.join();
-  Ok(())
+  child.join().unwrap()
 }
 
 pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
