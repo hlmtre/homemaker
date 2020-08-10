@@ -73,6 +73,7 @@ fn main() {
         e
       )
     });
+    println!("{}", config::as_managed_objects(a));
     let _ = execute!(stdout(), ResetColor);
   }
 }

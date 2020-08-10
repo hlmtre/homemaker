@@ -62,7 +62,7 @@ fn execute_solution(solution: String) -> Result<(), HMError> {
   child.join().unwrap()
 }
 
-pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
+pub fn perform_operation_on(mut mo: ManagedObject) -> Result<(), HMError> {
   let _s = mo.method.as_str();
   match _s {
     "symlink" => {
@@ -71,6 +71,8 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
       return symlink_file(source, destination);
     }
     "execute" => {
+      // in here, we must construct the list of dependencies as managed objects,
+      // then either complete them or make sure their 'satisfied' field is true
       //      if !mo.dependencies.is_empty() {
       //        for d in mo.dependencies
       //        {
@@ -82,7 +84,14 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
       let _ = execute!(stdout(), SetForegroundColor(Color::Green));
       println!("Executing `{}` for task `{}`", cmd, mo.name.to_owned());
       let _ = execute!(stdout(), ResetColor);
-      return execute_solution(cmd);
+      let a = execute_solution(cmd);
+      match &a {
+        Ok(()) => {
+          mo.satisfied = true;
+          return Ok(());
+        }
+        Err(e) => return a,
+      }
     }
     _ => {
       let _ = execute!(stdout(), SetForegroundColor(Color::Green));
