@@ -73,12 +73,11 @@ pub fn perform_operation_on(mut mo: ManagedObject) -> Result<(), HMError> {
     "execute" => {
       // in here, we must construct the list of dependencies as managed objects,
       // then either complete them or make sure their 'satisfied' field is true
-      //      if !mo.dependencies.is_empty() {
-      //        for d in mo.dependencies
-      //        {
-      //
-      //        }
-      //      }
+      if !mo.dependencies.is_empty() && !mo.satisfied {
+        for d in mo.dependencies {
+          eprintln!("{}", d);
+        }
+      }
       //Err(HMError::Regular(hmek::SolutionError))
       let cmd: String = mo.solution;
       let _ = execute!(stdout(), SetForegroundColor(Color::Green));

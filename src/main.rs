@@ -64,7 +64,8 @@ fn main() {
   //  println!("{}", a);
   //}
   #[allow(unused_must_use)]
-  for mo in config::as_managed_objects(a) {
+  let b = config::as_managed_objects(a);
+  for mo in b {
     mgmt::perform_operation_on(mo.clone()).map_err(|e| {
       let _ = execute!(stdout(), SetForegroundColor(Color::Red));
       eprintln!(
@@ -73,9 +74,9 @@ fn main() {
         e
       )
     });
-    println!("{}", config::as_managed_objects(a));
     let _ = execute!(stdout(), ResetColor);
   }
+  //println!("{:#?}", b);
 }
 
 fn ensure_config_dir() -> Result<PathBuf, &'static str> {

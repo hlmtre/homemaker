@@ -17,7 +17,7 @@ dependencies = 'maim, slop'
 [[obj]]
 task = 'slop'
 source = '~/dotfiles/zt/slop'
-solution = 'cd ~/dotfiles/zt/slop; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
+solution = 'cd ~/dotfiles/zt/slop; make clean && cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 method = 'execute'
 
 [[obj]]
@@ -27,6 +27,6 @@ solution = 'sudo apt install libxfixes-dev libglm-dev libxrandr-dev libglew-dev 
 [[obj]]
 task = 'maim'
 source = '~/dotfiles/zt/maim'
-solution = 'cd ~/dotfiles/zt/maim; make clean; && cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
+solution = 'cd ~/dotfiles/zt/maim; make clean && cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 method = 'execute'
 dependencies = 'maim_dependencies'
