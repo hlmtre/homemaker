@@ -187,6 +187,14 @@ pub fn as_managed_objects(config: Config) -> Vec<ManagedObject> {
         mo.destination = String::from(_x.as_str().unwrap());
       }
     }
+    match _f.1.get("dependencies") {
+      None => (),
+      Some(_x) => {
+        let _f = _x.as_str().unwrap();
+        // thanks https://stackoverflow.com/a/37547426
+        mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
+      }
+    }
     mos.push(mo);
   }
   return mos;

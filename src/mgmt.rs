@@ -6,6 +6,7 @@ use crate::{
   hmerror::{ErrorKind as hmek, HMError, HomemakerError},
 };
 
+use std::collections::HashMap;
 use std::fs::metadata;
 use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
 use std::path::Path;
@@ -38,6 +39,26 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
     )?;
   }
   Ok(())
+}
+
+// return a list of lists of ManagedObjects who don't depend on anything (or they're done already)
+pub fn get_task_batches(
+  nodes: &mut Vec<ManagedObject>,
+) -> Result<Vec<Vec<ManagedObject>>, HMError> {
+  let mut batches: Vec<Vec<ManagedObject>> = Vec::new();
+  let mut b: Vec<ManagedObject> = Vec::new();
+  for mo in nodes.clone() {
+    if mo.dependencies.is_empty() || mo.satisfied {
+      b.push(mo.to_owned());
+    }
+  }
+  if !(b.len() > 1) {
+    return Err(HMError::Regular(hmek::CyclicalDependencyError));
+  }
+  batches.push(b);
+  eprintln!("things i can solve without dependencies:");
+  eprintln!("{:#?}", batches);
+  return Ok(vec![vec![ManagedObject::default()]]);
 }
 
 fn execute_solution(solution: String) -> Result<(), HMError> {
@@ -73,11 +94,6 @@ pub fn perform_operation_on(mut mo: ManagedObject) -> Result<(), HMError> {
     "execute" => {
       // in here, we must construct the list of dependencies as managed objects,
       // then either complete them or make sure their 'satisfied' field is true
-      if !mo.dependencies.is_empty() && !mo.satisfied {
-        for d in mo.dependencies {
-          eprintln!("{}", d);
-        }
-      }
       //Err(HMError::Regular(hmek::SolutionError))
       let cmd: String = mo.solution;
       let _ = execute!(stdout(), SetForegroundColor(Color::Green));

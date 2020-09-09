@@ -47,6 +47,7 @@ pub enum HMError {
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum ErrorKind {
   DependencyUndefinedError,
+  CyclicalDependencyError,
   SolutionError,
   ConfigError,
   Other,
@@ -72,6 +73,12 @@ struct DependencyUndefinedError {
   dependent: String,
 }
 
+#[derive(Debug)]
+struct CyclicalDependencyError {
+  line_number: i32,
+  dependency: String,
+}
+
 impl From<io::Error> for HMError {
   fn from(err: io::Error) -> HMError {
     HMError::Io(err)
@@ -84,6 +91,7 @@ impl ErrorKind {
       ErrorKind::ConfigError => "configuration error",
       ErrorKind::SolutionError => "solution error",
       ErrorKind::DependencyUndefinedError => "dependency undefined",
+      ErrorKind::CyclicalDependencyError => "cyclical dependency",
       ErrorKind::Other => "other error",
     }
   }

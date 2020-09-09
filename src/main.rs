@@ -63,18 +63,20 @@ fn main() {
   //if cfg!(debug_assertions) {
   //  println!("{}", a);
   //}
-  #[allow(unused_must_use)]
-  let b = config::as_managed_objects(a);
-  for mo in b {
-    mgmt::perform_operation_on(mo.clone()).map_err(|e| {
-      let _ = execute!(stdout(), SetForegroundColor(Color::Red));
-      eprintln!(
-        "Failed to perform operation on {:#?}. \nError: {}\n",
-        mo.clone(),
-        e
-      )
-    });
-    let _ = execute!(stdout(), ResetColor);
+  let mut b = config::as_managed_objects(a);
+  let mut c = mgmt::get_task_batches(&mut b).expect("Cyclical dependencies!");
+  for seq in c {
+    for mo in seq {
+      mgmt::perform_operation_on(mo.clone()).map_err(|e| {
+        let _ = execute!(stdout(), SetForegroundColor(Color::Red));
+        eprintln!(
+          "Failed to perform operation on {:#?}. \nError: {}\n",
+          mo.clone(),
+          e
+        )
+      });
+      let _ = execute!(stdout(), ResetColor);
+    }
   }
   //println!("{:#?}", b);
 }
