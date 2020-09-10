@@ -42,9 +42,24 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
 }
 
 // return a list of lists of ManagedObjects who don't depend on anything (or they're done already)
+/*
+  TODO: create set of all tasks that are dependencies, complete all the ones that either
+  a) have no dependencies themselves, or;
+  b) whose satisfied field is true
+*/
 pub fn get_task_batches(
   nodes: &mut Vec<ManagedObject>,
 ) -> Result<Vec<Vec<ManagedObject>>, HMError> {
+  let mut name_to_deps: HashMap<String, Vec<String>> = HashMap::new();
+  let mut l: Vec<String> = Vec::new();
+  for n in nodes.clone() {
+    for m in n.dependencies {
+      l.push(m);
+    }
+    name_to_deps.insert(n.name, l.clone());
+    l.clear();
+  }
+  eprintln!("{:#?}", name_to_deps);
   let mut batches: Vec<Vec<ManagedObject>> = Vec::new();
   let mut b: Vec<ManagedObject> = Vec::new();
   for mo in nodes.clone() {
