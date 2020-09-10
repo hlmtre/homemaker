@@ -59,19 +59,21 @@ pub fn get_task_batches(
     name_to_deps.insert(n.name, l.clone());
     l.clear();
   }
+  eprintln!("dependencies:");
   eprintln!("{:#?}", name_to_deps);
-  let mut batches: Vec<Vec<ManagedObject>> = Vec::new();
+  let mut batches: Vec<HashMap<String, ManagedObject>> = Vec::new();
   let mut b: Vec<ManagedObject> = Vec::new();
+  let mut c: HashMap<String, ManagedObject> = HashMap::new();
   for mo in nodes.clone() {
     if mo.dependencies.is_empty() || mo.satisfied {
-      b.push(mo.to_owned());
+      c.insert(mo.name.to_owned(), mo.to_owned());
     }
   }
-  if !(b.len() > 1) {
+  if !(c.len() > 1) {
     return Err(HMError::Regular(hmek::CyclicalDependencyError));
   }
-  batches.push(b);
-  eprintln!("things i can solve without dependencies:");
+  batches.push(c);
+  eprintln!("tasks i can solve without dependencies:");
   eprintln!("{:#?}", batches);
   return Ok(vec![vec![ManagedObject::default()]]);
 }
