@@ -59,25 +59,26 @@ fn main() {
       }
     }
   };
-  // call worker for objects in Config a here
-  //if cfg!(debug_assertions) {
-  //  println!("{}", a);
+  let mut b = config::as_managed_objects(a);
+  // bah still gotta figure out how to do them node by node, but nodeA dep by nodeA dep, then nodeA
+  eprintln!("before retain: {:#?}", b);
+  b.retain(|_, v| v.is_task());
+  eprintln!("after retain: {:#?}", b);
+  let c = mgmt::perform_task_batches(b).expect("Cyclical dependencies!");
+  eprintln!("{:#?}", c);
+  //for (k, v) in c {
+  //  for mo in v {
+  //    mgmt::perform_operation_on(mo.clone()).map_err(|e| {
+  //      let _ = execute!(stdout(), SetForegroundColor(Color::Red));
+  //      eprintln!(
+  //        "Failed to perform operation on {:#?}. \nError: {}\n",
+  //        mo.clone(),
+  //        e
+  //      )
+  //    });
+  //    let _ = execute!(stdout(), ResetColor);
+  //  }
   //}
-  let b = config::as_managed_objects(a);
-  let mut c = mgmt::get_task_batches(b).expect("Cyclical dependencies!");
-  for seq in c {
-    for mo in seq {
-      mgmt::perform_operation_on(mo.clone()).map_err(|e| {
-        let _ = execute!(stdout(), SetForegroundColor(Color::Red));
-        eprintln!(
-          "Failed to perform operation on {:#?}. \nError: {}\n",
-          mo.clone(),
-          e
-        )
-      });
-      let _ = execute!(stdout(), ResetColor);
-    }
-  }
   //println!("{:#?}", b);
 }
 

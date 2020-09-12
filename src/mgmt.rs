@@ -7,13 +7,13 @@ use crate::{
   hmerror::{ErrorKind as hmek, HMError, HomemakerError},
 };
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs::metadata;
 use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
 use std::path::Path;
 use std::{
   process::{Command, Stdio},
-  {thread, time},
+  thread,
 };
 
 use crossterm::{
@@ -45,22 +45,18 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
 }
 
 /*
-return a list of lists of ManagedObjects,
-whose order guarantees we'll satisfy dependencies first
+  return a list of lists of ManagedObjects,
+  whose order guarantees we'll satisfy dependencies first
 */
-pub fn get_task_batches(
-  nodes: HashMap<String, ManagedObject>,
-) -> Result<Vec<Vec<ManagedObject>>, HMError> {
+pub fn perform_task_batches(nodes: HashMap<String, ManagedObject>) -> Result<(), HMError> {
   let mut depgraph: DepGraph<String> = DepGraph::new();
-  let mut y: Vec<Vec<ManagedObject>> = Vec::new();
-  let mut x: Vec<ManagedObject> = Vec::new();
   for (name, node) in nodes.clone() {
     depgraph.register_dependencies(name.to_owned(), node.dependencies.clone());
   }
-  for (name, _node) in nodes {
+  for (name, _node) in nodes.clone() {
     for n in depgraph.dependencies_of(&name).unwrap() {
       match n {
-        Ok(r) => eprintln!("{} ", r),
+        Ok(r) => execute_solution(nodes.get(r).unwrap().solution.clone())?,
         Err(_e) => {
           return Err(HMError::Regular(hmek::CyclicalDependencyError));
         }
@@ -68,7 +64,7 @@ pub fn get_task_batches(
     }
   }
 
-  Ok(vec![vec![ManagedObject::default()]])
+  Ok(())
 }
 
 fn execute_solution(solution: String) -> Result<(), HMError> {
@@ -83,11 +79,13 @@ fn execute_solution(solution: String) -> Result<(), HMError> {
       .spawn()?
       .stdout
       .ok_or_else(|| Error::new(ErrorKind::Other, "Couldn't capture stdout"))?;
-    let reader = BufReader::new(output);
-    reader
-      .lines()
-      .filter_map(|line| line.ok())
-      .for_each(|line| println!("{}", line));
+    if cfg!(debug_assertions) {
+      let reader = BufReader::new(output);
+      reader
+        .lines()
+        .filter_map(|line| line.ok())
+        .for_each(|line| println!("{}", line));
+    }
     Ok(())
   });
   child.join().unwrap()

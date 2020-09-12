@@ -25,6 +25,12 @@ pub struct ManagedObject {
   pub satisfied: bool,
 }
 
+impl ManagedObject {
+  pub fn is_task(&self) -> bool {
+    return !self.solution.is_empty();
+  }
+}
+
 impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
