@@ -63,8 +63,8 @@ fn main() {
   //if cfg!(debug_assertions) {
   //  println!("{}", a);
   //}
-  let mut b = config::as_managed_objects(a);
-  let mut c = mgmt::get_task_batches(&mut b).expect("Cyclical dependencies!");
+  let b = config::as_managed_objects(a);
+  let mut c = mgmt::get_task_batches(b).expect("Cyclical dependencies!");
   for seq in c {
     for mo in seq {
       mgmt::perform_operation_on(mo.clone()).map_err(|e| {

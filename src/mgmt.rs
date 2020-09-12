@@ -1,4 +1,5 @@
 extern crate shellexpand;
+extern crate solvent;
 extern crate symlink;
 
 use crate::{
@@ -6,13 +7,13 @@ use crate::{
   hmerror::{ErrorKind as hmek, HMError, HomemakerError},
 };
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::metadata;
 use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
 use std::path::Path;
 use std::{
   process::{Command, Stdio},
-  thread,
+  {thread, time},
 };
 
 use crossterm::{
@@ -21,6 +22,8 @@ use crossterm::{
 };
 
 use symlink::{symlink_dir as sd, symlink_file as sf};
+
+use solvent::DepGraph;
 
 fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   let md = match metadata(source.to_owned()) {
@@ -41,41 +44,31 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   Ok(())
 }
 
-// return a list of lists of ManagedObjects who don't depend on anything (or they're done already)
 /*
-  TODO: create set of all tasks that are dependencies, complete all the ones that either
-  a) have no dependencies themselves, or;
-  b) whose satisfied field is true
+return a list of lists of ManagedObjects,
+whose order guarantees we'll satisfy dependencies first
 */
 pub fn get_task_batches(
-  nodes: &mut Vec<ManagedObject>,
+  nodes: HashMap<String, ManagedObject>,
 ) -> Result<Vec<Vec<ManagedObject>>, HMError> {
-  let mut name_to_deps: HashMap<String, Vec<String>> = HashMap::new();
-  let mut l: Vec<String> = Vec::new();
-  for n in nodes.clone() {
-    for m in n.dependencies {
-      l.push(m);
-    }
-    name_to_deps.insert(n.name, l.clone());
-    l.clear();
+  let mut depgraph: DepGraph<String> = DepGraph::new();
+  let mut y: Vec<Vec<ManagedObject>> = Vec::new();
+  let mut x: Vec<ManagedObject> = Vec::new();
+  for (name, node) in nodes.clone() {
+    depgraph.register_dependencies(name.to_owned(), node.dependencies.clone());
   }
-  eprintln!("dependencies:");
-  eprintln!("{:#?}", name_to_deps);
-  let mut batches: Vec<HashMap<String, ManagedObject>> = Vec::new();
-  let mut b: Vec<ManagedObject> = Vec::new();
-  let mut c: HashMap<String, ManagedObject> = HashMap::new();
-  for mo in nodes.clone() {
-    if mo.dependencies.is_empty() || mo.satisfied {
-      c.insert(mo.name.to_owned(), mo.to_owned());
+  for (name, _node) in nodes {
+    for n in depgraph.dependencies_of(&name).unwrap() {
+      match n {
+        Ok(r) => eprintln!("{} ", r),
+        Err(_e) => {
+          return Err(HMError::Regular(hmek::CyclicalDependencyError));
+        }
+      }
     }
   }
-  if !(c.len() > 1) {
-    return Err(HMError::Regular(hmek::CyclicalDependencyError));
-  }
-  batches.push(c);
-  eprintln!("tasks i can solve without dependencies:");
-  eprintln!("{:#?}", batches);
-  return Ok(vec![vec![ManagedObject::default()]]);
+
+  Ok(vec![vec![ManagedObject::default()]])
 }
 
 fn execute_solution(solution: String) -> Result<(), HMError> {

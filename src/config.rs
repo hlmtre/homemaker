@@ -4,6 +4,7 @@ extern crate toml;
 use crate::hmerror::HMError;
 
 use serde::{Deserialize, Deserializer, Serialize};
+use std::collections::HashMap;
 use std::{
   fmt, fs, io,
   io::{prelude::*, BufReader},
@@ -152,8 +153,8 @@ where
   Ok(files)
 }
 
-pub fn as_managed_objects(config: Config) -> Vec<ManagedObject> {
-  let mut mos: Vec<ManagedObject> = Vec::new();
+pub fn as_managed_objects(config: Config) -> HashMap<String, ManagedObject> {
+  let mut mos: HashMap<String, ManagedObject> = HashMap::new();
   for _f in config.files.iter() {
     let mut mo = ManagedObject::default();
     mo.name = _f.0.to_owned();
@@ -195,7 +196,7 @@ pub fn as_managed_objects(config: Config) -> Vec<ManagedObject> {
         mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
       }
     }
-    mos.push(mo);
+    mos.insert(mo.name.clone(), mo);
   }
   return mos;
 }
