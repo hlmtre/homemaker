@@ -45,8 +45,9 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
 }
 
 /*
-  return a list of lists of ManagedObjects,
-  whose order guarantees we'll satisfy dependencies first
+  create non-cyclical dependency graph, then execute them in some (non-deterministic)
+  order that solves things without dependencies, then works its way up (or complains about
+  cyclical dependencies, which are unsolveable)
 */
 pub fn perform_task_batches(nodes: HashMap<String, ManagedObject>) -> Result<(), HMError> {
   let mut depgraph: DepGraph<String> = DepGraph::new();
@@ -56,22 +57,32 @@ pub fn perform_task_batches(nodes: HashMap<String, ManagedObject>) -> Result<(),
   for (name, _node) in nodes.clone() {
     for n in depgraph.dependencies_of(&name).unwrap() {
       match n {
-        Ok(r) => execute_solution(nodes.get(r).unwrap().solution.clone())?,
+        Ok(r) => {
+          execute_solution(nodes.get(r).unwrap().solution.clone())?;
+        }
         Err(_e) => {
           return Err(HMError::Regular(hmek::CyclicalDependencyError));
         }
       }
     }
   }
-
   Ok(())
+}
+
+fn get_task_thread(
+  mo: &ManagedObject,
+) -> Result<thread::JoinHandle<Result<std::process::Child, Error>>, HMError> {
+  let s = mo.solution.clone().to_string();
+  let child: thread::JoinHandle<Result<std::process::Child, Error>> =
+    thread::spawn(|| Command::new("bash").arg("-c").arg(s).spawn());
+  Ok(child)
 }
 
 fn execute_solution(solution: String) -> Result<(), HMError> {
   // marginally adapted but mostly stolen from
   // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html
 
-  let child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
+  let child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(|| {
     let output = Command::new("bash")
       .arg("-c")
       .arg(solution)
@@ -97,30 +108,13 @@ pub fn perform_operation_on(mut mo: ManagedObject) -> Result<(), HMError> {
     "symlink" => {
       let source: String = mo.source;
       let destination: String = mo.destination;
-      return symlink_file(source, destination);
-    }
-    "execute" => {
-      // in here, we must construct the list of dependencies as managed objects,
-      // then either complete them or make sure their 'satisfied' field is true
-      //Err(HMError::Regular(hmek::SolutionError))
-      let cmd: String = mo.solution;
-      let _ = execute!(stdout(), SetForegroundColor(Color::Green));
-      println!("Executing `{}` for task `{}`", cmd, mo.name.to_owned());
-      let _ = execute!(stdout(), ResetColor);
-      let a = execute_solution(cmd);
-      match &a {
-        Ok(()) => {
-          mo.satisfied = true;
-          return Ok(());
-        }
-        Err(e) => return a,
-      }
+      symlink_file(source, destination)
     }
     _ => {
       let _ = execute!(stdout(), SetForegroundColor(Color::Green));
       println!("{}", _s);
       let _ = execute!(stdout(), ResetColor);
-      return Ok(());
+      Ok(())
     }
   }
 }

@@ -59,24 +59,25 @@ fn main() {
       }
     }
   };
-  let mut b = config::as_managed_objects(a);
-  // bah still gotta figure out how to do them node by node, but nodeA dep by nodeA dep, then nodeA
-  eprintln!("before retain: {:#?}", b);
-  b.retain(|_, v| v.is_task());
-  eprintln!("after retain: {:#?}", b);
-  let c = mgmt::perform_task_batches(b).expect("Cyclical dependencies!");
-  eprintln!("{:#?}", c);
+  let a = config::as_managed_objects(a);
+  let mut complex_operations = a.clone();
+  let mut simple_operations = a.clone();
+  complex_operations.retain(|_, v| v.is_task());
+  simple_operations.retain(|_, v| !v.is_task());
+  for (_name, _mo) in simple_operations.into_iter() {
+    let _ = mgmt::perform_operation_on(_mo).map_err(|e| {
+      let _ = execute!(stdout(), SetForegroundColor(Color::Red));
+      eprintln!(
+        "Failed to perform operation on {:#?}. \nError: {}\n",
+        _name, e
+      )
+    });
+    let _ = execute!(stdout(), ResetColor);
+  }
+  let d = mgmt::perform_task_batches(complex_operations).expect("Cyclical dependencies!");
+  //eprintln!("{:#?}", d);
   //for (k, v) in c {
   //  for mo in v {
-  //    mgmt::perform_operation_on(mo.clone()).map_err(|e| {
-  //      let _ = execute!(stdout(), SetForegroundColor(Color::Red));
-  //      eprintln!(
-  //        "Failed to perform operation on {:#?}. \nError: {}\n",
-  //        mo.clone(),
-  //        e
-  //      )
-  //    });
-  //    let _ = execute!(stdout(), ResetColor);
   //  }
   //}
   //println!("{:#?}", b);
