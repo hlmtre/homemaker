@@ -6,7 +6,9 @@ use std::{
   io::{stdout, Write},
   path::{Path, PathBuf},
   process::exit,
+  result::Result,
   string::String,
+  thread::JoinHandle,
 };
 
 use crossterm::{
@@ -62,8 +64,8 @@ fn main() {
   let a = config::as_managed_objects(a);
   let mut complex_operations = a.clone();
   let mut simple_operations = a.clone();
-  complex_operations.retain(|_, v| v.is_task());
-  simple_operations.retain(|_, v| !v.is_task());
+  complex_operations.retain(|_, v| v.is_task()); // all the things that aren't just symlink/copy
+  simple_operations.retain(|_, v| !v.is_task()); // all the things that are quick (don't need to thread off)
   for (_name, _mo) in simple_operations.into_iter() {
     let _ = mgmt::perform_operation_on(_mo).map_err(|e| {
       let _ = execute!(stdout(), SetForegroundColor(Color::Red));
@@ -74,7 +76,16 @@ fn main() {
     });
     let _ = execute!(stdout(), ResetColor);
   }
-  let d = mgmt::perform_task_batches(complex_operations).expect("Cyclical dependencies!");
+  match mgmt::perform_task_batches(complex_operations) {
+    Ok(_) => (),
+    Err(_) => (),
+  }
+  // let mut mcl: Vec<JoinHandle<Result<std::process::Child, std::io::Error>>> = Vec::new();
+  // for (_name, _mo) in complex_operations.into_iter() {
+  //   let _my_child = mgmt::get_task_thread(&_mo).map(|ct| mcl.push(ct));
+  // }
+  // eprintln!("{:#?}", mcl);
+  //let d = mgmt::perform_task_batches(complex_operations).expect("Cyclical dependencies!");
   //eprintln!("{:#?}", d);
   //for (k, v) in c {
   //  for mo in v {

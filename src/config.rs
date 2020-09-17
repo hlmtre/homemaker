@@ -29,6 +29,9 @@ impl ManagedObject {
   pub fn is_task(&self) -> bool {
     return !self.solution.is_empty();
   }
+  pub fn set_satisfied(&mut self) -> () {
+    self.satisfied = true;
+  }
 }
 
 impl fmt::Display for ManagedObject {
