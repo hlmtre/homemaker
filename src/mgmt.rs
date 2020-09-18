@@ -3,8 +3,6 @@ extern crate shellexpand;
 extern crate solvent;
 extern crate symlink;
 
-use tokio::task;
-
 use crate::{
   config::ManagedObject,
   hmerror::{ErrorKind as hmek, HMError, HomemakerError},
@@ -108,6 +106,7 @@ pub fn get_task_batches(
   Ok(tasks)
 }
 
+/*
 pub fn get_task_thread(mo: &ManagedObject) -> Result<task::JoinHandle<()>, HMError> {
   let s = mo.solution.clone().to_string();
   let t = mo.name.clone().to_string();
@@ -121,6 +120,7 @@ pub fn get_task_thread(mo: &ManagedObject) -> Result<task::JoinHandle<()>, HMErr
   });
   Ok(child)
 }
+*/
 
 fn execute_solution(solution: String) -> Result<(), HMError> {
   // marginally adapted but mostly stolen from

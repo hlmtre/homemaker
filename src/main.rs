@@ -1,7 +1,6 @@
 extern crate crossterm;
 extern crate dirs;
 extern crate indicatif;
-extern crate tokio;
 
 use std::{
   env, fs,
@@ -26,8 +25,7 @@ mod config;
 mod hmerror;
 mod mgmt;
 
-#[tokio::main]
-async fn main() {
+fn main() {
   let args: Vec<String> = env::args().collect();
   /*
     accept either a config passed as arg 1 or try to open the default config location
