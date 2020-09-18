@@ -2,8 +2,11 @@ extern crate indicatif;
 extern crate shellexpand;
 extern crate solvent;
 extern crate symlink;
+extern crate tokio;
 
 use indicatif::ProgressBar;
+
+use tokio::task;
 
 use crate::{
   config::ManagedObject,
@@ -52,12 +55,14 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   order that solves things without dependencies, then works its way up (or complains about
   cyclical dependencies, which are unsolveable)
 */
-pub fn perform_task_batches(nodes: HashMap<String, ManagedObject>) -> Result<(), HMError> {
+pub fn perform_task_batches(
+  nodes: HashMap<String, ManagedObject>,
+) -> Result<Option<Vec<task::JoinHandle<()>>>, HMError> {
   let mut depgraph: DepGraph<String> = DepGraph::new();
   for (name, node) in nodes.clone() {
     depgraph.register_dependencies(name.to_owned(), node.dependencies.clone());
   }
-  let mut tasks: Vec<thread::JoinHandle<()>> = Vec::new();
+  let mut tasks: Vec<task::JoinHandle<()>> = Vec::new();
   for (name, _node) in nodes.clone() {
     for n in depgraph.dependencies_of(&name).unwrap() {
       match n {
@@ -72,33 +77,19 @@ pub fn perform_task_batches(nodes: HashMap<String, ManagedObject>) -> Result<(),
       }
     }
   }
-  for t in tasks {
-    t.join();
-  }
-  Ok(())
+  Ok(Some(tasks))
 }
 
-pub fn get_task_thread(mo: &ManagedObject) -> Result<thread::JoinHandle<()>, HMError> {
+pub fn get_task_thread(mo: &ManagedObject) -> Result<task::JoinHandle<()>, HMError> {
   let s = mo.solution.clone().to_string();
   let t = mo.name.clone().to_string();
-  let child: thread::JoinHandle<()> = thread::spawn(move || {
+  let child: task::JoinHandle<()> = task::spawn(async {
     let c = Command::new("bash")
       .arg("-c")
       .arg(s)
       .stdout(Stdio::piped())
       .stderr(Stdio::piped())
       .spawn();
-    let pb = ProgressBar::new_spinner();
-    pb.enable_steady_tick(200);
-    pb.set_message(format!("Executing task {}", t).as_str());
-    for line in BufReader::new(c.unwrap().stderr.take().unwrap()).lines() {
-      let line = line.unwrap();
-      let stripped = line.trim();
-      if !stripped.is_empty() {
-        pb.println(stripped);
-      }
-      pb.tick();
-    }
   });
   Ok(child)
 }

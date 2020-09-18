@@ -1,5 +1,7 @@
 extern crate crossterm;
 extern crate dirs;
+extern crate indicatif;
+extern crate tokio;
 
 use std::{
   env, fs,
@@ -8,8 +10,11 @@ use std::{
   process::exit,
   result::Result,
   string::String,
-  thread::JoinHandle,
+  thread::{sleep, JoinHandle},
+  time,
 };
+
+use indicatif::{ProgressBar, ProgressStyle};
 
 use crossterm::{
   execute,
@@ -20,7 +25,8 @@ mod config;
 mod hmerror;
 mod mgmt;
 
-fn main() {
+#[tokio::main]
+async fn main() {
   let args: Vec<String> = env::args().collect();
   /*
     accept either a config passed as arg 1 or try to open the default config location
@@ -77,7 +83,23 @@ fn main() {
     let _ = execute!(stdout(), ResetColor);
   }
   match mgmt::perform_task_batches(complex_operations) {
-    Ok(_) => (),
+    Ok(_re) => match _re {
+      Some(arr) => {
+        for jh in arr {
+          let result = jh.await;
+          eprintln!("{:#?}", result);
+          /*
+          eprintln!("hi");
+          let p = ProgressBar::new_spinner();
+          p.set_style(ProgressStyle::default_spinner());
+          p.enable_steady_tick(200);
+          p.tick();
+          sleep(time::Duration::from_millis(10));
+          */
+        }
+      }
+      None => {}
+    },
     Err(_) => (),
   }
   // let mut mcl: Vec<JoinHandle<Result<std::process::Child, std::io::Error>>> = Vec::new();
