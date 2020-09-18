@@ -2,7 +2,6 @@ extern crate indicatif;
 extern crate shellexpand;
 extern crate solvent;
 extern crate symlink;
-extern crate tokio;
 
 use tokio::task;
 

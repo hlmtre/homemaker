@@ -13,4 +13,3 @@ crossterm = "0.17.7"
 symlink = "0.1.0"
 solvent = "0.8.2"
 indicatif = ">=0.15.0"
-tokio = { version = "0.2", features = ["full"] }
