@@ -4,8 +4,6 @@ extern crate solvent;
 extern crate symlink;
 extern crate tokio;
 
-use indicatif::ProgressBar;
-
 use tokio::task;
 
 use crate::{
@@ -16,10 +14,11 @@ use crate::{
 use std::collections::HashMap;
 use std::fs::metadata;
 use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
-use std::path::Path;
 use std::{
+  path::Path,
   process::{Command, Stdio},
-  thread,
+  sync::mpsc::{Receiver, Sender, *},
+  {thread, time},
 };
 
 use crossterm::{
@@ -50,34 +49,64 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   Ok(())
 }
 
+pub fn send_tasks_off_to_college(mo: &ManagedObject, tx: &Sender<i32>) -> Result<(), Error> {
+  let s = mo.solution.clone().to_string();
+  let tx1 = Sender::clone(tx);
+  let child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
+    let mut c = Command::new("bash")
+      .arg("-c")
+      .arg(s)
+      .stdout(Stdio::null())
+      .stderr(Stdio::null())
+      .spawn()
+      .unwrap();
+    loop {
+      match c.try_wait() {
+        Ok(Some(status)) => {
+          tx1.send(status.code().unwrap()).unwrap();
+          return Ok(());
+        }
+        Ok(None) => {
+          tx1.send(1).unwrap();
+          thread::sleep(time::Duration::from_millis(200));
+        }
+        Err(e) => return Err(HMError::Regular(hmek::SolutionError)),
+      }
+    }
+  });
+  Ok(())
+}
+
 /*
   create non-cyclical dependency graph, then execute them in some (non-deterministic)
   order that solves things without dependencies, then works its way up (or complains about
   cyclical dependencies, which are unsolveable)
 */
-pub fn perform_task_batches(
+pub fn get_task_batches(
   nodes: HashMap<String, ManagedObject>,
-) -> Result<Option<Vec<task::JoinHandle<()>>>, HMError> {
+) -> Result<Vec<Vec<ManagedObject>>, HMError> {
   let mut depgraph: DepGraph<String> = DepGraph::new();
   for (name, node) in nodes.clone() {
     depgraph.register_dependencies(name.to_owned(), node.dependencies.clone());
   }
-  let mut tasks: Vec<task::JoinHandle<()>> = Vec::new();
+  let mut tasks: Vec<Vec<ManagedObject>> = Vec::new();
   for (name, _node) in nodes.clone() {
+    let mut q: Vec<ManagedObject> = Vec::new();
     for n in depgraph.dependencies_of(&name).unwrap() {
       match n {
         Ok(r) => {
           let mut a = nodes.get(r).unwrap().to_owned();
-          tasks.push(get_task_thread(&a)?);
           a.set_satisfied();
+          q.push(a);
         }
         Err(_e) => {
           return Err(HMError::Regular(hmek::CyclicalDependencyError));
         }
       }
     }
+    tasks.push(q);
   }
-  Ok(Some(tasks))
+  Ok(tasks)
 }
 
 pub fn get_task_thread(mo: &ManagedObject) -> Result<task::JoinHandle<()>, HMError> {

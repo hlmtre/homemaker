@@ -10,6 +10,7 @@ use std::{
   process::exit,
   result::Result,
   string::String,
+  sync::mpsc,
   thread::{sleep, JoinHandle},
   time,
 };
@@ -82,6 +83,24 @@ async fn main() {
     });
     let _ = execute!(stdout(), ResetColor);
   }
+  let (tx, rx) = mpsc::channel();
+  let hi = mgmt::get_task_batches(complex_operations).unwrap();
+  for _a in hi {
+    for _b in _a {
+      mgmt::send_tasks_off_to_college(&_b, &tx);
+    }
+  }
+  for received in rx {
+    let p = ProgressBar::new_spinner();
+    p.set_style(ProgressStyle::default_spinner());
+    p.enable_steady_tick(200);
+    p.tick();
+    println!("");
+    if received == 0 {
+      p.finish_and_clear();
+    }
+  }
+  /*
   match mgmt::perform_task_batches(complex_operations) {
     Ok(_re) => match _re {
       Some(arr) => {
@@ -102,6 +121,7 @@ async fn main() {
     },
     Err(_) => (),
   }
+  */
   // let mut mcl: Vec<JoinHandle<Result<std::process::Child, std::io::Error>>> = Vec::new();
   // for (_name, _mo) in complex_operations.into_iter() {
   //   let _my_child = mgmt::get_task_thread(&_mo).map(|ct| mcl.push(ct));
