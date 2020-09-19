@@ -3,6 +3,7 @@ extern crate dirs;
 extern crate indicatif;
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::convert::TryInto;
 use std::{
   env, fs,
@@ -86,8 +87,10 @@ fn main() {
   }
   let (tx, rx) = mpsc::channel();
   let mp: MultiProgress = MultiProgress::new();
+  let mut t: HashSet<String> = HashSet::new();
   for _a in mgmt::get_task_batches(complex_operations).unwrap() {
     for _b in _a {
+      t.insert(_b.name.to_string());
       let p = ProgressBar::new_spinner();
       p.set_style(ProgressStyle::default_spinner());
       p.enable_steady_tick(200);
@@ -96,20 +99,28 @@ fn main() {
     }
   }
 
-  match rx.try_recv() {
-    Ok(t) => {
-      println!("processing...");
+  let mut v: HashMap<String, config::Worker> = HashMap::new();
+
+  loop {
+    match rx.try_recv() {
+      Ok(_t) => {
+        v.insert(_t.name.clone(), _t.clone());
+      }
+      Err(_) => {}
     }
-    Err(_) => {
-      eprintln!("error!");
+    std::thread::sleep(time::Duration::from_millis(10));
+    //eprintln!("{:#?}", v);
+    if !all_workers_done(v.clone()) {
+      continue;
     }
+    break;
   }
-  mp.join_and_clear();
+  mp.join_and_clear().unwrap();
+  std::process::exit(0);
   /*
   for (n, pb) in ws {
     pb.tick();
     pb.set_message(n.as_str());
-    std::thread::sleep(time::Duration::from_millis(200));
   }
   counter += 1;
   p.set_position(counter * 30);
@@ -151,8 +162,8 @@ fn main() {
   //println!("{:#?}", b);
 }
 
-fn are_all_workers_done(workers: Vec<config::Worker>) -> bool {
-  for w in workers {
+fn all_workers_done(workers: HashMap<String, config::Worker>) -> bool {
+  for (n, w) in workers {
     if !w.completed {
       return false;
     }

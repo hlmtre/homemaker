@@ -83,7 +83,6 @@ pub fn send_tasks_off_to_college(
           return Ok(());
         }
         Ok(None) => {
-          p.tick();
           tx1.send(w).unwrap();
           thread::sleep(time::Duration::from_millis(200));
         }

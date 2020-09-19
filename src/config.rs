@@ -12,7 +12,7 @@ use std::{
 };
 use toml::value;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct Worker {
   pub name: String,
   pub status: Option<i32>,
@@ -28,6 +28,12 @@ impl<'a> Worker {
     }
   }
 }
+impl PartialEq for Worker {
+  fn eq(&self, other: &Self) -> bool {
+    self.name == other.name
+  }
+}
+impl Eq for Worker {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ManagedObject {
