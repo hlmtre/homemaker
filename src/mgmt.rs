@@ -4,17 +4,19 @@ extern crate solvent;
 extern crate symlink;
 
 use crate::{
-  config::ManagedObject,
-  hmerror::{ErrorKind as hmek, HMError, HomemakerError},
+  config::{ManagedObject, Worker},
+  hmerror::{ErrorKind as hmek, HMError},
 };
 
+use indicatif::ProgressBar;
 use std::collections::HashMap;
 use std::fs::metadata;
 use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
+use std::sync::Arc;
 use std::{
   path::Path,
   process::{Command, Stdio},
-  sync::mpsc::{Receiver, Sender, *},
+  sync::mpsc::Sender,
   {thread, time},
 };
 
@@ -46,9 +48,14 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   Ok(())
 }
 
-pub fn send_tasks_off_to_college(mo: &ManagedObject, tx: &Sender<i32>) -> Result<(), Error> {
-  let s = mo.solution.clone().to_string();
-  let tx1 = Sender::clone(tx);
+pub fn send_tasks_off_to_college(
+  mo: &ManagedObject,
+  tx: &Sender<Worker>,
+  p: ProgressBar,
+) -> Result<(), Error> {
+  let s: String = mo.solution.clone().to_string();
+  let n: String = mo.name.clone().to_string();
+  let tx1: Sender<Worker> = Sender::clone(tx);
   let _child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
     let mut c = Command::new("bash")
       .arg("-c")
@@ -58,16 +65,29 @@ pub fn send_tasks_off_to_college(mo: &ManagedObject, tx: &Sender<i32>) -> Result
       .spawn()
       .unwrap();
     loop {
+      let mut w: Worker = Worker {
+        name: n.clone(),
+        status: None,
+        completed: false,
+      };
+      //eprintln!("{:#?}", w);
       match c.try_wait() {
         Ok(Some(status)) => {
-          tx1.send(status.code().unwrap()).unwrap();
+          p.finish_with_message("done");
+          w.status = status.code();
+          w.completed = match status.code().unwrap() {
+            0 => true,
+            _ => false,
+          };
+          tx1.send(w).unwrap();
           return Ok(());
         }
         Ok(None) => {
-          tx1.send(1).unwrap();
+          p.tick();
+          tx1.send(w).unwrap();
           thread::sleep(time::Duration::from_millis(200));
         }
-        Err(e) => return Err(HMError::Regular(hmek::SolutionError)),
+        Err(_e) => return Err(HMError::Regular(hmek::SolutionError)),
       }
     }
   });
@@ -122,6 +142,7 @@ pub fn get_task_thread(mo: &ManagedObject) -> Result<task::JoinHandle<()>, HMErr
 }
 */
 
+#[allow(dead_code)]
 fn execute_solution(solution: String) -> Result<(), HMError> {
   // marginally adapted but mostly stolen from
   // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html

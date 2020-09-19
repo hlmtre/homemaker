@@ -12,6 +12,23 @@ use std::{
 };
 use toml::value;
 
+#[derive(Debug, Clone)]
+pub struct Worker {
+  pub name: String,
+  pub status: Option<i32>,
+  pub completed: bool,
+}
+
+impl<'a> Worker {
+  pub fn new() -> Worker {
+    Worker {
+      name: String::from(""),
+      status: Some(1),
+      completed: false,
+    }
+  }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ManagedObject {
   pub name: String,
@@ -56,10 +73,10 @@ impl Default for ManagedObject {
     ManagedObject {
       name: String::from(""),
       source: String::from(""),
+      file: String::from(""),
       destination: String::from(""),
       method: String::from(""),
       task: String::from(""),
-      file: String::from(""),
       solution: String::from(""),
       dependencies: Vec::new(),
       satisfied: false,
