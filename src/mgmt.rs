@@ -49,7 +49,7 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
 pub fn send_tasks_off_to_college(mo: &ManagedObject, tx: &Sender<i32>) -> Result<(), Error> {
   let s = mo.solution.clone().to_string();
   let tx1 = Sender::clone(tx);
-  let child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
+  let _child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
     let mut c = Command::new("bash")
       .arg("-c")
       .arg(s)

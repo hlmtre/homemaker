@@ -81,21 +81,24 @@ fn main() {
     });
     let _ = execute!(stdout(), ResetColor);
   }
+  let mut count: i32 = 0;
   let (tx, rx) = mpsc::channel();
-  let hi = mgmt::get_task_batches(complex_operations).unwrap();
-  for _a in hi {
+  for _a in mgmt::get_task_batches(complex_operations).unwrap() {
     for _b in _a {
       mgmt::send_tasks_off_to_college(&_b, &tx);
+      count += 1;
     }
   }
+  let p = ProgressBar::new_spinner();
+  p.set_style(ProgressStyle::default_spinner());
+  p.enable_steady_tick(200);
   for received in rx {
-    let p = ProgressBar::new_spinner();
-    p.set_style(ProgressStyle::default_spinner());
-    p.enable_steady_tick(200);
     p.tick();
-    println!("");
+    p.set_message("executing tasks...");
     if received == 0 {
       p.finish_and_clear();
+      p.finish_with_message("Done!");
+      std::process::exit(0);
     }
   }
   /*
