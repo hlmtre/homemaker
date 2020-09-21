@@ -60,10 +60,11 @@ pub fn send_tasks_off_to_college(
     let mut c = Command::new("bash")
       .arg("-c")
       .arg(s)
-      .stdout(Stdio::null())
-      .stderr(Stdio::null())
+      .stdout(Stdio::piped())
+      .stderr(Stdio::piped())
       .spawn()
       .unwrap();
+    //let output = c.stdout.unwrap();
     loop {
       let mut w: Worker = Worker {
         name: n.clone(),
@@ -75,10 +76,7 @@ pub fn send_tasks_off_to_college(
         Ok(Some(status)) => {
           p.finish_with_message("done");
           w.status = status.code();
-          w.completed = match status.code().unwrap() {
-            0 => true,
-            _ => false,
-          };
+          w.completed = true;
           tx1.send(w).unwrap();
           return Ok(());
         }
@@ -86,7 +84,11 @@ pub fn send_tasks_off_to_college(
           tx1.send(w).unwrap();
           thread::sleep(time::Duration::from_millis(200));
         }
-        Err(_e) => return Err(HMError::Regular(hmek::SolutionError)),
+        Err(_e) => {
+          drop(tx1);
+          p.abandon_with_message("error!");
+          return Err(HMError::Regular(hmek::SolutionError));
+        }
       }
     }
   });

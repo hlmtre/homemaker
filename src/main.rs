@@ -148,22 +148,11 @@ fn main() {
     Err(_) => (),
   }
   */
-  // let mut mcl: Vec<JoinHandle<Result<std::process::Child, std::io::Error>>> = Vec::new();
-  // for (_name, _mo) in complex_operations.into_iter() {
-  //   let _my_child = mgmt::get_task_thread(&_mo).map(|ct| mcl.push(ct));
-  // }
-  // eprintln!("{:#?}", mcl);
-  //let d = mgmt::perform_task_batches(complex_operations).expect("Cyclical dependencies!");
-  //eprintln!("{:#?}", d);
-  //for (k, v) in c {
-  //  for mo in v {
-  //  }
-  //}
-  //println!("{:#?}", b);
 }
 
 fn all_workers_done(workers: HashMap<String, config::Worker>) -> bool {
-  for (n, w) in workers {
+  //eprintln!("{:#?}", workers);
+  for (_n, w) in workers {
     if !w.completed {
       return false;
     }
