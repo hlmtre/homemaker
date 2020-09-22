@@ -65,6 +65,7 @@ pub fn send_tasks_off_to_college(
       .spawn()
       .unwrap();
     //let output = c.stdout.unwrap();
+    p.set_message(format!("task {}", n).as_str());
     loop {
       let mut w: Worker = Worker {
         name: n.clone(),
