@@ -4,7 +4,6 @@ extern crate indicatif;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::convert::TryInto;
 use std::{
   env, fs,
   io::{stdout, Write},
@@ -74,7 +73,6 @@ fn main() {
   let mut simple_operations = a.clone();
   complex_operations.retain(|_, v| v.is_task()); // all the things that aren't just symlink/copy
   simple_operations.retain(|_, v| !v.is_task()); // all the things that are quick (don't need to thread off)
-  let c2 = complex_operations.clone();
   for (_name, _mo) in simple_operations.into_iter() {
     let _ = mgmt::perform_operation_on(_mo).map_err(|e| {
       let _ = execute!(stdout(), SetForegroundColor(Color::Red));
@@ -92,10 +90,10 @@ fn main() {
     for _b in _a {
       t.insert(_b.name.to_string());
       let p = ProgressBar::new_spinner();
-      p.set_style(ProgressStyle::default_spinner());
-      p.enable_steady_tick(200);
       let _p = mp.add(p);
-      mgmt::send_tasks_off_to_college(&_b, &tx, _p);
+      mgmt::send_tasks_off_to_college(&_b, &tx, _p).unwrap_or_else(|_e| {
+        panic!("ohtehnoes");
+      });
     }
   }
 
@@ -116,6 +114,7 @@ fn main() {
     break;
   }
   mp.join_and_clear().unwrap();
+  println!("doneskies.");
   std::process::exit(0);
   /*
   for (n, pb) in ws {

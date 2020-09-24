@@ -1,3 +1,4 @@
+extern crate console;
 extern crate indicatif;
 extern crate shellexpand;
 extern crate solvent;
@@ -8,11 +9,11 @@ use crate::{
   hmerror::{ErrorKind as hmek, HMError},
 };
 
-use indicatif::ProgressBar;
+use console::{pad_str, Alignment};
+use indicatif::{ProgressBar, ProgressStyle};
 use std::collections::HashMap;
 use std::fs::metadata;
 use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
-use std::sync::Arc;
 use std::{
   path::Path,
   process::{Command, Stdio},
@@ -65,7 +66,15 @@ pub fn send_tasks_off_to_college(
       .spawn()
       .unwrap();
     //let output = c.stdout.unwrap();
-    p.set_message(format!("task {}", n).as_str());
+    p.set_style(
+      ProgressStyle::default_spinner().template("{prefix:.bold.dim} {spinner} {wide_msg}"),
+    );
+    p.enable_steady_tick(200);
+    p.set_prefix(
+      pad_str(format!("task {}", n).as_str(), 30, Alignment::Left, None)
+        .into_owned()
+        .as_str(),
+    );
     loop {
       let mut w: Worker = Worker {
         name: n.clone(),
@@ -75,7 +84,7 @@ pub fn send_tasks_off_to_college(
       //eprintln!("{:#?}", w);
       match c.try_wait() {
         Ok(Some(status)) => {
-          p.finish_with_message("done");
+          p.finish_with_message("complete!");
           w.status = status.code();
           w.completed = true;
           tx1.send(w).unwrap();
