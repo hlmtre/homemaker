@@ -86,9 +86,7 @@ fn main() {
   let (tx, rx) = mpsc::channel();
   let mp: MultiProgress = MultiProgress::new();
   let mut t: HashSet<String> = HashSet::new();
-  let _x = mgmt::get_task_batches(complex_operations).unwrap();
-  let _x2 = _x.clone();
-  for _a in _x {
+  for _a in mgmt::get_task_batches(complex_operations).unwrap() {
     for _b in _a {
       t.insert(_b.name.to_string());
       let _p: ProgressBar = mp.add(ProgressBar::new_spinner());
@@ -97,7 +95,6 @@ fn main() {
       });
     }
   }
-  eprintln!("{:#?}", _x2);
 
   let mut v: HashMap<String, config::Worker> = HashMap::new();
 
