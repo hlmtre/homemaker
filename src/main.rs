@@ -89,8 +89,7 @@ fn main() {
   for _a in mgmt::get_task_batches(complex_operations).unwrap() {
     for _b in _a {
       t.insert(_b.name.to_string());
-      let p = ProgressBar::new_spinner();
-      let _p = mp.add(p);
+      let _p: ProgressBar = mp.add(ProgressBar::new_spinner());
       mgmt::send_tasks_off_to_college(&_b, &tx, _p).unwrap_or_else(|_e| {
         panic!("ohtehnoes");
       });
@@ -107,13 +106,12 @@ fn main() {
       Err(_) => {}
     }
     std::thread::sleep(time::Duration::from_millis(10));
-    //eprintln!("{:#?}", v);
     if !all_workers_done(v.clone()) {
       continue;
     }
     break;
   }
-  mp.join_and_clear().unwrap();
+  mp.join().unwrap();
   println!("doneskies.");
   std::process::exit(0);
   /*

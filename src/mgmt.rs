@@ -12,6 +12,7 @@ use crate::{
 use console::{pad_str, Alignment};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fs::metadata;
 use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
 use std::{
@@ -118,14 +119,19 @@ pub fn get_task_batches(
     depgraph.register_dependencies(name.to_owned(), node.dependencies.clone());
   }
   let mut tasks: Vec<Vec<ManagedObject>> = Vec::new();
+  let mut _dedup: HashSet<String> = HashSet::new();
   for (name, _node) in nodes.clone() {
     let mut q: Vec<ManagedObject> = Vec::new();
     for n in depgraph.dependencies_of(&name).unwrap() {
       match n {
         Ok(r) => {
-          let mut a = nodes.get(r).unwrap().to_owned();
-          a.set_satisfied();
-          q.push(a);
+          let c = String::from(r.as_str());
+          // returns true if the set DID NOT have c in it already
+          if _dedup.insert(c) {
+            let mut a = nodes.get(r).unwrap().to_owned();
+            a.set_satisfied();
+            q.push(a);
+          }
         }
         Err(_e) => {
           return Err(HMError::Regular(hmek::CyclicalDependencyError));
@@ -134,6 +140,7 @@ pub fn get_task_batches(
     }
     tasks.push(q);
   }
+  drop(_dedup);
   Ok(tasks)
 }
 
