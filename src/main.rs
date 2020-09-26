@@ -68,7 +68,13 @@ fn main() {
       }
     }
   };
-  let a = config::as_managed_objects(a);
+  // do it here
+  do_tasks(config::as_managed_objects(a));
+  println!("doneskies.");
+  exit(0);
+}
+
+fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   let mut complex_operations = a.clone();
   let mut simple_operations = a.clone();
   complex_operations.retain(|_, v| v.is_task()); // all the things that aren't just symlink/copy
@@ -112,39 +118,6 @@ fn main() {
     break;
   }
   mp.join().unwrap();
-  println!("doneskies.");
-  std::process::exit(0);
-  /*
-  for (n, pb) in ws {
-    pb.tick();
-    pb.set_message(n.as_str());
-  }
-  counter += 1;
-  p.set_position(counter * 30);
-  eprintln!("{}", received.name);
-  */
-  /*
-  match mgmt::perform_task_batches(complex_operations) {
-    Ok(_re) => match _re {
-      Some(arr) => {
-        for jh in arr {
-          let result = jh.await;
-          eprintln!("{:#?}", result);
-          /*
-          eprintln!("hi");
-          let p = ProgressBar::new_spinner();
-          p.set_style(ProgressStyle::default_spinner());
-          p.enable_steady_tick(200);
-          p.tick();
-          sleep(time::Duration::from_millis(10));
-          */
-        }
-      }
-      None => {}
-    },
-    Err(_) => (),
-  }
-  */
 }
 
 fn all_workers_done(workers: HashMap<String, config::Worker>) -> bool {

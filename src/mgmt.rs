@@ -144,22 +144,6 @@ pub fn get_task_batches(
   Ok(tasks)
 }
 
-/*
-pub fn get_task_thread(mo: &ManagedObject) -> Result<task::JoinHandle<()>, HMError> {
-  let s = mo.solution.clone().to_string();
-  let t = mo.name.clone().to_string();
-  let child: task::JoinHandle<()> = task::spawn(async {
-    let c = Command::new("bash")
-      .arg("-c")
-      .arg(s)
-      .stdout(Stdio::piped())
-      .stderr(Stdio::piped())
-      .spawn();
-  });
-  Ok(child)
-}
-*/
-
 #[allow(dead_code)]
 fn execute_solution(solution: String) -> Result<(), HMError> {
   // marginally adapted but mostly stolen from
