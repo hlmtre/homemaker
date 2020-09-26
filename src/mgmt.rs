@@ -11,25 +11,23 @@ use crate::{
 
 use console::{pad_str, Alignment};
 use indicatif::{ProgressBar, ProgressStyle};
-use std::collections::HashMap;
-use std::collections::HashSet;
-use std::fs::metadata;
-use std::io::{stdout, BufRead, BufReader, Error, ErrorKind, Write};
+use solvent::DepGraph;
 use std::{
+  collections::HashMap,
+  collections::HashSet,
+  fs::metadata,
+  io::{stdout, BufRead, BufReader, Error, ErrorKind, Write},
   path::Path,
   process::{Command, Stdio},
   sync::mpsc::Sender,
   {thread, time},
 };
+use symlink::{symlink_dir as sd, symlink_file as sf};
 
 use crossterm::{
   execute,
   style::{Color, ResetColor, SetForegroundColor},
 };
-
-use symlink::{symlink_dir as sd, symlink_file as sf};
-
-use solvent::DepGraph;
 
 fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   let md = match metadata(source.to_owned()) {
