@@ -30,7 +30,6 @@ fn main() {
     Some(second) => match config::deserialize_file(&second) {
       Ok(c) => c,
       Err(e) => {
-        // if the platform doesn't support color, just don't set it
         let _ = execute!(stdout(), SetForegroundColor(Color::Red));
         eprintln!(
           "Couldn't open specified config file {}. Error: {}",
@@ -70,14 +69,12 @@ fn main() {
 
 fn ensure_config_dir() -> Result<PathBuf, &'static str> {
   // get /home/<username>/.config, if exists...
-  let conf_dir = dirs::config_dir();
-  let mut _a = match conf_dir {
+  match dirs::config_dir() {
     Some(p) => {
       // if something
       // creates a PathBuf from $XDG_CONFIG_DIR
       let whole_path = p.join(Path::new("homemaker"));
-      let _r = fs::create_dir_all(&whole_path);
-      match _r {
+      match fs::create_dir_all(&whole_path) {
         /*
           then when we return it, do the entire config dir path (/home/hlmtre/.config)
            and add our config file to the end of the PathBuf
