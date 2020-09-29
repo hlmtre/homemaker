@@ -38,9 +38,7 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
     for _b in _a {
       t.insert(_b.name.to_string());
       let _p: ProgressBar = mp.add(ProgressBar::new_spinner());
-      mgmt::send_tasks_off_to_college(&_b, &tx, _p).unwrap_or_else(|_e| {
-        panic!("ohtehnoes");
-      });
+      mgmt::send_tasks_off_to_college(&_b, &tx, _p).expect("ohtehnoes");
     }
   }
 
