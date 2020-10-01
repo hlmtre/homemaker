@@ -9,14 +9,14 @@ use crate::{
   hmerror::{ErrorKind as hmek, HMError},
 };
 
-use console::{pad_str, Alignment};
+use console::{pad_str, style, Alignment};
 use indicatif::{ProgressBar, ProgressStyle};
 use solvent::DepGraph;
 use std::{
   collections::HashMap,
   collections::HashSet,
   fs::metadata,
-  io::{stdout, BufRead, BufReader, Error, ErrorKind, Write},
+  io::{BufRead, BufReader, Error, ErrorKind},
   path::Path,
   process::{Command, Stdio},
   sync::mpsc::Sender,
@@ -24,10 +24,12 @@ use std::{
 };
 use symlink::{symlink_dir as sd, symlink_file as sf};
 
+/*
 use crossterm::{
   execute,
   style::{Color, ResetColor, SetForegroundColor},
 };
+*/
 
 fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   let md = match metadata(source.to_owned()) {
@@ -176,9 +178,7 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
       symlink_file(source, destination)
     }
     _ => {
-      let _ = execute!(stdout(), SetForegroundColor(Color::Green));
-      println!("{}", _s);
-      let _ = execute!(stdout(), ResetColor);
+      println!("{}", style(format!("{}", _s)).red());
       Ok(())
     }
   }

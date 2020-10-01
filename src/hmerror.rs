@@ -1,6 +1,7 @@
+extern crate console;
+use console::style;
 use std::fmt;
 use std::io;
-
 use std::process::ExitStatus;
 
 pub struct HomemakerError {
@@ -36,7 +37,6 @@ impl From<io::Error> for HomemakerError {
     }
   }
 }
-
 #[derive(Debug)]
 pub enum HMError {
   Io(io::Error),
@@ -114,6 +114,10 @@ impl fmt::Display for HMError {
       HMError::Io(ref err) => err.fmt(f),
     }
   }
+}
+
+pub fn error(complaint: String, er: &str) {
+  eprintln!("{}:\n ↳ Error: {}", style(complaint).red().bold(), er)
 }
 
 pub type Result<T> = std::result::Result<T, HMError>;

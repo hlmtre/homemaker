@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use std::{
   fmt, fs, io,
   io::{prelude::*, BufReader},
+  path::{Path, PathBuf},
   string::String,
 };
 use toml::value;
@@ -20,6 +21,8 @@ pub struct Worker {
 }
 
 impl<'a> Worker {
+  // i'll get to you
+  #[allow(dead_code)]
   pub fn new() -> Worker {
     Worker {
       name: String::from(""),
@@ -161,7 +164,8 @@ impl fmt::Display for Config {
   }
 }
 
-pub fn get_mo(n: String) -> Result<ManagedObject, HMError> {
+#[allow(dead_code)]
+pub fn get_mo(_n: String) -> Result<ManagedObject, HMError> {
   unimplemented!("not done")
 }
 
@@ -252,4 +256,29 @@ pub fn deserialize_file(file: &str) -> Result<Config, String> {
     println!("file: {}", &file);
   }
   toml::from_str(&contents).or_else(|e| Err(e.to_string()))
+}
+
+pub fn ensure_config_dir() -> Result<PathBuf, &'static str> {
+  // get /home/<username>/.config, if exists...
+  match dirs::config_dir() {
+    Some(p) => {
+      // if something
+      // creates a PathBuf from $XDG_CONFIG_DIR
+      let whole_path = p.join(Path::new("homemaker"));
+      match fs::create_dir_all(&whole_path) {
+        /*
+        then when we return it, do the entire config dir path (/home/hlmtre/.config)
+        and add our config file to the end of the PathBuf
+        ```
+        Ok(("/home/hlmtre/.config").join("config.toml"))
+        ```
+        sort of as a pseudocodey example
+         */
+        Ok(()) => return Ok(PathBuf::from(&whole_path.join("config.toml"))),
+        Err(_e) => return Err("Couldn't create config dir!"),
+      }
+    }
+    // if dirs::config_path() call doesn't return anything
+    None => return Err("Couldn't get config directory from $XDG"),
+  };
 }

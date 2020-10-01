@@ -1,4 +1,4 @@
-extern crate crossterm;
+extern crate console;
 extern crate indicatif;
 
 use std::collections::{HashMap, HashSet};
@@ -6,15 +6,9 @@ use std::{sync::mpsc, time};
 
 use indicatif::{MultiProgress, ProgressBar};
 
-use std::io::{stdout, Write};
-
 use super::config;
+use super::hmerror;
 use super::mgmt;
-
-use crossterm::{
-  execute,
-  style::{Color, ResetColor, SetForegroundColor},
-};
 
 pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   let mut complex_operations = a.clone();
@@ -23,13 +17,11 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   simple_operations.retain(|_, v| !v.is_task()); // all the things that are quick (don't need to thread off)
   for (_name, _mo) in simple_operations.into_iter() {
     let _ = mgmt::perform_operation_on(_mo).map_err(|e| {
-      let _ = execute!(stdout(), SetForegroundColor(Color::Red));
-      eprintln!(
-        "Failed to perform operation on {:#?}. \nError: {}\n",
-        _name, e
+      hmerror::error(
+        format!("Failed to perform operation on {:#?}.", _name),
+        e.to_string().as_str(),
       )
     });
-    let _ = execute!(stdout(), ResetColor);
   }
   let (tx, rx) = mpsc::channel();
   let mp: MultiProgress = MultiProgress::new();
