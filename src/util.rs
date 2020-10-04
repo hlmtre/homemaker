@@ -10,6 +10,15 @@ use super::config;
 use super::hmerror;
 use super::mgmt;
 
+///
+/// Take our list of ManagedObjects to do stuff to, and determine
+/// if they're simple or complex (simple is symlink or copy, complex
+/// maybe compilation or pulling a git repo). We just do the simple ones, as they
+/// won't be computationally expensive.
+///
+/// For complex ones we get a list of list of MOs that we can do in some order that
+/// satisfies their dependencies, then we hand them off to mgmt::send_tasks_off_to_college().
+///
 pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   let mut complex_operations = a.clone();
   let mut simple_operations = a.clone();
@@ -18,7 +27,7 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   for (_name, _mo) in simple_operations.into_iter() {
     let _ = mgmt::perform_operation_on(_mo).map_err(|e| {
       hmerror::error(
-        format!("Failed to perform operation on {:#?}.", _name),
+        format!("Failed to perform operation on {:#?}", _name),
         e.to_string().as_str(),
       )
     });
@@ -52,6 +61,9 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   mp.join().unwrap();
 }
 
+///
+/// Iterate through all the workers passed in. If any isn't marked as complete, `return false;`.
+///
 fn all_workers_done(workers: HashMap<String, config::Worker>) -> bool {
   for (_n, w) in workers {
     if !w.completed {

@@ -31,6 +31,11 @@ use crossterm::{
 };
 */
 
+///
+/// Either create a symlink to a file or directory. Generally
+/// we'll be doing this in a tilde'd home subdirectory, so
+/// we need to be careful to get our Path right.
+///
 fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   let md = match metadata(source.to_owned()) {
     Ok(a) => a,
@@ -50,6 +55,12 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   Ok(())
 }
 
+///
+/// Take a ManagedObject task, an mpsc tx, and a Progressbar. Execute task and regularly inform the rx
+/// about our status using config::Worker.
+///
+/// Return () or io::Error (something went wrong in our task).
+///
 pub fn send_tasks_off_to_college(
   mo: &ManagedObject,
   tx: &Sender<Worker>,
@@ -107,10 +118,26 @@ pub fn send_tasks_off_to_college(
 }
 
 /*
-  create non-cyclical dependency graph, then execute them in some (non-deterministic)
-  order that solves things without dependencies, then works its way up (or complains about
-  cyclical dependencies, which are unsolveable)
 */
+///
+/// Create a non-cyclical dependency graph and give it back as a Vec&lt;Vec&lt;ManagedObject&gt;&gt;.
+/// Will return a CyclicalDependencyError if the graph is unsolveable.
+/// Intended to be used with either mgmt::execute_solution or mgmt::send_tasks_off_to_college.
+///
+///
+/// Example:
+///
+/// ```
+/// let (rx, tx) = mpsc::channel();
+/// let p = ProgressBar::new_spinner();
+/// let v: Vec&lt;Vec&lt;ManagedObject&gt;&gt; = get_task_batches(nodes);
+/// for a in v {
+///   for b in a {
+///     mgmt::send_tasks_off_to_college(&b, &tx, p);
+///   }
+/// }
+/// ```
+///
 pub fn get_task_batches(
   nodes: HashMap<String, ManagedObject>,
 ) -> Result<Vec<Vec<ManagedObject>>, HMError> {
@@ -144,6 +171,9 @@ pub fn get_task_batches(
   Ok(tasks)
 }
 
+///
+/// Execute the shell commands specified in the MO's solution in a thread, so as not to block.
+///
 #[allow(dead_code)]
 fn execute_solution(solution: String) -> Result<(), HMError> {
   // marginally adapted but mostly stolen from
@@ -169,6 +199,10 @@ fn execute_solution(solution: String) -> Result<(), HMError> {
   child.join().unwrap()
 }
 
+///
+/// Pretty simple. We support only symlinking, but copying would be trivial.
+/// Hand off to the actual function that does the work.
+///
 pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
   let _s = mo.method.as_str();
   match _s {
