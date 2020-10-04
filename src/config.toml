@@ -12,6 +12,7 @@ method = 'symlink'
 
 [[obj]]
 task = 'zt'
+solution = 'cd ~/dotfiles/zt && git pull'
 dependencies = 'maim, slop'
 
 [[obj]]
