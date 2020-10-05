@@ -77,7 +77,15 @@ pub fn send_tasks_off_to_college(
       .stderr(Stdio::piped())
       .spawn()
       .unwrap();
-    //let output = c.stdout.unwrap();
+    let output = c.stdout.take().unwrap();
+    let reader = BufReader::new(output);
+    /*
+      reader
+        .lines()
+        .filter_map(|line| line.ok())
+        .for_each(|line| println!("{}", line));
+    }
+    */
     p.set_style(
       ProgressStyle::default_spinner().template("{prefix:.bold.dim} {spinner} {wide_msg}"),
     );
@@ -93,7 +101,6 @@ pub fn send_tasks_off_to_college(
         status: None,
         completed: false,
       };
-      //eprintln!("{:#?}", w);
       match c.try_wait() {
         Ok(Some(status)) => {
           p.finish_with_message("complete!");
@@ -103,6 +110,7 @@ pub fn send_tasks_off_to_college(
           return Ok(());
         }
         Ok(None) => {
+          //p.println(reader.lines().filter_map(|line| line.ok()).last().unwrap());
           tx1.send(w).unwrap();
           thread::sleep(time::Duration::from_millis(200));
         }
