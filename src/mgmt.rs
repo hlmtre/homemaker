@@ -37,7 +37,7 @@ use crossterm::{
 /// we need to be careful to get our Path right.
 ///
 fn symlink_file(source: String, target: String) -> Result<(), HMError> {
-  let md = match metadata(source.to_owned()) {
+  let md = match metadata(shellexpand::tilde(&source).to_string()) {
     Ok(a) => a,
     Err(e) => return Err(HMError::Io(e)),
   };
@@ -77,8 +77,8 @@ pub fn send_tasks_off_to_college(
       .stderr(Stdio::piped())
       .spawn()
       .unwrap();
-    let output = c.stdout.take().unwrap();
-    let reader = BufReader::new(output);
+    //let output = c.stdout.take().unwrap();
+    //let reader = BufReader::new(output);
     /*
       reader
         .lines()
@@ -110,7 +110,6 @@ pub fn send_tasks_off_to_college(
           return Ok(());
         }
         Ok(None) => {
-          //p.println(reader.lines().filter_map(|line| line.ok()).last().unwrap());
           tx1.send(w).unwrap();
           thread::sleep(time::Duration::from_millis(200));
         }

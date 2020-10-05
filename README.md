@@ -33,7 +33,6 @@ method = 'execute'
 thanks to actual good code:
 serde
 toml
-crossterm
 symlink
 solvent
 indicatif
