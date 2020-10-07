@@ -2,7 +2,9 @@
 extern crate dirs;
 extern crate indicatif;
 
-use std::{env, path::PathBuf, process::exit, string::String};
+use std::{env, path::PathBuf, process::exit, string::String, time::Instant};
+
+use indicatif::HumanDuration;
 
 use config::deserialize_file;
 use config::ensure_config_dir;
@@ -69,8 +71,9 @@ fn main() {
     }
   };
   // do it here
+  let started = Instant::now();
   util::do_tasks(config::as_managed_objects(a));
-  println!("doneskies.");
+  println!("Done in {}.", HumanDuration(started.elapsed()));
   exit(0);
 }
 

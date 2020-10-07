@@ -67,6 +67,7 @@ pub fn send_tasks_off_to_college(
   p: ProgressBar,
 ) -> Result<(), Error> {
   let s: String = mo.solution.clone().to_string();
+  //let s1 = s.clone();
   let n: String = mo.name.clone().to_string();
   let tx1: Sender<Worker> = Sender::clone(tx);
   let _child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
@@ -86,8 +87,10 @@ pub fn send_tasks_off_to_college(
         .for_each(|line| println!("{}", line));
     }
     */
+    //p.println(s1);
     p.set_style(
-      ProgressStyle::default_spinner().template("{prefix:.bold.dim} {spinner} {wide_msg}"),
+      ProgressStyle::default_spinner()
+        .template("[{elapsed:4}] {prefix:.bold.dim} {spinner} {wide_msg}"),
     );
     p.enable_steady_tick(200);
     p.set_prefix(
@@ -103,7 +106,7 @@ pub fn send_tasks_off_to_college(
       };
       match c.try_wait() {
         Ok(Some(status)) => {
-          p.finish_with_message("complete!");
+          p.finish_with_message(console::style("✓").green().to_string().as_str());
           w.status = status.code();
           w.completed = true;
           tx1.send(w).unwrap();
@@ -207,7 +210,7 @@ fn execute_solution(solution: String) -> Result<(), HMError> {
 }
 
 ///
-/// Pretty simple. We support only symlinking, but copying would be trivial.
+/// Pretty simple. We currently support only symlinking, but copying would be trivial.
 /// Hand off to the actual function that does the work.
 ///
 pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
