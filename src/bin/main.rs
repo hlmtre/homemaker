@@ -54,18 +54,16 @@
 extern crate dirs;
 extern crate indicatif;
 
+//extern crate hm;
+
 use std::{env, path::PathBuf, process::exit, string::String, time::Instant};
 
 use indicatif::HumanDuration;
 
-use config::deserialize_file;
-use config::ensure_config_dir;
-use config::Config;
-
-mod config;
-mod hmerror;
-mod lib;
-mod util;
+use hm::{
+  config::{as_managed_objects, deserialize_file, ensure_config_dir, Config},
+  hmerror, util,
+};
 
 /// Pull apart our arguments, if they're called, get our Config, and error-check.
 /// Then work our way through the Config, executing the easy stuff, and threading off the hard.
@@ -127,7 +125,7 @@ fn main() {
   };
   // do it here
   let started = Instant::now();
-  util::do_tasks(config::as_managed_objects(a));
+  util::do_tasks(as_managed_objects(a));
   println!("Done in {}.", HumanDuration(started.elapsed()));
   exit(0);
 }

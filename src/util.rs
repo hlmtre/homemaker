@@ -4,7 +4,7 @@ extern crate indicatif;
 use std::collections::{HashMap, HashSet};
 use std::{sync::mpsc, time};
 
-use hm::{get_task_batches, perform_operation_on, send_tasks_off_to_college};
+use super::{get_task_batches, perform_operation_on, send_tasks_off_to_college};
 use indicatif::{MultiProgress, ProgressBar};
 
 use super::{config, hmerror};

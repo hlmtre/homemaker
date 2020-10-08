@@ -1,4 +1,3 @@
-//! This is basically lib.rs (maybe it should be lib.rs?).
 //! This module generally takes ManagedObjects and either links them
 //! to their destination, or threads off and executes the task solution.
 extern crate console;
@@ -7,13 +6,12 @@ extern crate shellexpand;
 extern crate solvent;
 extern crate symlink;
 
-mod config;
-mod hmerror;
+pub mod config;
+pub mod hmerror;
+pub mod util;
 
-use crate::{
-  config::{ManagedObject, Worker},
-  hmerror::{ErrorKind as hmek, HMError},
-};
+use config::{ManagedObject, Worker};
+use hmerror::{ErrorKind as hmek, HMError};
 
 use console::{pad_str, style, Alignment};
 use indicatif::{ProgressBar, ProgressStyle};
@@ -35,7 +33,7 @@ use symlink::{symlink_dir as sd, symlink_file as sf};
 /// we'll be doing this in a tilde'd home subdirectory, so
 /// we need to be careful to get our Path right.
 ///
-fn symlink_file(source: String, target: String) -> Result<(), HMError> {
+pub fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   let md = match metadata(shellexpand::tilde(&source).to_string()) {
     Ok(a) => a,
     Err(e) => return Err(HMError::Io(e)),
