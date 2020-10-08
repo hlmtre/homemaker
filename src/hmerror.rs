@@ -1,3 +1,19 @@
+//! Custom Error implementation to allow for our own kind, along with
+//! run-of-the-mill `std::io::Error`s.
+//! ```
+//! pub enum ErrorKind {
+//!   DependencyUndefinedError,
+//!   CyclicalDependencyError,
+//!   SolutionError,
+//!   ConfigError,
+//!   Other,
+//! }
+//! ```
+//! * DependencyUndefinedError: A stated dependency doesn't have an object telling us how to satisfy it.
+//! * CyclicalDependencyError: a -> b and b -> a and neither is satisfied.
+//! * SolutionError: Something went wrong in our script.
+//! * ConfigError: Something is wrong with how you wrote the `config.toml`.
+//! * Other: Other.
 extern crate console;
 use console::style;
 use std::fmt;
@@ -116,7 +132,8 @@ impl fmt::Display for HMError {
   }
 }
 
-pub fn error(complaint: String, er: &str) {
+/// Easy formatting for errors as they come in.
+pub fn error(complaint: &str, er: &str) {
   eprintln!("{}:\n ↳ Error: {}", style(complaint).red().bold(), er)
 }
 

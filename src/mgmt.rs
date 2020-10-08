@@ -1,3 +1,6 @@
+//! This is basically lib.rs (maybe it should be lib.rs?).
+//! This module generally takes ManagedObjects and either links them
+//! to their destination, or threads off and executes the task solution.
 extern crate console;
 extern crate indicatif;
 extern crate shellexpand;
@@ -23,13 +26,6 @@ use std::{
   {thread, time},
 };
 use symlink::{symlink_dir as sd, symlink_file as sf};
-
-/*
-use crossterm::{
-  execute,
-  style::{Color, ResetColor, SetForegroundColor},
-};
-*/
 
 ///
 /// Either create a symlink to a file or directory. Generally
@@ -57,7 +53,9 @@ fn symlink_file(source: String, target: String) -> Result<(), HMError> {
 
 ///
 /// Take a ManagedObject task, an mpsc tx, and a Progressbar. Execute task and regularly inform the rx
-/// about our status using config::Worker.
+/// (all the way over back in `main()`)about our status using config::Worker.
+///
+/// TODO: allow the `verbose` bool to show the output of the tasks as they go.
 ///
 /// Return () or io::Error (something went wrong in our task).
 ///
@@ -140,7 +138,7 @@ pub fn send_tasks_off_to_college(
 /// ```
 /// let (rx, tx) = mpsc::channel();
 /// let p = ProgressBar::new_spinner();
-/// let v: Vec&lt;Vec&lt;ManagedObject&gt;&gt; = get_task_batches(nodes);
+/// let v: Vec<Vec<ManagedObject>> = get_task_batches(nodes);
 /// for a in v {
 ///   for b in a {
 ///     mgmt::send_tasks_off_to_college(&b, &tx, p);

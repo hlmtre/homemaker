@@ -27,7 +27,7 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   for (_name, _mo) in simple_operations.into_iter() {
     let _ = mgmt::perform_operation_on(_mo).map_err(|e| {
       hmerror::error(
-        format!("Failed to perform operation on {:#?}", _name),
+        format!("Failed to perform operation on {:#?}", _name).as_str(),
         e.to_string().as_str(),
       )
     });

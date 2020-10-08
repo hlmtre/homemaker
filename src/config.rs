@@ -1,3 +1,7 @@
+//! Define our `Config` and `Worker`.
+//! Implement how to take the `config.toml` and turn it into a `Config { files: Vec<ManagedObject> }`.
+//! Describes the `Worker` object, which is how we communicate back to our `main()` thread
+//! about how our `task` is going.
 extern crate serde;
 extern crate toml;
 
@@ -13,6 +17,9 @@ use std::{
 };
 use toml::value;
 
+///
+/// Allow us to communicate meaningfully back to `main()` thread.
+///
 #[derive(Debug, Clone, Hash)]
 pub struct Worker {
   pub name: String,
@@ -38,6 +45,11 @@ impl PartialEq for Worker {
 }
 impl Eq for Worker {}
 
+/// We're a super-set of all the kinds of `ManagedObject`s we can be.
+/// Just don't use the fields you don't wanna use.
+/// A simple `ManagedObject` is a name, source, destination, and method (currently only symlink).
+/// The simple `ManagedObject` would just be symlinked to its destination.
+/// Complex `ManagedObject`s include solutions, which are executed scripts.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ManagedObject {
   pub name: String,
@@ -52,6 +64,7 @@ pub struct ManagedObject {
 }
 
 impl ManagedObject {
+  /// quite simply, if we're a task, we'll have a `solution`.
   pub fn is_task(&self) -> bool {
     return !self.solution.is_empty();
   }
@@ -93,6 +106,8 @@ impl Default for ManagedObject {
   }
 }
 
+/// Represents just the file `config.toml` and contains a vector of things
+/// that shall become `ManagedObject`s.
 #[derive(Deserialize, Clone)]
 pub struct Config {
   #[serde(rename = "obj", deserialize_with = "deserialize_files")]
@@ -108,6 +123,7 @@ impl Default for Config {
 /*
   this is all such terrible rust please don't look at it
 */
+/// pls do not view src for this, am not proud
 impl fmt::Display for Config {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     let mut mos: Vec<ManagedObject> = Vec::new();
@@ -169,6 +185,8 @@ pub fn get_mo(_n: String) -> Result<ManagedObject, HMError> {
   unimplemented!("not done")
 }
 
+/// This takes our file/task array and turns them into `ManagedObjects`,
+/// to be stuffed into the `Config`.
 pub fn deserialize_files<'de, D>(deserializer: D) -> Result<Vec<(String, value::Value)>, D::Error>
 where
   D: Deserializer<'de>,
@@ -189,6 +207,8 @@ where
   Ok(files)
 }
 
+/// Convenience function that allows getting a HashMap from a `Config` of
+/// the `ManagedObject`s within.
 pub fn as_managed_objects(config: Config) -> HashMap<String, ManagedObject> {
   let mut mos: HashMap<String, ManagedObject> = HashMap::new();
   for _f in config.files.iter() {
@@ -237,10 +257,16 @@ pub fn as_managed_objects(config: Config) -> HashMap<String, ManagedObject> {
   return mos;
 }
 
+/// Take a big, fat guess.
+/// Open the specified file. We've already made sure our Path and stuff
+/// look good.
 fn open_config(file: &str) -> io::Result<fs::File> {
   fs::File::open(file)
 }
 
+/// Open our config file and read the entire contents into hopefully
+/// valid toml. Either we gucci and return back a `Config` made of toml,
+/// or we explain what went wrong with the `toml` Err.
 pub fn deserialize_file(file: &str) -> Result<Config, String> {
   let mut contents = String::new();
   let g = match open_config(file) {
@@ -258,6 +284,16 @@ pub fn deserialize_file(file: &str) -> Result<Config, String> {
   toml::from_str(&contents).or_else(|e| Err(e.to_string()))
 }
 
+/// Make sure $XDG_CONFIG_DIR exists.
+/// On Linux and similar this is /home/\<username\>/.config;
+/// macOS /Users/\<username\>/.config.
+///
+/// Assuming it does exist or we can create it, stuff config.toml on the end of it
+/// and return `Ok(my_path_buf/config.toml)`.
+///
+/// This is safe because `ensure_config_dir()` is called only after we already know
+/// the user didn't specify a `config.toml` path themselves. We must check our
+/// default expected location for it.
 pub fn ensure_config_dir() -> Result<PathBuf, &'static str> {
   // get /home/<username>/.config, if exists...
   match dirs::config_dir() {
