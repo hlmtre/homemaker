@@ -7,6 +7,9 @@ extern crate shellexpand;
 extern crate solvent;
 extern crate symlink;
 
+mod config;
+mod hmerror;
+
 use crate::{
   config::{ManagedObject, Worker},
   hmerror::{ErrorKind as hmek, HMError},

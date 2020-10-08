@@ -64,7 +64,7 @@ use config::Config;
 
 mod config;
 mod hmerror;
-mod mgmt;
+mod lib;
 mod util;
 
 /// Pull apart our arguments, if they're called, get our Config, and error-check.

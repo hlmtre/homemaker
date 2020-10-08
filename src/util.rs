@@ -4,11 +4,10 @@ extern crate indicatif;
 use std::collections::{HashMap, HashSet};
 use std::{sync::mpsc, time};
 
+use hm::{get_task_batches, perform_operation_on, send_tasks_off_to_college};
 use indicatif::{MultiProgress, ProgressBar};
 
-use super::config;
-use super::hmerror;
-use super::mgmt;
+use super::{config, hmerror};
 
 ///
 /// Take our list of ManagedObjects to do stuff to, and determine
@@ -17,7 +16,7 @@ use super::mgmt;
 /// won't be computationally expensive.
 ///
 /// For complex ones we get a list of list of MOs that we can do in some order that
-/// satisfies their dependencies, then we hand them off to mgmt::send_tasks_off_to_college().
+/// satisfies their dependencies, then we hand them off to send_tasks_off_to_college().
 ///
 pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   let mut complex_operations = a.clone();
@@ -25,7 +24,7 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   complex_operations.retain(|_, v| v.is_task()); // all the things that aren't just symlink/copy
   simple_operations.retain(|_, v| !v.is_task()); // all the things that are quick (don't need to thread off)
   for (_name, _mo) in simple_operations.into_iter() {
-    let _ = mgmt::perform_operation_on(_mo).map_err(|e| {
+    let _ = perform_operation_on(_mo).map_err(|e| {
       hmerror::error(
         format!("Failed to perform operation on {:#?}", _name).as_str(),
         e.to_string().as_str(),
@@ -35,11 +34,11 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   let (tx, rx) = mpsc::channel();
   let mp: MultiProgress = MultiProgress::new();
   let mut t: HashSet<String> = HashSet::new();
-  for _a in mgmt::get_task_batches(complex_operations).unwrap() {
+  for _a in get_task_batches(complex_operations).unwrap() {
     for _b in _a {
       t.insert(_b.name.to_string());
       let _p: ProgressBar = mp.add(ProgressBar::new_spinner());
-      mgmt::send_tasks_off_to_college(&_b, &tx, _p).expect("ohtehnoes");
+      send_tasks_off_to_college(&_b, &tx, _p).expect("ohtehnoes");
     }
   }
 
