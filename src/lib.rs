@@ -74,8 +74,7 @@ use config::{ManagedObject, Worker};
 use hmerror::{ErrorKind as hmek, HMError};
 
 use console::{pad_str, style, Alignment};
-use indicatif::MultiProgress;
-use indicatif::{ProgressBar, ProgressStyle};
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use solvent::DepGraph;
 use std::sync::mpsc;
 use std::{
@@ -199,12 +198,20 @@ pub fn send_tasks_off_to_college(
 /// Example:
 ///
 /// ```
-/// let (rx, tx) = mpsc::channel();
-/// let p = ProgressBar::new_spinner();
-/// let v: Vec<Vec<ManagedObject>> = get_task_batches(nodes);
+/// extern crate indicatif;
+/// use std::sync::mpsc;
+/// use std::collections::HashMap;
+/// use indicatif::{MultiProgress, ProgressBar};
+/// use hm::config::ManagedObject;
+/// use hm::{get_task_batches, send_tasks_off_to_college};
+/// let nodes: HashMap<String, ManagedObject> = HashMap::new();
+/// let (tx, rx) = mpsc::channel();
+/// let mp: MultiProgress = MultiProgress::new();
+/// let v: Vec<Vec<ManagedObject>> = get_task_batches(nodes).unwrap();
 /// for a in v {
 ///   for b in a {
-///     mgmt::send_tasks_off_to_college(&b, &tx, p);
+///     let _p: ProgressBar = mp.add(ProgressBar::new_spinner());
+///     send_tasks_off_to_college(&b, &tx, _p);
 ///   }
 /// }
 /// ```
