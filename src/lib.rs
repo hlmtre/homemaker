@@ -102,12 +102,6 @@ struct SneakyDepGraphImposter<String> {
   satisfied: HashSet<usize>,
 }
 
-//impl SneakyDepGraphImposter<String> {
-//  fn _pos(&self, node: &String) -> usize {
-//    self.nodes.iter().position(|x| x == node).unwrap()
-//  }
-//}
-
 impl fmt::Display for SneakyDepGraphImposter<String> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     let mut i: usize = 0;
@@ -115,13 +109,20 @@ impl fmt::Display for SneakyDepGraphImposter<String> {
       if self.dependencies.get(&i).is_some() {
         let _ = write!(f, "[ {} -> ", n);
         for d in self.dependencies.get(&i) {
+          if d.len() == 0 {
+            write!(f, "<no deps> ")?;
+          }
           for m in d {
-            let _ = write!(f, "{} ", self.nodes[*m]);
+            write!(f, "{}, ", self.nodes[*m])?;
           }
         }
       }
       i += 1;
-      let _ = write!(f, "], ");
+      if i != self.nodes.len() {
+        write!(f, "], ")?;
+      } else {
+        write!(f, "]")?;
+      }
     }
     Ok(())
   }
@@ -351,6 +352,17 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
   }
 }
 
+macro_rules! function {
+  () => {{
+    fn f() {}
+    fn type_name_of<T>(_: T) -> &'static str {
+      std::any::type_name::<T>()
+    }
+    let name = type_name_of(f);
+    &name[..name.len() - 3]
+  }};
+}
+
 ///
 /// Take our list of ManagedObjects to do stuff to, and determine
 /// if they're simple or complex (simple is symlink or copy, complex
@@ -378,8 +390,8 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) -> Result<(), HMError
   let mut t: HashSet<String> = HashSet::new();
   let _v = get_task_batches(complex_operations).unwrap_or_else(|er| {
     hmerror::error(
-      "Error occurred attempting to get task batches:",
-      er.to_string().as_str(),
+      "Error occurred attempting to get task batches",
+      format!("{}{}", "\n", er.to_string().as_str()).as_str(),
     );
     exit(3);
   });
@@ -420,15 +432,4 @@ fn all_workers_done(workers: HashMap<String, config::Worker>) -> bool {
     }
   }
   true
-}
-
-macro_rules! function {
-  () => {{
-    fn f() {}
-    fn type_name_of<T>(_: T) -> &'static str {
-      std::any::type_name::<T>()
-    }
-    let name = type_name_of(f);
-    &name[..name.len() - 3]
-  }};
 }

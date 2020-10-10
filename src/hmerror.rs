@@ -20,12 +20,6 @@ use std::fmt;
 use std::io;
 
 #[derive(Debug)]
-pub struct HMExplanation {
-  e: HMError,
-  ex: String,
-}
-
-#[derive(Debug)]
 pub enum HMError {
   Io(io::Error),
   Regular(ErrorKind),
@@ -37,7 +31,7 @@ pub enum ErrorKind {
   DependencyUndefinedError { dependency: String },
   CyclicalDependencyError { dependency_graph: String },
   SolutionError { solution: String },
-  ConfigError { line_number: u128 },
+  ConfigError { line_number: usize },
   Other,
 }
 
@@ -60,6 +54,7 @@ impl ErrorKind {
     }
   }
 }
+
 impl fmt::Display for HMError {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match *self {

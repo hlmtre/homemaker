@@ -31,7 +31,7 @@ dependencies = 'maim_dependencies'
 [[obj]]
 task = 'maim_dependencies'
 solution = 'sudo apt install -y libxfixes-dev libglm-dev libxrandr-dev libglew-dev libegl1-mesa-dev libxcomposite-dev'
-dependencies = 'loop_detection'
+#dependencies = 'loop_detection'
 
 [[obj]]
 task = 'rustup update'
