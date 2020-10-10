@@ -35,7 +35,7 @@ pub enum HMError {
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum ErrorKind {
   DependencyUndefinedError { dependency: String },
-  CyclicalDependencyError { dependency: String },
+  CyclicalDependencyError { dependency_graph: String },
   SolutionError { solution: String },
   ConfigError { line_number: u128 },
   Other,
@@ -53,7 +53,9 @@ impl ErrorKind {
       ErrorKind::ConfigError { line_number: _ } => "configuration error",
       ErrorKind::SolutionError { solution: _ } => "solution error",
       ErrorKind::DependencyUndefinedError { dependency: _ } => "dependency undefined",
-      ErrorKind::CyclicalDependencyError { dependency: _ } => "cyclical dependency",
+      ErrorKind::CyclicalDependencyError {
+        dependency_graph: _,
+      } => "cyclical dependency",
       ErrorKind::Other => "other error",
     }
   }

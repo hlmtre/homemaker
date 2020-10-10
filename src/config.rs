@@ -73,6 +73,12 @@ impl ManagedObject {
   }
 }
 
+//impl Drop for ManagedObject {
+//  fn drop(&mut self) {
+//    eprintln!("dropping {}", self.name);
+//  }
+//}
+
 impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(

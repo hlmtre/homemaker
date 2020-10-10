@@ -78,6 +78,7 @@ use hmerror::{ErrorKind as hmek, HMError};
 use console::{pad_str, style, Alignment};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use solvent::DepGraph;
+use std::fmt;
 use std::sync::mpsc;
 use std::{
   collections::HashMap,
@@ -90,6 +91,41 @@ use std::{
   {thread, time},
 };
 use symlink::{symlink_dir as sd, symlink_file as sf};
+
+/// I just wanna borrow one to look at it for a minute.
+/// use me with std::mem::transmute()
+/// absolutely not pub struct. don't look at me.
+#[derive(Debug, Clone)]
+struct SneakyDepGraphImposter<String> {
+  nodes: Vec<String>,
+  dependencies: HashMap<usize, HashSet<usize>>,
+  satisfied: HashSet<usize>,
+}
+
+//impl SneakyDepGraphImposter<String> {
+//  fn _pos(&self, node: &String) -> usize {
+//    self.nodes.iter().position(|x| x == node).unwrap()
+//  }
+//}
+
+impl fmt::Display for SneakyDepGraphImposter<String> {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    let mut i: usize = 0;
+    for n in self.nodes.clone() {
+      if self.dependencies.get(&i).is_some() {
+        let _ = write!(f, "[ {} -> ", n);
+        for d in self.dependencies.get(&i) {
+          for m in d {
+            let _ = write!(f, "{} ", self.nodes[*m]);
+          }
+        }
+      }
+      i += 1;
+      let _ = write!(f, "], ");
+    }
+    Ok(())
+  }
+}
 
 ///
 /// Either create a symlink to a file or directory. Generally
@@ -180,7 +216,7 @@ pub fn send_tasks_off_to_college(
         }
         Err(_e) => {
           drop(tx1);
-          p.abandon_with_message("error!");
+          p.abandon_with_message(console::style("✗").red().to_string().as_str());
           return Err(HMError::Regular(hmek::SolutionError {
             solution: String::from(s1),
           }));
@@ -232,7 +268,8 @@ pub fn get_task_batches(
   for (name, _node) in nodes.clone() {
     let mut q: Vec<ManagedObject> = Vec::new();
     let _name = name.clone();
-    for n in depgraph.dependencies_of(&name).unwrap() {
+    let dg = depgraph.dependencies_of(&name).unwrap();
+    for n in dg {
       match n {
         Ok(r) => {
           let c = String::from(r.as_str());
@@ -251,20 +288,20 @@ pub fn get_task_batches(
             q.push(a);
           }
         }
-        //Err(_e) => {
-        //  return Err(HMError::Other(String::from("asd")));
-        //}
-        Err(_e) => {
-          //eprintln!("{:#?}", _e);
+        Err(_e) => unsafe {
+          // we'll just borrow this for a second
+          // just to look
+          // i'm not gonna touch it i promise
+          let my_sneaky_depgraph: SneakyDepGraphImposter<String> = std::mem::transmute(depgraph);
           return Err(HMError::Regular(hmek::CyclicalDependencyError {
-            dependency: _name,
+            // we can do this because we've implemented fmt::Display for SneakyDepGraphImposter
+            dependency_graph: my_sneaky_depgraph.to_string(),
           }));
-        }
+        },
       }
     }
     tasks.push(q);
   }
-  drop(_dedup);
   Ok(tasks)
 }
 
