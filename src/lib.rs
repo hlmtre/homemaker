@@ -61,6 +61,7 @@
 //!  solvent
 //!  indicatif
 //!  console
+#![allow(dead_code)]
 extern crate console;
 extern crate indicatif;
 extern crate shellexpand;
@@ -127,7 +128,7 @@ pub fn send_tasks_off_to_college(
   p: ProgressBar,
 ) -> Result<(), Error> {
   let s: String = mo.solution.clone().to_string();
-  //let s1 = s.clone();
+  let s1: String = mo.solution.clone().to_string();
   let n: String = mo.name.clone().to_string();
   let tx1: Sender<Worker> = Sender::clone(tx);
   let _child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
@@ -179,7 +180,9 @@ pub fn send_tasks_off_to_college(
         Err(_e) => {
           drop(tx1);
           p.abandon_with_message("error!");
-          return Err(HMError::Regular(hmek::SolutionError));
+          return Err(HMError::Regular(hmek::SolutionError {
+            solution: String::from(s1),
+          }));
         }
       }
     }
@@ -236,7 +239,9 @@ pub fn get_task_batches(
             let mut a = match nodes.get(r) {
               Some(a) => a,
               None => {
-                return Err(HMError::Regular(hmek::DependencyUndefinedError));
+                return Err(HMError::Regular(hmek::DependencyUndefinedError {
+                  dependency: String::from(r),
+                }));
               }
             }
             .to_owned();
@@ -244,8 +249,15 @@ pub fn get_task_batches(
             q.push(a);
           }
         }
+        //Err(_e) => {
+        //  return Err(HMError::Other(String::from("asd")));
+        //}
         Err(_e) => {
-          return Err(HMError::Regular(hmek::CyclicalDependencyError));
+          //eprintln!("{:#?}", _e);
+          return Err(HMError::Regular(hmek::CyclicalDependencyError {
+            parent_error: Some("jklqwjel".to_string()),
+            dependency: "asd".to_string(),
+          }));
         }
       }
     }
@@ -258,7 +270,6 @@ pub fn get_task_batches(
 ///
 /// Execute the shell commands specified in the MO's solution in a thread, so as not to block.
 ///
-#[allow(dead_code)]
 fn execute_solution(solution: String) -> Result<(), HMError> {
   // marginally adapted but mostly stolen from
   // https://rust-lang-nursery.github.io/rust-cookbook/os/external.html
@@ -329,7 +340,7 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) -> Result<(), HMError
   let mut t: HashSet<String> = HashSet::new();
   let _v = get_task_batches(complex_operations).unwrap_or_else(|er| {
     hmerror::error(
-      "Error occurred attempting to execute solution",
+      "Error occurred attempting to get task batches:",
       er.to_string().as_str(),
     );
     exit(3);
@@ -371,4 +382,15 @@ fn all_workers_done(workers: HashMap<String, config::Worker>) -> bool {
     }
   }
   true
+}
+
+macro_rules! function {
+  () => {{
+    fn f() {}
+    fn type_name_of<T>(_: T) -> &'static str {
+      std::any::type_name::<T>()
+    }
+    let name = type_name_of(f);
+    &name[..name.len() - 3]
+  }};
 }

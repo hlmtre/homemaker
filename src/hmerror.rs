@@ -60,12 +60,21 @@ pub enum HMError {
   Other(String),
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum ErrorKind {
-  DependencyUndefinedError,
-  CyclicalDependencyError,
-  SolutionError,
-  ConfigError,
+  DependencyUndefinedError {
+    dependency: String,
+  },
+  CyclicalDependencyError {
+    dependency: String,
+    parent_error: Option<String>,
+  },
+  SolutionError {
+    solution: String,
+  },
+  ConfigError {
+    line_number: u128,
+  },
   Other,
 }
 
@@ -104,10 +113,17 @@ impl From<io::Error> for HMError {
 impl ErrorKind {
   fn as_str(&self) -> &str {
     match *self {
-      ErrorKind::ConfigError => "configuration error",
-      ErrorKind::SolutionError => "solution error",
-      ErrorKind::DependencyUndefinedError => "dependency undefined",
-      ErrorKind::CyclicalDependencyError => "cyclical dependency",
+      ErrorKind::ConfigError { line_number: _ } => "configuration error",
+      ErrorKind::SolutionError { solution: _ } => "solution error",
+      ErrorKind::DependencyUndefinedError { dependency: _ } => "dependency undefined",
+      ErrorKind::CyclicalDependencyError {
+        dependency: _,
+        parent_error: None,
+      } => "cyclical dependency",
+      ErrorKind::CyclicalDependencyError {
+        dependency: _,
+        parent_error: Some(_),
+      } => "cyclical dependency",
       ErrorKind::Other => "other error",
     }
   }
