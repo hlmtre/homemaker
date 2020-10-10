@@ -10,7 +10,7 @@
 //! }
 //! ```
 //! * DependencyUndefinedError: A stated dependency doesn't have an object telling us how to satisfy it.
-//! * CyclicalDependencyError: a -> b and b -> a and neither is satisfied.
+//! * CyclicalDependencyError: a -> b and b -> a and neither is satisfied. The offending object is the tippy-top of the chain.
 //! * SolutionError: Something went wrong in our script.
 //! * ConfigError: Something is wrong with how you wrote the `config.toml`.
 //! * Other: Other.
@@ -18,41 +18,13 @@ extern crate console;
 use console::style;
 use std::fmt;
 use std::io;
-use std::process::ExitStatus;
 
-pub struct HomemakerError {
-  line_number: usize,
-  complaint: String,
-  encapsulated_error: Option<io::Error>,
+#[derive(Debug)]
+pub struct HMExplanation {
+  e: HMError,
+  ex: String,
 }
 
-impl fmt::Display for HomemakerError {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{}: {}", self.line_number, self.complaint)
-  }
-}
-
-impl fmt::Debug for HomemakerError {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(
-      f,
-      "HomemakerError {{ line_number: {}, complaint: {}, encapsulated_error: {} }}",
-      self.line_number,
-      self.complaint,
-      self.encapsulated_error.as_ref().unwrap().to_string()
-    )
-  }
-}
-
-impl From<io::Error> for HomemakerError {
-  fn from(err: io::Error) -> Self {
-    HomemakerError {
-      line_number: 0,
-      complaint: err.to_string(),
-      encapsulated_error: Some(err),
-    }
-  }
-}
 #[derive(Debug)]
 pub enum HMError {
   Io(io::Error),
@@ -62,46 +34,11 @@ pub enum HMError {
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum ErrorKind {
-  DependencyUndefinedError {
-    dependency: String,
-  },
-  CyclicalDependencyError {
-    dependency: String,
-    parent_error: Option<String>,
-  },
-  SolutionError {
-    solution: String,
-  },
-  ConfigError {
-    line_number: u128,
-  },
+  DependencyUndefinedError { dependency: String },
+  CyclicalDependencyError { dependency: String },
+  SolutionError { solution: String },
+  ConfigError { line_number: u128 },
   Other,
-}
-
-#[derive(Debug)]
-struct ConfigError {
-  line_number: i32,
-  complaint: String,
-}
-
-#[derive(Debug)]
-struct SolutionError {
-  line_number: i32,
-  exit_status: ExitStatus,
-  complaint: String,
-}
-
-#[derive(Debug)]
-struct DependencyUndefinedError {
-  line_number: i32,
-  dependency: String,
-  dependent: String,
-}
-
-#[derive(Debug)]
-struct CyclicalDependencyError {
-  line_number: i32,
-  dependency: String,
 }
 
 impl From<io::Error> for HMError {
@@ -116,39 +53,34 @@ impl ErrorKind {
       ErrorKind::ConfigError { line_number: _ } => "configuration error",
       ErrorKind::SolutionError { solution: _ } => "solution error",
       ErrorKind::DependencyUndefinedError { dependency: _ } => "dependency undefined",
-      ErrorKind::CyclicalDependencyError {
-        dependency: _,
-        parent_error: None,
-      } => "cyclical dependency",
-      ErrorKind::CyclicalDependencyError {
-        dependency: _,
-        parent_error: Some(_),
-      } => "cyclical dependency",
+      ErrorKind::CyclicalDependencyError { dependency: _ } => "cyclical dependency",
       ErrorKind::Other => "other error",
     }
   }
 }
-
-//impl Error for HMError {
-//  fn description(&self) -> &str {
-//    match *self {
-//      HMError::Regular(ref err) => err.as_str(),
-//      HMError::Custom(ref err) => err
-//    }
-//  }
-//}
-
 impl fmt::Display for HMError {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match *self {
-      HMError::Regular(ref err) => write!(f, "An error occurred: {:?}", err),
-      HMError::Other(ref err) => write!(f, "An error occurred: {:?}", err),
+      HMError::Regular(ref err) => write!(f, "{:?}", err),
+      HMError::Other(ref err) => write!(f, "{:?}", err),
       HMError::Io(ref err) => err.fmt(f),
     }
   }
 }
 
 /// Easy formatting for errors as they come in.
+///
+/// example:
+///
+/// ```
+/// use hm::hmerror;
+/// let _a = "src/config.toml";
+/// let _e = "my_dummy_error";
+/// hmerror::error(
+///  format!("Couldn't open specified config file `{}`", _a).as_str(),
+///  _e,
+/// );
+/// ```
 pub fn error(complaint: &str, er: &str) {
   eprintln!("{}:\n ↳ Error: {}", style(complaint).red().bold(), er)
 }

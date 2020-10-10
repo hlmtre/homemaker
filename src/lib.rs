@@ -62,6 +62,7 @@
 //!  indicatif
 //!  console
 #![allow(dead_code)]
+#![allow(unused_macros)]
 extern crate console;
 extern crate indicatif;
 extern crate shellexpand;
@@ -230,6 +231,7 @@ pub fn get_task_batches(
   let mut _dedup: HashSet<String> = HashSet::new();
   for (name, _node) in nodes.clone() {
     let mut q: Vec<ManagedObject> = Vec::new();
+    let _name = name.clone();
     for n in depgraph.dependencies_of(&name).unwrap() {
       match n {
         Ok(r) => {
@@ -255,8 +257,7 @@ pub fn get_task_batches(
         Err(_e) => {
           //eprintln!("{:#?}", _e);
           return Err(HMError::Regular(hmek::CyclicalDependencyError {
-            parent_error: Some("jklqwjel".to_string()),
-            dependency: "asd".to_string(),
+            dependency: _name,
           }));
         }
       }
