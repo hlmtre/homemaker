@@ -83,7 +83,7 @@ use std::{
   fs::metadata,
   io::{BufRead, BufReader, Error, ErrorKind},
   path::Path,
-  process::{Command, Stdio},
+  process::{exit, Command, Stdio},
   sync::mpsc::Sender,
   {thread, time},
 };
@@ -233,7 +233,13 @@ pub fn get_task_batches(
           let c = String::from(r.as_str());
           // returns true if the set DID NOT have c in it already
           if _dedup.insert(c) {
-            let mut a = nodes.get(r).unwrap().to_owned();
+            let mut a = match nodes.get(r) {
+              Some(a) => a,
+              None => {
+                return Err(HMError::Regular(hmek::DependencyUndefinedError));
+              }
+            }
+            .to_owned();
             a.set_satisfied();
             q.push(a);
           }
@@ -305,7 +311,7 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
 /// For complex ones we get a list of list of MOs that we can do in some order that
 /// satisfies their dependencies, then we hand them off to send_tasks_off_to_college().
 ///
-pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
+pub fn do_tasks(a: HashMap<String, config::ManagedObject>) -> Result<(), HMError> {
   let mut complex_operations = a.clone();
   let mut simple_operations = a.clone();
   complex_operations.retain(|_, v| v.is_task()); // all the things that aren't just symlink/copy
@@ -321,7 +327,14 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
   let (tx, rx) = mpsc::channel();
   let mp: MultiProgress = MultiProgress::new();
   let mut t: HashSet<String> = HashSet::new();
-  for _a in get_task_batches(complex_operations).unwrap() {
+  let _v = get_task_batches(complex_operations).unwrap_or_else(|er| {
+    hmerror::error(
+      "Error occurred attempting to execute solution",
+      er.to_string().as_str(),
+    );
+    exit(3);
+  });
+  for _a in _v {
     for _b in _a {
       t.insert(_b.name.to_string());
       let _p: ProgressBar = mp.add(ProgressBar::new_spinner());
@@ -345,6 +358,7 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) {
     break;
   }
   mp.join().unwrap();
+  Ok(())
 }
 
 ///

@@ -125,8 +125,8 @@ impl ErrorKind {
 impl fmt::Display for HMError {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match *self {
-      HMError::Regular(ref err) => write!(f, "A regular error occurred {:?}", err),
-      HMError::Other(ref err) => write!(f, "An error occurred {:?}", err),
+      HMError::Regular(ref err) => write!(f, "An error occurred: {:?}", err),
+      HMError::Other(ref err) => write!(f, "An error occurred: {:?}", err),
       HMError::Io(ref err) => err.fmt(f),
     }
   }

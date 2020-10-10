@@ -123,9 +123,16 @@ fn main() {
   };
   // do it here
   let started = Instant::now();
-  do_tasks(as_managed_objects(a));
-  println!("Done in {}.", HumanDuration(started.elapsed()));
-  exit(0);
+  match do_tasks(as_managed_objects(a)) {
+    Ok(_) => {
+      println!("Done in {}.", HumanDuration(started.elapsed()));
+      exit(0);
+    }
+    Err(e) => {
+      hmerror::error(format!("{}", e).as_str(), "poooooop");
+      exit(3);
+    }
+  }
 }
 
 /// Print help for the user.
