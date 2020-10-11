@@ -79,6 +79,7 @@ use hmerror::{ErrorKind as hmek, HMError};
 use console::{pad_str, style, Alignment};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use solvent::DepGraph;
+use std::fmt;
 use std::{
   collections::HashMap,
   collections::HashSet,
@@ -90,7 +91,6 @@ use std::{
   sync::mpsc::Sender,
   {thread, time},
 };
-use std::{env, fmt};
 use symlink::{symlink_dir as sd, symlink_file as sf};
 
 /// I just wanna borrow one to look at it for a minute.
