@@ -1,6 +1,6 @@
 [package]
 name = "hm"
-version = "0.3.3"
+version = "0.3.4"
 authors = ["Matt Weller <hellmitre@gmail.com>"]
 edition = "2018"
 description = "homemaker. Slightly more than yet another dotfile manager."
@@ -18,3 +18,4 @@ symlink = "0.1.0"
 solvent = "0.8.2"
 indicatif = "0.15.0"
 console = "0.12.0"
+sys-info = "0.7.0"

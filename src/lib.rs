@@ -68,6 +68,7 @@ extern crate indicatif;
 extern crate shellexpand;
 extern crate solvent;
 extern crate symlink;
+extern crate sys_info;
 
 pub mod config;
 pub mod hmerror;
@@ -78,8 +79,6 @@ use hmerror::{ErrorKind as hmek, HMError};
 use console::{pad_str, style, Alignment};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use solvent::DepGraph;
-use std::fmt;
-use std::sync::mpsc;
 use std::{
   collections::HashMap,
   collections::HashSet,
@@ -87,9 +86,11 @@ use std::{
   io::{BufRead, BufReader, Error, ErrorKind},
   path::Path,
   process::{exit, Command, Stdio},
+  sync::mpsc,
   sync::mpsc::Sender,
   {thread, time},
 };
+use std::{env, fmt};
 use symlink::{symlink_dir as sd, symlink_file as sf};
 
 /// I just wanna borrow one to look at it for a minute.
@@ -205,11 +206,19 @@ pub fn send_tasks_off_to_college(
       };
       match c.try_wait() {
         Ok(Some(status)) => {
-          p.finish_with_message(console::style("✓").green().to_string().as_str());
-          w.status = status.code();
-          w.completed = true;
-          tx1.send(w).unwrap();
-          return Ok(());
+          if status.success() {
+            p.finish_with_message(console::style("✓").green().to_string().as_str());
+            w.status = status.code();
+            w.completed = true;
+            tx1.send(w).unwrap();
+            return Ok(());
+          } else {
+            drop(tx1);
+            p.abandon_with_message(console::style("✗").red().to_string().as_str());
+            return Err(HMError::Regular(hmek::SolutionError {
+              solution: String::from(s1),
+            }));
+          }
         }
         Ok(None) => {
           tx1.send(w).unwrap();
@@ -432,4 +441,37 @@ fn all_workers_done(workers: HashMap<String, config::Worker>) -> bool {
     }
   }
   true
+}
+
+pub enum OS {
+  Windows,
+  Unknown,
+  Linux(LinuxDistro),
+}
+
+pub enum LinuxDistro {
+  Fedora,
+  Debian,
+  Ubuntu,
+  Arch,
+}
+
+pub fn determine_os() -> OS {
+  match sys_info::linux_os_release() {
+    Ok(l) => {
+      let a: String = l.name.unwrap().to_ascii_lowercase();
+      if a.contains("fedora") {
+        return OS::Linux(LinuxDistro::Fedora);
+      } else if a.contains("debian") {
+        return OS::Linux(LinuxDistro::Debian);
+      } else if a.contains("ubuntu") {
+        return OS::Linux(LinuxDistro::Ubuntu);
+      } else {
+        return OS::Unknown;
+      }
+    }
+    Err(_e) => {
+      return OS::Unknown;
+    }
+  }
 }

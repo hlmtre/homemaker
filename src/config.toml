@@ -42,3 +42,12 @@ method = 'execute'
 task = 'loop_detection'
 solution = 'echo HI'
 dependencies = 'maim_dependencies'
+
+[[obj]]
+task = 'playerctl dependencies'
+solution = 'sudo dnf -y install meson'
+
+[[obj]]
+task = 'playerctl install'
+solution = 'mkdir -p ~/src; cd ~/src/; git clone https://github.com/altdesktop/playerctl.git ; cd playerctl; meson -Dgtk-doc=false mesonbuild && sudo ninja -C mesonbuild install'
+dependencies = 'playerctl dependencies'
