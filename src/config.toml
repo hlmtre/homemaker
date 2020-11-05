@@ -5,6 +5,12 @@ destination = '~/.tmux.conf'
 method = 'symlink'
 
 [[obj]]
+file = 'nvim'
+source = '~/dotfiles/.config/nvim'
+destination = '~/.config/nvim'
+method = 'symlink'
+
+[[obj]]
 file = 'fish'
 source = '~/dotfiles/.config/fish'
 destination = '~/.config/fish'

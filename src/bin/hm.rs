@@ -145,5 +145,5 @@ fn help() {
     <config> and -v are not required.
     if config is not specified, default location of ~/.config/homemaker/config.toml is assumed."
   );
-  exit(1)
+  exit(0)
 }
