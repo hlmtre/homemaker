@@ -443,12 +443,14 @@ fn all_workers_done(workers: HashMap<String, config::Worker>) -> bool {
   true
 }
 
+#[derive(Debug)]
 pub enum OS {
   Windows,
   Unknown,
   Linux(LinuxDistro),
 }
 
+#[derive(Debug)]
 pub enum LinuxDistro {
   Fedora,
   Debian,
@@ -457,19 +459,27 @@ pub enum LinuxDistro {
 }
 
 pub fn determine_os() -> OS {
-  match sys_info::linux_os_release() {
-    Ok(l) => {
-      let a: String = l.name.unwrap().to_ascii_lowercase();
-      if a.contains("fedora") {
-        return OS::Linux(LinuxDistro::Fedora);
-      } else if a.contains("debian") {
-        return OS::Linux(LinuxDistro::Debian);
-      } else if a.contains("ubuntu") {
-        return OS::Linux(LinuxDistro::Ubuntu);
-      } else {
-        return OS::Unknown;
-      }
-    }
+  match sys_info::os_type() {
+    Ok(s) => match s.to_ascii_lowercase().as_str() {
+      "linux" => match sys_info::linux_os_release() {
+        Ok(l) => {
+          let a: String = l.name.unwrap().to_ascii_lowercase();
+          if a.contains("fedora") {
+            return OS::Linux(LinuxDistro::Fedora);
+          } else if a.contains("debian") {
+            return OS::Linux(LinuxDistro::Debian);
+          } else if a.contains("ubuntu") {
+            return OS::Linux(LinuxDistro::Ubuntu);
+          } else {
+            return OS::Unknown;
+          }
+        }
+        Err(_e) => {
+          return OS::Unknown;
+        }
+      },
+      _ => return OS::Unknown,
+    },
     Err(_e) => {
       return OS::Unknown;
     }
