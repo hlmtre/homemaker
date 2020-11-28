@@ -67,7 +67,6 @@ use std::{env, path::PathBuf, process::exit, string::String, time::Instant};
 /// Then work our way through the Config, executing the easy stuff, and threading off the hard.
 fn main() {
   let mut args: Vec<String> = env::args().collect();
-  eprintln!("{:#?}", sys_info::os_type());
   // it's a little hackish, but we don't have to bring in an external crate to do our args
   let mut verbose: bool = false;
   let mut i = 0;

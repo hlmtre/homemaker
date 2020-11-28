@@ -478,6 +478,7 @@ pub fn determine_os() -> OS {
           return OS::Unknown;
         }
       },
+      "windows" => OS::Windows,
       _ => return OS::Unknown,
     },
     Err(_e) => {
