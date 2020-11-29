@@ -4,7 +4,7 @@ Have a dotfiles directory with all your stuff in it? Have homemaker put everythi
 
 **homemaker in action**
 
-![hm in action](demo/hm.gif)
+![hm in action](demo/hm.webm)
 
 
 1. create a config.toml file either anywhere or in ~/.config/homemaker/.
