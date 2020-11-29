@@ -52,6 +52,7 @@ dependencies = 'maim_dependencies'
 [[obj]]
 task = 'playerctl dependencies'
 solution = 'sudo dnf -y install meson'
+os = 'fedora'
 
 [[obj]]
 task = 'playerctl install'
