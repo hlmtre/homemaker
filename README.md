@@ -1,6 +1,10 @@
-have a dotfiles directory with all your stuff in it? have homemaker put everything in its right place.
+Have a dotfiles directory with all your stuff in it? Have homemaker put everything in its right place.
 
-[gfycat of it in action](https://gfycat.com/skinnywarmheartedafricanpiedkingfisher)
+
+
+**homemaker in action**
+
+![hm in action](demo/hm.gif)
 
 
 1. create a config.toml file either anywhere or in ~/.config/homemaker/.
