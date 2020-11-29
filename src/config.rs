@@ -45,6 +45,49 @@ impl PartialEq for Worker {
 }
 impl Eq for Worker {}
 
+#[derive(Debug)]
+pub enum OS {
+  Windows,
+  Unknown,
+  Linux(LinuxDistro),
+}
+
+#[derive(Debug)]
+pub enum LinuxDistro {
+  Fedora,
+  Debian,
+  Ubuntu,
+  Arch,
+}
+
+///
+/// Windows or Linux? If Linux, let's determine our distro, because package managers and stuff.
+///
+pub fn determine_os() -> OS {
+  match sys_info::os_type() {
+    Ok(s) => match s.to_ascii_lowercase().as_str() {
+      "linux" => match sys_info::linux_os_release() {
+        Ok(l) => {
+          let a: String = l.name.unwrap().to_ascii_lowercase();
+          if a.contains("fedora") {
+            OS::Linux(LinuxDistro::Fedora)
+          } else if a.contains("debian") {
+            OS::Linux(LinuxDistro::Debian)
+          } else if a.contains("ubuntu") {
+            OS::Linux(LinuxDistro::Ubuntu)
+          } else {
+            OS::Unknown
+          }
+        }
+        Err(_e) => OS::Unknown,
+      },
+      "windows" => OS::Windows,
+      _ => OS::Unknown,
+    },
+    Err(_e) => OS::Unknown,
+  }
+}
+
 /// We're a super-set of all the kinds of `ManagedObject`s we can be.
 /// Just don't use the fields you don't wanna use.
 /// A simple `ManagedObject` is a name, source, destination, and method (currently only symlink).

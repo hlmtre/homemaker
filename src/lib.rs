@@ -458,6 +458,9 @@ pub enum LinuxDistro {
   Arch,
 }
 
+///
+/// Windows or Linux? If Linux, let's determine our distro, because package managers and stuff.
+///
 pub fn determine_os() -> OS {
   match sys_info::os_type() {
     Ok(s) => match s.to_ascii_lowercase().as_str() {
@@ -465,24 +468,20 @@ pub fn determine_os() -> OS {
         Ok(l) => {
           let a: String = l.name.unwrap().to_ascii_lowercase();
           if a.contains("fedora") {
-            return OS::Linux(LinuxDistro::Fedora);
+            OS::Linux(LinuxDistro::Fedora)
           } else if a.contains("debian") {
-            return OS::Linux(LinuxDistro::Debian);
+            OS::Linux(LinuxDistro::Debian)
           } else if a.contains("ubuntu") {
-            return OS::Linux(LinuxDistro::Ubuntu);
+            OS::Linux(LinuxDistro::Ubuntu)
           } else {
-            return OS::Unknown;
+            OS::Unknown
           }
         }
-        Err(_e) => {
-          return OS::Unknown;
-        }
+        Err(_e) => OS::Unknown,
       },
       "windows" => OS::Windows,
-      _ => return OS::Unknown,
+      _ => OS::Unknown,
     },
-    Err(_e) => {
-      return OS::Unknown;
-    }
+    Err(_e) => OS::Unknown,
   }
 }
