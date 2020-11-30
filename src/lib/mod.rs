@@ -79,16 +79,14 @@ use hmerror::{ErrorKind as hmek, HMError};
 use console::{pad_str, style, Alignment};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use solvent::DepGraph;
-use std::fmt;
 use std::{
-  collections::HashMap,
-  collections::HashSet,
+  collections::{HashMap, HashSet},
+  fmt,
   fs::metadata,
   io::{BufRead, BufReader, Error, ErrorKind},
   path::Path,
   process::{exit, Command, Stdio},
-  sync::mpsc,
-  sync::mpsc::Sender,
+  sync::mpsc::{self, Sender},
   {thread, time},
 };
 use symlink::{symlink_dir as sd, symlink_file as sf};
@@ -134,7 +132,7 @@ impl fmt::Display for SneakyDepGraphImposter<String> {
 /// we'll be doing this in a tilde'd home subdirectory, so
 /// we need to be careful to get our Path right.
 ///
-pub fn symlink_file(source: String, target: String) -> Result<(), HMError> {
+pub(crate) fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   let md = match metadata(shellexpand::tilde(&source).to_string()) {
     Ok(a) => a,
     Err(e) => return Err(HMError::Io(e)),
@@ -161,7 +159,7 @@ pub fn symlink_file(source: String, target: String) -> Result<(), HMError> {
 ///
 /// Return () or io::Error (something went wrong in our task).
 ///
-pub fn send_tasks_off_to_college(
+pub(crate) fn send_tasks_off_to_college(
   mo: &ManagedObject,
   tx: &Sender<Worker>,
   p: ProgressBar,

@@ -9,6 +9,14 @@ repository = "https://github.com/hlmtre/homemaker"
 keywords = ["dotfiles", "management", "dotfile"]
 categories = ["command-line-utilities", "filesystem"]
 
+[lib]
+name = "hm"
+path = "src/lib/mod.rs"
+
+[[bin]]
+name = "hm"
+path = "src/hm.rs"
+
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.5"
