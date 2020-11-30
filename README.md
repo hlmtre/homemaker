@@ -51,10 +51,10 @@ method = 'execute'
 
 why homemaker?
 ==============
-* compared to say, gnu stow, homemaker supports more than just creating a mirrored symlinked filesystem/
+* compared to say, gnu stow, homemaker supports more than just creating a mirrored symlinked filesystem.
 * dependency resolution:
   * specify a set of tasks to complete, each with their own dependencies, and watch as it completes them in some
-  order that satisfies each tasks's dependencies.
+  order that satisfies each task's dependencies.
   * for example, in the sample `config.toml` (the one i use, actually), `maim` depends on having some graphics libraries installed.
   i created a task called `maim_dependencies`, and `hm` will complete `maim_dependencies` before attempting to complete `maim`.
   * `zt` has two dependencies: `maim` and `slop`. `hm` will complete the entire dependency tree below `zt` before atttempting `zt`.
