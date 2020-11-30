@@ -111,8 +111,14 @@ impl fmt::Display for SneakyDepGraphImposter<String> {
           if d.len() == 0 {
             write!(f, "<no deps> ")?;
           }
+          let mut j: usize = 1;
           for m in d {
-            write!(f, "{}, ", self.nodes[*m])?;
+            if j == d.len() {
+              write!(f, "{} ", self.nodes[*m])?;
+            } else {
+              write!(f, "{}, ", self.nodes[*m])?;
+            }
+            j += 1;
           }
         }
       }
@@ -132,7 +138,7 @@ impl fmt::Display for SneakyDepGraphImposter<String> {
 /// we'll be doing this in a tilde'd home subdirectory, so
 /// we need to be careful to get our Path right.
 ///
-pub(crate) fn symlink_file(source: String, target: String) -> Result<(), HMError> {
+pub fn symlink_file(source: String, target: String) -> Result<(), HMError> {
   let md = match metadata(shellexpand::tilde(&source).to_string()) {
     Ok(a) => a,
     Err(e) => return Err(HMError::Io(e)),
@@ -159,7 +165,7 @@ pub(crate) fn symlink_file(source: String, target: String) -> Result<(), HMError
 ///
 /// Return () or io::Error (something went wrong in our task).
 ///
-pub(crate) fn send_tasks_off_to_college(
+pub fn send_tasks_off_to_college(
   mo: &ManagedObject,
   tx: &Sender<Worker>,
   p: ProgressBar,
