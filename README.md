@@ -4,7 +4,7 @@ Have a dotfiles directory with all your stuff in it? Have homemaker put everythi
 
 **homemaker in action**
 
-![hm in action](demo/hm.gif)
+![hm in action](doc/hm.gif)
 
 
 1. create a `config.toml` file either anywhere (and specify it when you run `hm`) or in `~/.config/homemaker/`.
@@ -59,6 +59,7 @@ why homemaker?
   i created a task called `maim_dependencies`, and `hm` will complete `maim_dependencies` before attempting to complete `maim`.
   * `zt` has two dependencies: `maim` and `slop`. `hm` will complete the entire dependency tree below `zt` before atttempting `zt`.
   * `homemaker` complains if the dependency tree cannot be solved, and hopefully shows you a handy explanation why.
+  ![dep graph](doc/dep_graph.png)
 
 [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org)
 
