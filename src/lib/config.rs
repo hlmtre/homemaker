@@ -3,18 +3,22 @@
 //! Describes the `Worker` object, which is how we communicate back to our `main()` thread
 //! about how our `task` is going.
 extern crate serde;
+extern crate strum_macros;
 extern crate toml;
 
-use crate::hmerror::HMError;
+use super::hmerror::HMError;
 
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
+use std::str::FromStr;
 use std::{
   fmt, fs,
   io::{self, prelude::*, BufReader},
   path::{Path, PathBuf},
   string::String,
 };
+//use strum;
+use strum_macros::EnumString;
 use toml::value;
 
 ///
@@ -45,19 +49,34 @@ impl PartialEq for Worker {
 }
 impl Eq for Worker {}
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug, EnumString)]
+#[strum(serialize_all = "snake_case")]
 pub enum OS {
   Windows,
   Unknown,
   Linux(LinuxDistro),
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+impl Default for OS {
+  fn default() -> Self {
+    OS::Unknown
+  }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, EnumString)]
+#[strum(serialize_all = "snake_case")]
 pub enum LinuxDistro {
   Fedora,
   Debian,
   Ubuntu,
   Arch,
+  Generic,
+}
+
+impl Default for LinuxDistro {
+  fn default() -> Self {
+    LinuxDistro::Generic
+  }
 }
 
 ///
@@ -226,6 +245,14 @@ impl fmt::Display for Config {
           mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
         }
       }
+      match _f.1.get("os") {
+        None => (),
+        Some(_x) => {
+          mo.os = Some(OS::Linux(
+            LinuxDistro::from_str(_x.as_str().unwrap().to_lowercase().as_str()).unwrap(),
+          ));
+        }
+      }
       mos.push(mo);
     }
     write!(f, "{:#?}", mos)
@@ -304,7 +331,16 @@ pub fn as_managed_objects(config: Config) -> HashMap<String, ManagedObject> {
         mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
       }
     }
-    mos.insert(mo.name.clone(), mo);
+    match _f.1.get("os") {
+      None => (),
+      Some(_x) => {
+        mo.os = Some(OS::Linux(
+          LinuxDistro::from_str(_x.as_str().unwrap().to_lowercase().as_str()).unwrap(),
+        ));
+      }
+    }
+    mos.insert(mo.name.clone(), mo.clone());
+    eprintln!("{:#?}", mo);
   }
   return mos;
 }
