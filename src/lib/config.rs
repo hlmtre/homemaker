@@ -10,8 +10,8 @@ use crate::hmerror::HMError;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::{
-  fmt, fs, io,
-  io::{prelude::*, BufReader},
+  fmt, fs,
+  io::{self, prelude::*, BufReader},
   path::{Path, PathBuf},
   string::String,
 };
@@ -45,14 +45,14 @@ impl PartialEq for Worker {
 }
 impl Eq for Worker {}
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum OS {
   Windows,
   Unknown,
   Linux(LinuxDistro),
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum LinuxDistro {
   Fedora,
   Debian,
@@ -104,6 +104,7 @@ pub struct ManagedObject {
   pub solution: String,
   pub dependencies: Vec<String>,
   pub satisfied: bool,
+  pub os: Option<OS>,
 }
 
 impl ManagedObject {
@@ -126,7 +127,7 @@ impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
       f,
-      "{} {} {} {} {} {} {} {}",
+      "{} {} {} {} {} {} {} {} {:?}",
       self.name,
       self.file,
       self.source,
@@ -134,7 +135,8 @@ impl fmt::Display for ManagedObject {
       self.destination,
       self.task,
       self.solution,
-      self.satisfied
+      self.satisfied,
+      self.os
     )
   }
 }
@@ -151,6 +153,7 @@ impl Default for ManagedObject {
       solution: String::from(""),
       dependencies: Vec::new(),
       satisfied: false,
+      os: None,
     }
   }
 }
