@@ -421,6 +421,8 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) -> Result<(), HMError
 
   let mut v: HashMap<String, config::Worker> = HashMap::new();
 
+  // create a map of each Worker, and just poll them until they're done
+  // the hashmap ensures we have only one of each worker
   loop {
     match rx.try_recv() {
       Ok(_t) => {
@@ -429,7 +431,7 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) -> Result<(), HMError
       Err(_) => {}
     }
     std::thread::sleep(time::Duration::from_millis(10));
-    if !all_workers_done(v.clone()) {
+    if !all_workers_done(&v) {
       continue;
     }
     break;
@@ -441,7 +443,7 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) -> Result<(), HMError
 ///
 /// Iterate through all the workers passed in. If any isn't marked as complete, `return false;`.
 ///
-fn all_workers_done(workers: HashMap<String, config::Worker>) -> bool {
+fn all_workers_done(workers: &HashMap<String, config::Worker>) -> bool {
   for (_n, w) in workers {
     if !w.completed {
       return false;
