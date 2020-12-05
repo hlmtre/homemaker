@@ -191,70 +191,9 @@ impl Default for Config {
   }
 }
 
-/*
-  this is all such terrible rust please don't look at it
-*/
-/// pls do not view src for this, am not proud
 impl fmt::Display for Config {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let mut mos: Vec<ManagedObject> = Vec::new();
-    for _f in self.files.iter() {
-      let mut mo = ManagedObject::default();
-      mo.name = _f.0.to_owned();
-      match _f.1.get("file") {
-        None => (),
-        Some(_x) => {
-          mo.file = String::from(_x.as_str().unwrap());
-        }
-      }
-      match _f.1.get("source") {
-        None => (),
-        Some(_x) => {
-          mo.source = String::from(_x.as_str().unwrap());
-        }
-      }
-      match _f.1.get("method") {
-        None => (),
-        Some(_x) => {
-          mo.method = String::from(_x.as_str().unwrap());
-        }
-      }
-      match _f.1.get("destination") {
-        None => (),
-        Some(_x) => {
-          mo.destination = String::from(_x.as_str().unwrap());
-        }
-      }
-      match _f.1.get("solution") {
-        None => (),
-        Some(_x) => {
-          mo.solution = String::from(_x.as_str().unwrap());
-        }
-      }
-      match _f.1.get("task") {
-        None => (),
-        Some(_x) => {
-          mo.task = String::from(_x.as_str().unwrap());
-        }
-      }
-      match _f.1.get("dependencies") {
-        None => (),
-        Some(_x) => {
-          let _f = _x.as_str().unwrap();
-          // thanks https://stackoverflow.com/a/37547426
-          mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
-        }
-      }
-      match _f.1.get("os") {
-        None => (),
-        Some(_x) => {
-          mo.os = Some(OS::Linux(
-            LinuxDistro::from_str(_x.as_str().unwrap().to_lowercase().as_str()).unwrap(),
-          ));
-        }
-      }
-      mos.push(mo);
-    }
+    let mos = as_managed_objects(self.clone());
     write!(f, "{:#?}", mos)
   }
 }
@@ -340,7 +279,6 @@ pub fn as_managed_objects(config: Config) -> HashMap<String, ManagedObject> {
       }
     }
     mos.insert(mo.name.clone(), mo.clone());
-    eprintln!("{:#?}", mo);
   }
   return mos;
 }

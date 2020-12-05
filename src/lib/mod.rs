@@ -71,6 +71,7 @@ extern crate symlink;
 extern crate sys_info;
 
 pub mod config;
+mod hm_macro;
 pub mod hmerror;
 
 use config::{ManagedObject, Worker};
@@ -174,7 +175,7 @@ pub fn send_tasks_off_to_college(
   let s1: String = mo.solution.clone().to_string();
   let n: String = mo.name.clone().to_string();
   let tx1: Sender<Worker> = Sender::clone(tx);
-  let _child: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
+  let _: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
     let mut c = Command::new("bash")
       .arg("-c")
       .arg(s)
@@ -365,20 +366,6 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
   }
 }
 
-/// equivalent of __func__ for stacktrace/debugging
-/// see https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust
-#[macro_export]
-macro_rules! function {
-  () => {{
-    fn f() {}
-    fn type_name_of<T>(_: T) -> &'static str {
-      std::any::type_name::<T>()
-    }
-    let name = type_name_of(f);
-    &name[..name.len() - 3]
-  }};
-}
-
 ///
 /// Take our list of ManagedObjects to do stuff to, and determine
 /// if they're simple or complex (simple is symlink or copy, complex
@@ -442,6 +429,7 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) -> Result<(), HMError
 
 ///
 /// Iterate through all the workers passed in. If any isn't marked as complete, `return false;`.
+/// Let's take a reference, because we're only reading, and don't need ownership.
 ///
 fn all_workers_done(workers: &HashMap<String, config::Worker>) -> bool {
   for (_n, w) in workers {
