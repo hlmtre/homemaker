@@ -6,8 +6,6 @@ extern crate serde;
 extern crate strum_macros;
 extern crate toml;
 
-use super::hmerror::HMError;
-
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -136,12 +134,6 @@ impl ManagedObject {
   }
 }
 
-//impl Drop for ManagedObject {
-//  fn drop(&mut self) {
-//    eprintln!("dropping {}", self.name);
-//  }
-//}
-
 impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
@@ -193,14 +185,77 @@ impl Default for Config {
 
 impl fmt::Display for Config {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let mos = as_managed_objects(self.clone());
+    let mos = Config::as_managed_objects(self.clone());
     write!(f, "{:#?}", mos)
   }
 }
 
-#[allow(dead_code)]
-pub fn get_mo(_n: String) -> Result<ManagedObject, HMError> {
-  unimplemented!("not done")
+impl Config {
+  #[allow(dead_code)]
+  pub fn get_mo(&mut self, _n: String) -> Option<ManagedObject> {
+    match Config::as_managed_objects(self.clone()).get(&_n) {
+      Some(a) => Some(a.to_owned()),
+      None => None,
+    }
+  }
+
+  /// Convenience function that allows getting a HashMap from a `Config` of
+  /// the `ManagedObject`s within.
+  pub fn as_managed_objects(config: Config) -> HashMap<String, ManagedObject> {
+    let mut mos: HashMap<String, ManagedObject> = HashMap::new();
+    for _f in config.files.iter() {
+      let mut mo = ManagedObject::default();
+      mo.name = _f.0.to_owned();
+      match _f.1.get("solution") {
+        None => (),
+        Some(_x) => {
+          mo.solution = String::from(_x.as_str().unwrap());
+        }
+      }
+      match _f.1.get("task") {
+        None => (),
+        Some(_x) => {
+          mo.task = String::from(_x.as_str().unwrap());
+        }
+      }
+      match _f.1.get("source") {
+        None => (),
+        Some(_x) => {
+          mo.source = String::from(_x.as_str().unwrap());
+        }
+      }
+      match _f.1.get("method") {
+        None => (),
+        Some(_x) => {
+          mo.method = String::from(_x.as_str().unwrap());
+        }
+      }
+      match _f.1.get("destination") {
+        None => (),
+        Some(_x) => {
+          mo.destination = String::from(_x.as_str().unwrap());
+        }
+      }
+      match _f.1.get("dependencies") {
+        None => (),
+        Some(_x) => {
+          let _f = _x.as_str().unwrap();
+          // thanks https://stackoverflow.com/a/37547426
+          mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
+        }
+      }
+      match _f.1.get("os") {
+        None => (),
+        Some(_x) => {
+          mo.os = Some(OS::Linux(
+            LinuxDistro::from_str(_x.as_str().unwrap().to_lowercase().as_str()).unwrap(),
+          ));
+        }
+      }
+      mos.insert(mo.name.clone(), mo.clone());
+    }
+    return mos;
+  }
 }
 
 /// This takes our file/task array and turns them into `ManagedObjects`,
@@ -223,64 +278,6 @@ where
     }
   }
   Ok(files)
-}
-
-/// Convenience function that allows getting a HashMap from a `Config` of
-/// the `ManagedObject`s within.
-pub fn as_managed_objects(config: Config) -> HashMap<String, ManagedObject> {
-  let mut mos: HashMap<String, ManagedObject> = HashMap::new();
-  for _f in config.files.iter() {
-    let mut mo = ManagedObject::default();
-    mo.name = _f.0.to_owned();
-    match _f.1.get("solution") {
-      None => (),
-      Some(_x) => {
-        mo.solution = String::from(_x.as_str().unwrap());
-      }
-    }
-    match _f.1.get("task") {
-      None => (),
-      Some(_x) => {
-        mo.task = String::from(_x.as_str().unwrap());
-      }
-    }
-    match _f.1.get("source") {
-      None => (),
-      Some(_x) => {
-        mo.source = String::from(_x.as_str().unwrap());
-      }
-    }
-    match _f.1.get("method") {
-      None => (),
-      Some(_x) => {
-        mo.method = String::from(_x.as_str().unwrap());
-      }
-    }
-    match _f.1.get("destination") {
-      None => (),
-      Some(_x) => {
-        mo.destination = String::from(_x.as_str().unwrap());
-      }
-    }
-    match _f.1.get("dependencies") {
-      None => (),
-      Some(_x) => {
-        let _f = _x.as_str().unwrap();
-        // thanks https://stackoverflow.com/a/37547426
-        mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
-      }
-    }
-    match _f.1.get("os") {
-      None => (),
-      Some(_x) => {
-        mo.os = Some(OS::Linux(
-          LinuxDistro::from_str(_x.as_str().unwrap().to_lowercase().as_str()).unwrap(),
-        ));
-      }
-    }
-    mos.insert(mo.name.clone(), mo.clone());
-  }
-  return mos;
 }
 
 /// Take a big, fat guess.
@@ -312,7 +309,8 @@ pub fn deserialize_file(file: &str) -> Result<Config, String> {
 
 /// Make sure $XDG_CONFIG_DIR exists.
 /// On Linux and similar this is /home/\<username\>/.config;
-/// macOS /Users/\<username\>/.config.
+/// macOS /Users/\<username\>/.config,
+/// Windows C:\\Users\\\<username\>\\.config
 ///
 /// Assuming it does exist or we can create it, stuff config.toml on the end of it
 /// and return `Ok(my_path_buf/config.toml)`.

@@ -55,7 +55,7 @@ extern crate dirs;
 extern crate indicatif;
 
 use ::hm::{
-  config::{as_managed_objects, deserialize_file, ensure_config_dir, Config},
+  config::{deserialize_file, ensure_config_dir, Config},
   do_tasks, hmerror,
 };
 use indicatif::HumanDuration;
@@ -121,7 +121,7 @@ fn main() {
   };
   // do it here
   let started = Instant::now();
-  match do_tasks(as_managed_objects(a)) {
+  match do_tasks(Config::as_managed_objects(a)) {
     Ok(_) => {
       println!("Done in {}.", HumanDuration(started.elapsed()));
       exit(0);
