@@ -6,6 +6,11 @@ Have a dotfiles directory with all your stuff in it? Have homemaker put everythi
 
 ![hm in action](doc/hm.gif)
 
+installation
+============
+* from crates.io: `cargo install hm`
+* from github (may be in some state of flux): `cargo install --git github.com/hlmtre/homemaker`
+* cloned locally: `cargo install --path .`
 
 1. create a `config.toml` file either anywhere (and specify it when you run `hm`) or in `~/.config/homemaker/`.
 2. enter things to do things to in the file.
