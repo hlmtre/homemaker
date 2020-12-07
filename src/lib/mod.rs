@@ -274,9 +274,12 @@ pub fn send_tasks_off_to_college(
 pub fn get_task_batches(
   nodes: HashMap<String, ManagedObject>,
 ) -> Result<Vec<Vec<ManagedObject>>, HMError> {
+  let our_os = config::determine_os();
   let mut depgraph: DepGraph<String> = DepGraph::new();
   for (name, node) in nodes.clone() {
-    depgraph.register_dependencies(name.to_owned(), node.dependencies.clone());
+    if node.os.is_none() || node.os.unwrap() == our_os {
+      depgraph.register_dependencies(name.to_owned(), node.dependencies.clone());
+    }
   }
   let mut tasks: Vec<Vec<ManagedObject>> = Vec::new();
   let mut _dedup: HashSet<String> = HashSet::new();

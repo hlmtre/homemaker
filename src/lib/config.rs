@@ -47,7 +47,7 @@ impl PartialEq for Worker {
 }
 impl Eq for Worker {}
 
-#[derive(Serialize, Deserialize, Clone, Debug, EnumString)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, EnumString)]
 #[strum(serialize_all = "snake_case")]
 pub enum OS {
   Windows,
@@ -61,7 +61,7 @@ impl Default for OS {
   }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, EnumString)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, EnumString)]
 #[strum(serialize_all = "snake_case")]
 pub enum LinuxDistro {
   Fedora,
@@ -191,6 +191,7 @@ impl fmt::Display for Config {
 }
 
 impl Config {
+  /// Allows us to get a specified Managed Object by name
   #[allow(dead_code)]
   pub fn get_mo(&mut self, _n: String) -> Option<ManagedObject> {
     match Config::as_managed_objects(self.clone()).get(&_n) {
