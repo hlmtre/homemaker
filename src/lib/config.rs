@@ -257,7 +257,7 @@ impl Config {
           let _b = String::from(_x.as_str().unwrap());
           let _a: Vec<&str> = _b.split("::").collect::<Vec<&str>>();
           match _a.len() > 1 {
-            false => mo.os = Some(OS::Windows),
+            false => mo.os = Some(OS::from_str(_a[0].to_lowercase().as_str()).unwrap()),
             true => {
               mo.os = Some(OS::Linux(
                 LinuxDistro::from_str(_a[1].to_lowercase().as_str()).unwrap(),
