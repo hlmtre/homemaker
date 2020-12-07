@@ -275,30 +275,46 @@ pub fn get_task_batches(
   nodes: HashMap<String, ManagedObject>,
 ) -> Result<Vec<Vec<ManagedObject>>, HMError> {
   let our_os = config::determine_os();
+  let mut our_nodes = nodes.clone();
   let mut depgraph: DepGraph<String> = DepGraph::new();
-  for (name, node) in nodes.clone() {
-    if node.os.is_none() || node.os.unwrap() == our_os {
+  let mut nodes_to_remove: Vec<String> = Vec::new();
+  let mut wrong_platforms: HashMap<String, config::OS> = HashMap::new();
+  for (name, node) in &our_nodes {
+    if node.os.is_none() || node.os.clone().unwrap() == our_os {
       depgraph.register_dependencies(name.to_owned(), node.dependencies.clone());
+    } else {
+      nodes_to_remove.push(name.to_string());
+      wrong_platforms.insert(name.clone(), node.os.clone().unwrap());
     }
+  }
+  for n in nodes_to_remove {
+    our_nodes.remove(&n);
   }
   let mut tasks: Vec<Vec<ManagedObject>> = Vec::new();
   let mut _dedup: HashSet<String> = HashSet::new();
-  for (name, _node) in nodes.clone() {
+  for (name, _node) in &our_nodes {
     let mut q: Vec<ManagedObject> = Vec::new();
-    let _name = name.clone();
-    let dg = depgraph.dependencies_of(&name).unwrap();
+    let dg: solvent::DepGraphIterator<String> = depgraph.dependencies_of(&name).unwrap();
     for n in dg {
       match n {
         Ok(r) => {
           let c = String::from(r.as_str());
           // returns true if the set DID NOT have c in it already
           if _dedup.insert(c) {
-            let mut a = match nodes.get(r) {
+            let mut a = match our_nodes.get(r) {
               Some(a) => a,
               None => {
-                return Err(HMError::Regular(hmek::DependencyUndefinedError {
-                  dependency: String::from(r),
-                }));
+                if wrong_platforms.contains_key(r) {
+                  return Err(HMError::Regular(hmek::IncorrectPlatformError {
+                    dependency: String::from(r),
+                    platform: our_os,
+                    target_platform: wrong_platforms.get(r).cloned().unwrap(),
+                  }));
+                } else {
+                  return Err(HMError::Regular(hmek::DependencyUndefinedError {
+                    dependency: String::from(r),
+                  }));
+                }
               }
             }
             .to_owned();

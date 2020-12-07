@@ -37,7 +37,12 @@ dependencies = 'maim_dependencies'
 [[obj]]
 task = 'maim_dependencies'
 solution = 'sudo apt install -y libxfixes-dev libglm-dev libxrandr-dev libglew-dev libegl1-mesa-dev libxcomposite-dev'
-os = "debian"
+os = "linux::fedora"
+
+[[obj]]
+task = 'windows only'
+solution = 'rustup update'
+os = 'windows'
 
 [[obj]]
 task = 'rustup update'
@@ -52,7 +57,7 @@ solution = 'echo HI'
 [[obj]]
 task = 'playerctl dependencies'
 solution = 'sudo dnf -y install meson'
-os = "fedora"
+os = "linux::fedora"
 
 [[obj]]
 task = 'playerctl install'

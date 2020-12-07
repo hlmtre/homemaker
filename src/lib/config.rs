@@ -47,7 +47,7 @@ impl PartialEq for Worker {
 }
 impl Eq for Worker {}
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, EnumString)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, PartialOrd, Ord, Hash, EnumString)]
 #[strum(serialize_all = "snake_case")]
 pub enum OS {
   Windows,
@@ -61,7 +61,7 @@ impl Default for OS {
   }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, EnumString)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, PartialOrd, Ord, Hash, EnumString)]
 #[strum(serialize_all = "snake_case")]
 pub enum LinuxDistro {
   Fedora,
@@ -76,6 +76,10 @@ impl Default for LinuxDistro {
     LinuxDistro::Generic
   }
 }
+
+impl Eq for OS {}
+
+impl Eq for LinuxDistro {}
 
 ///
 /// Windows or Linux? If Linux, let's determine our distro, because package managers and stuff.
@@ -246,11 +250,20 @@ impl Config {
         }
       }
       match _f.1.get("os") {
-        None => (),
+        None => {
+          mo.os = None;
+        }
         Some(_x) => {
-          mo.os = Some(OS::Linux(
-            LinuxDistro::from_str(_x.as_str().unwrap().to_lowercase().as_str()).unwrap(),
-          ));
+          let _b = String::from(_x.as_str().unwrap());
+          let _a: Vec<&str> = _b.split("::").collect::<Vec<&str>>();
+          match _a.len() > 1 {
+            false => mo.os = Some(OS::Windows),
+            true => {
+              mo.os = Some(OS::Linux(
+                LinuxDistro::from_str(_a[1].to_lowercase().as_str()).unwrap(),
+              ));
+            }
+          }
         }
       }
       mos.insert(mo.name.clone(), mo.clone());

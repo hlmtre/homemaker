@@ -19,6 +19,8 @@ use console::style;
 use std::fmt;
 use std::io;
 
+use crate::config;
+
 #[derive(Debug)]
 pub enum HMError {
   Io(io::Error),
@@ -28,10 +30,23 @@ pub enum HMError {
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum ErrorKind {
-  DependencyUndefinedError { dependency: String },
-  CyclicalDependencyError { dependency_graph: String },
-  SolutionError { solution: String },
-  ConfigError { line_number: usize },
+  DependencyUndefinedError {
+    dependency: String,
+  },
+  IncorrectPlatformError {
+    dependency: String,
+    platform: config::OS,
+    target_platform: config::OS,
+  },
+  CyclicalDependencyError {
+    dependency_graph: String,
+  },
+  SolutionError {
+    solution: String,
+  },
+  ConfigError {
+    line_number: usize,
+  },
   Other,
 }
 
@@ -47,6 +62,11 @@ impl ErrorKind {
       ErrorKind::ConfigError { line_number: _ } => "configuration error",
       ErrorKind::SolutionError { solution: _ } => "solution error",
       ErrorKind::DependencyUndefinedError { dependency: _ } => "dependency undefined",
+      ErrorKind::IncorrectPlatformError {
+        dependency: _,
+        platform: _,
+        target_platform: _,
+      } => "incorrect platform for dependency",
       ErrorKind::CyclicalDependencyError {
         dependency_graph: _,
       } => "cyclical dependency",
