@@ -194,6 +194,7 @@ impl fmt::Display for Config {
   }
 }
 
+/// Represents our Config file, which is just a big list of `[[obj]]`s
 impl Config {
   /// Allows us to get a specified Managed Object by name
   #[allow(dead_code)]
@@ -249,6 +250,9 @@ impl Config {
           mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
         }
       }
+      //
+      // the `os =` entry in the config will be formatted either
+      // `windows` or `linux::<distro>`
       match _f.1.get("os") {
         None => {
           mo.os = None;
@@ -256,6 +260,7 @@ impl Config {
         Some(_x) => {
           let _b = String::from(_x.as_str().unwrap());
           let _a: Vec<&str> = _b.split("::").collect::<Vec<&str>>();
+          // TODO change this to match on strum's VariantNotFound
           match _a.len() > 1 {
             false => mo.os = Some(OS::from_str(_a[0].to_lowercase().as_str()).unwrap()),
             true => {

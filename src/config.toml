@@ -37,6 +37,7 @@ dependencies = 'maim_dependencies'
 [[obj]]
 task = 'maim_dependencies'
 solution = 'sudo apt install -y libxfixes-dev libglm-dev libxrandr-dev libglew-dev libegl1-mesa-dev libxcomposite-dev'
+# os should be of the format either `windows` or `linux::<distro>`
 os = "linux::fedora"
 
 [[obj]]
