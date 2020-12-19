@@ -91,7 +91,7 @@ fn main() {
       Err(e) => {
         hmerror::error(
           format!("Couldn't open specified config file `{}`", &second).as_str(),
-          e.as_str(),
+          e.to_string().as_str(),
         );
         exit(1)
       }
@@ -112,7 +112,7 @@ fn main() {
               _p.to_string_lossy()
             )
             .as_str(),
-            e.as_str(),
+            e.to_string().as_str(),
           );
           exit(1)
         }

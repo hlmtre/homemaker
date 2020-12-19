@@ -19,6 +19,8 @@ use std::{
 use strum_macros::EnumString;
 use toml::value;
 
+use super::hmerror::{HMError, Result as HMResult};
+
 ///
 /// Allow us to communicate meaningfully back to `main()` thread.
 ///
@@ -309,11 +311,11 @@ fn open_config(file: &str) -> io::Result<fs::File> {
 /// Open our config file and read the entire contents into hopefully
 /// valid toml. Either we gucci and return back a `Config` made of toml,
 /// or we explain what went wrong with the `toml` Err.
-pub fn deserialize_file(file: &str) -> Result<Config, String> {
+pub fn deserialize_file(file: &str) -> HMResult<Config> {
   let mut contents = String::new();
   let g = match open_config(file) {
     Ok(_a) => _a,
-    Err(e) => return Err(e.to_string()),
+    Err(e) => return Err(HMError::Other(e.to_string())),
   };
   let mut file_contents = BufReader::new(g);
   match file_contents.read_to_string(&mut contents) {
@@ -323,7 +325,7 @@ pub fn deserialize_file(file: &str) -> Result<Config, String> {
   if cfg!(debug_assertions) {
     println!("file: {}", &file);
   }
-  toml::from_str(&contents).or_else(|e| Err(e.to_string()))
+  toml::from_str(&contents).or_else(|e| Err(HMError::Other(e.to_string())))
 }
 
 /// Make sure $XDG_CONFIG_DIR exists.

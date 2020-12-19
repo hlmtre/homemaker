@@ -15,6 +15,7 @@
 //! * ConfigError: Something is wrong with how you wrote the `config.toml`.
 //! * Other: Other.
 extern crate console;
+extern crate serde;
 use console::style;
 use std::fmt;
 use std::io;
@@ -55,6 +56,14 @@ impl From<io::Error> for HMError {
     HMError::Io(err)
   }
 }
+
+/*
+impl From<Deserializer::Error> for HMError {
+  fn from(err: Deserializer::Error) -> HMError {
+    HMError::Other(err)
+  }
+}
+*/
 
 impl ErrorKind {
   fn as_str(&self) -> &str {
