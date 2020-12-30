@@ -304,6 +304,11 @@ pub fn get_task_batches(
             let mut a = match our_nodes.get(r) {
               Some(a) => a,
               None => {
+                /*
+                if we have a dependency, but it can't be solved because it's for the incorrect platform,
+                let's complain about it.
+                doing it this way is necessary because we DO still want our dependency graph to get run.
+                */
                 if wrong_platforms.contains_key(r) {
                   return Err(HMError::Regular(hmek::IncorrectPlatformError {
                     dependency: String::from(r),

@@ -17,6 +17,13 @@ path = "src/lib/mod.rs"
 name = "hm"
 path = "src/hm.rs"
 
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "benchy_bench"
+harness = false
+
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.5"

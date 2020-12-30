@@ -1,0 +1,66 @@
+[[obj]]
+file = 'tmux.conf'
+source = '~/dotfiles/.tmux.conf'
+destination = '~/.tmux.conf'
+method = 'symlink'
+
+[[obj]]
+file = 'nvim'
+source = '~/dotfiles/.config/nvim'
+destination = '~/.config/nvim'
+method = 'symlink'
+
+[[obj]]
+file = 'fish'
+source = '~/dotfiles/.config/fish'
+destination = '~/.config/fish'
+method = 'symlink'
+
+[[obj]]
+task = 'zt'
+solution = 'cd ~/dotfiles/zt && git pull'
+dependencies = 'maim, slop'
+
+[[obj]]
+task = 'slop'
+source = '~/dotfiles/zt/slop'
+solution = 'cd ~/dotfiles/zt/slop; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
+method = 'execute'
+
+[[obj]]
+task = 'maim'
+source = '~/dotfiles/zt/maim'
+solution = 'cd ~/dotfiles/zt/maim; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
+method = 'execute'
+dependencies = 'maim_dependencies'
+
+[[obj]]
+task = 'maim_dependencies'
+solution = 'sudo apt install -y libxfixes-dev libglm-dev libxrandr-dev libglew-dev libegl1-mesa-dev libxcomposite-dev'
+# os should be of the format either `windows` or `linux::<distro>`
+os = "linux::fedora"
+
+[[obj]]
+task = 'windows only'
+solution = 'rustup update'
+os = 'windows'
+
+[[obj]]
+task = 'rustup update'
+solution = 'rustup update'
+method = 'execute'
+
+[[obj]]
+task = 'loop_detection'
+solution = 'echo HI'
+#dependencies = 'maim_dependencies'
+
+[[obj]]
+task = 'playerctl dependencies'
+solution = 'sudo dnf -y install meson'
+os = "linux::fedora"
+
+[[obj]]
+task = 'playerctl install'
+solution = 'mkdir -p ~/src; cd ~/src/; git clone https://github.com/altdesktop/playerctl.git ; cd playerctl; meson -Dgtk-doc=false mesonbuild && sudo ninja -C mesonbuild install'
+dependencies = 'playerctl dependencies'
