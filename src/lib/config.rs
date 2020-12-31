@@ -139,6 +139,19 @@ impl ManagedObject {
     self.satisfied = true;
   }
 }
+impl PartialEq for ManagedObject {
+  fn eq(&self, other: &Self) -> bool {
+    if self.name == other.name
+      && self.source == other.source
+      && self.destination == other.destination
+      && self.task == other.task
+      && self.solution == other.solution
+    {
+      return true;
+    }
+    return false;
+  }
+}
 
 impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -362,4 +375,28 @@ pub fn ensure_config_dir() -> Result<PathBuf, &'static str> {
     // if dirs::config_path() call doesn't return anything
     None => return Err("Couldn't get config directory from $XDG"),
   };
+}
+
+#[cfg(test)]
+mod config_test {
+  use super::*;
+
+  /*
+    source looks like this:
+    [[obj]]
+    file = 'tmux.conf'
+    source = '~/dotfiles/.tmux.conf'
+    destination = '~/.tmux.conf'
+    method = 'symlink'
+  */
+  #[test]
+  fn test_mo_deserialization() {
+    let mut a: Config = deserialize_file("./benches/config.toml").unwrap();
+    let mut mo = ManagedObject::default();
+    mo.name = String::from("tmux.conf");
+    mo.source = String::from("~/dotfiles/.tmux.conf");
+    mo.destination = String::from("~/.tmux.conf");
+    mo.method = String::from("symlink");
+    assert_eq!(mo, a.get_mo("tmux.conf".to_string()).unwrap());
+  }
 }
