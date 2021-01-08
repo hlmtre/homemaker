@@ -128,6 +128,7 @@ pub struct ManagedObject {
   pub dependencies: Vec<String>,
   pub satisfied: bool,
   pub os: Option<OS>,
+  pub force: bool,
 }
 
 impl ManagedObject {
@@ -157,7 +158,7 @@ impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
       f,
-      "{} {} {} {} {} {} {} {} {:?}",
+      "{} {} {} {} {} {} {} {} {:?} {:?}",
       self.name,
       self.file,
       self.source,
@@ -166,7 +167,8 @@ impl fmt::Display for ManagedObject {
       self.task,
       self.solution,
       self.satisfied,
-      self.os
+      self.os,
+      self.force
     )
   }
 }
@@ -184,6 +186,7 @@ impl Default for ManagedObject {
       dependencies: Vec::new(),
       satisfied: false,
       os: None,
+      force: false,
     }
   }
 }
@@ -263,6 +266,13 @@ impl Config {
           let _f = _x.as_str().unwrap();
           // thanks https://stackoverflow.com/a/37547426
           mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
+        }
+      }
+      match _f.1.get("force") {
+        None => (),
+        Some(_x) => {
+          let _f = _x.as_str().unwrap();
+          mo.force = if _f == "true" { true } else { false };
         }
       }
       //

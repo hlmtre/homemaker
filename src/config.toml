@@ -9,12 +9,14 @@ file = 'gtk2'
 source = '~/dotfiles/.config/gtk-2.0'
 destination = '~/.config/gtk-2.0'
 method = 'symlink'
+force = 'true'
 
 [[obj]]
 file = 'gtk3'
 source = '~/dotfiles/.config/gtk-3.0'
 destination = '~/.config/gtk-3.0'
 method = 'symlink'
+force = 'true'
 
 [[obj]]
 file = 'nvim'

@@ -1,5 +1,3 @@
-//! `hm` (short for `homemaker`) provides a library to do basic filesystem operations
-//! that you'd want a dotfile manager to do (like symlink).
 //! It also provides functionality to thread off heavier operations
 //! into task threads, which regularly report back their status with
 //! Worker objects over a `std::sync::mpsc`.
@@ -83,7 +81,7 @@ use solvent::DepGraph;
 use std::{
   collections::{HashMap, HashSet},
   fmt,
-  fs::metadata,
+  fs::{metadata, remove_dir_all},
   io::{BufRead, BufReader, Error, ErrorKind},
   path::Path,
   process::{exit, Command, Stdio},
@@ -139,21 +137,22 @@ impl fmt::Display for SneakyDepGraphImposter<String> {
 /// we'll be doing this in a tilde'd home subdirectory, so
 /// we need to be careful to get our Path right.
 ///
-pub fn symlink_file(source: String, target: String) -> Result<(), HMError> {
-  let md = match metadata(shellexpand::tilde(&source).to_string()) {
+pub fn symlink_file(source: String, target: String, force: bool) -> Result<(), HMError> {
+  let _lsource: String = shellexpand::tilde(&source).to_string();
+  let _ltarget: String = shellexpand::tilde(&target).to_string();
+  let md = match metadata(_lsource.clone()) {
     Ok(a) => a,
     Err(e) => return Err(HMError::Io(e)),
   };
+  if force {
+    if Path::new(_ltarget.as_str()).exists() {
+      remove_dir_all(_ltarget.clone())?;
+    }
+  }
   if md.is_dir() {
-    sd(
-      Path::new(shellexpand::tilde(&source).to_mut()),
-      Path::new(shellexpand::tilde(&target).to_mut()),
-    )?;
+    sd(Path::new(_lsource.as_str()), Path::new(_ltarget.as_str()))?;
   } else if md.is_file() {
-    sf(
-      Path::new(shellexpand::tilde(&source).to_mut()),
-      Path::new(shellexpand::tilde(&target).to_mut()),
-    )?;
+    sf(Path::new(_lsource.as_str()), Path::new(_ltarget.as_str()))?;
   }
   Ok(())
 }
@@ -381,7 +380,7 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
     "symlink" => {
       let source: String = mo.source;
       let destination: String = mo.destination;
-      symlink_file(source, destination)
+      symlink_file(source, destination, mo.force)
     }
     _ => {
       println!("{}", style(format!("{}", _s)).red());
