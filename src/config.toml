@@ -5,6 +5,18 @@ destination = '~/.tmux.conf'
 method = 'symlink'
 
 [[obj]]
+file = 'gtk2'
+source = '~/dotfiles/.config/gtk-2.0'
+destination = '~/.config/gtk-2.0'
+method = 'symlink'
+
+[[obj]]
+file = 'gtk3'
+source = '~/dotfiles/.config/gtk-3.0'
+destination = '~/.config/gtk-3.0'
+method = 'symlink'
+
+[[obj]]
 file = 'nvim'
 source = '~/dotfiles/.config/nvim'
 destination = '~/.config/nvim'
