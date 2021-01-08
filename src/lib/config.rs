@@ -272,7 +272,8 @@ impl Config {
         None => (),
         Some(_x) => {
           let _f = _x.as_str().unwrap();
-          mo.force = if _f == "true" { true } else { false };
+          // haha boolean assignment go brr
+          mo.force = _f == "true";
         }
       }
       //
