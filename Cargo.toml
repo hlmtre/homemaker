@@ -1,6 +1,6 @@
 [package]
 name = "hm"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Matt Weller <hellmitre@gmail.com>"]
 edition = "2018"
 description = "homemaker. Slightly more than yet another dotfile manager."
