@@ -1,3 +1,13 @@
+//! hm is a commandline program to help with dotfile (and more) management.
+//!
+//! It can handle putting configuration files where they should go, but its real
+//! strength lies in the solutions it'll execute - shell scripts, usually - to
+//! pull a git repository, compile something from source, etc.
+//!
+//! hm exists because I bring along a few utilities to all Linux boxes I regularly
+//! use, and those are often built from source. So rather than manually install
+//! all dependency libraries, then build each dependent piece, then finally the
+//! top-level dependent program, I built hm.
 //! It also provides functionality to thread off heavier operations
 //! into task threads, which regularly report back their status with
 //! Worker objects over a `std::sync::mpsc`.
