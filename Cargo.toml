@@ -8,6 +8,7 @@ license = "Apache-2.0"
 repository = "https://github.com/hlmtre/homemaker"
 keywords = ["dotfiles", "management", "dotfile"]
 categories = ["command-line-utilities", "filesystem"]
+include = ["src/**/*", "LICENSE", "README.md"]
 
 [lib]
 name = "hm"
