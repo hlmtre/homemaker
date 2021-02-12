@@ -414,12 +414,21 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) -> Result<(), HMError
   complex_operations.retain(|_, v| v.is_task()); // all the things that aren't just symlink/copy
   simple_operations.retain(|_, v| !v.is_task()); // all the things that are quick (don't need to thread off)
   for (_name, _mo) in simple_operations.into_iter() {
-    let _ = perform_operation_on(_mo).map_err(|e| {
+    // lol postmaclone
+    let p = _mo.post.clone();
+    let a = perform_operation_on(_mo).map_err(|e| {
       hmerror::error(
         format!("Failed to perform operation on {:#?}", _name).as_str(),
         e.to_string().as_str(),
       )
     });
+    if a.is_ok() {
+      hmerror::happy_print(format!("Successfully performed operation on {:#?}", _name).as_str());
+      if p.len() > 0 {
+        println!("↳ Executing post {} for {}... ", p, _name);
+        let _ = execute_solution(p);
+      }
+    }
   }
   let (tx, rx) = mpsc::channel();
   let mp: MultiProgress = MultiProgress::new();

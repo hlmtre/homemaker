@@ -129,6 +129,7 @@ pub struct ManagedObject {
   pub satisfied: bool,
   pub os: Option<OS>,
   pub force: bool,
+  pub post: String,
 }
 
 impl ManagedObject {
@@ -158,7 +159,7 @@ impl fmt::Display for ManagedObject {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(
       f,
-      "{} {} {} {} {} {} {} {} {:?} {:?}",
+      "{} {} {} {} {} {} {} {} {:?} {:?} {}",
       self.name,
       self.file,
       self.source,
@@ -168,7 +169,8 @@ impl fmt::Display for ManagedObject {
       self.solution,
       self.satisfied,
       self.os,
-      self.force
+      self.force,
+      self.post
     )
   }
 }
@@ -187,6 +189,7 @@ impl Default for ManagedObject {
       satisfied: false,
       os: None,
       force: false,
+      post: "".to_string(),
     }
   }
 }
@@ -274,6 +277,12 @@ impl Config {
           let _f = _x.as_str().unwrap();
           // haha boolean assignment go brr
           mo.force = _f == "true";
+        }
+      }
+      match _f.1.get("post") {
+        None => (),
+        Some(_x) => {
+          mo.post = String::from(_x.as_str().unwrap());
         }
       }
       //

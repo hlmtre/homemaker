@@ -1,4 +1,18 @@
 [[obj]]
+file = '.Xresources'
+source = '~/dotfiles/.Xresources'
+destination = '~/.Xresources'
+method = 'symlink'
+post = "xrdb ~/.Xresources"
+force = 'true'
+
+[[obj]]
+file = 'rofi'
+source = '~/dotfiles/.config/rofi'
+destination = '~/.config/rofi'
+method = 'symlink'
+
+[[obj]]
 file = 'tmux.conf'
 source = '~/dotfiles/.tmux.conf'
 destination = '~/.tmux.conf'
@@ -52,7 +66,7 @@ dependencies = 'maim_dependencies'
 task = 'maim_dependencies'
 solution = 'sudo apt install -y libxfixes-dev libglm-dev libxrandr-dev libglew-dev libegl1-mesa-dev libxcomposite-dev'
 # os should be of the format either `windows` or `linux::<distro>`
-os = "linux::fedora"
+os = "linux::debian"
 
 [[obj]]
 task = 'windows only'

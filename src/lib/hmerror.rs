@@ -94,6 +94,10 @@ impl fmt::Display for HMError {
   }
 }
 
+pub fn happy_print(jubilation: &str) {
+  println!("{}!", style(jubilation).green().bold())
+}
+
 /// Easy formatting for errors as they come in.
 ///
 /// example:
