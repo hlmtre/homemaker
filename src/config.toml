@@ -23,6 +23,12 @@ post = "xrdb ~/.Xresources"
 force = 'true'
 
 [[obj]]
+file = 'sway'
+source = '~/dotfiles/.config/sway'
+destination = '~/.config/sway'
+method = 'symlink'
+
+[[obj]]
 file = 'rofi'
 source = '~/dotfiles/.config/rofi'
 destination = '~/.config/rofi'
