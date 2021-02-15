@@ -15,6 +15,13 @@
 # complex managed object
 
 [[obj]]
+file = '.neomuttrs'
+source = '~/dotfiles/.neomuttrc'
+destination = '~/.neomuttrc'
+method = 'symlink'
+force = 'true'
+
+[[obj]]
 file = '.Xresources'
 source = '~/dotfiles/.Xresources'
 destination = '~/.Xresources'
