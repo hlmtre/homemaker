@@ -1,21 +1,21 @@
-# simple amanged object
+# simple managed object
 # [[obj]]
 # task = 'zt' <-- like 'name' but for, uh, tasks
 # solution = 'cd ~/dotfiles/zt && git pull' <-- shell to execute
 # dependencies = 'maim, slop' <-- dependencies - do them first. Valid values: any other tasks, need not be specified before this one, comma separated.
 
+# complex managed object
 # [[obj]]  <-- required `obj` header for each managed object
 # file = '.Xresources' <-- name
 # source = '~/dotfiles/.Xresources' <-- for symlink/copy, source file location
 # destination = '~/.Xresources' <-- for symlink/copy, destination
-# method = 'symlink' <-- symlink or copy?. Valid values: symlink
+# method = 'symlink' <-- symlink or copy?. Valid values: symlink, copy.
 # post = "xrdb ~/.Xresources" <-- a wee shell script to execute upon SUCCESSFUL symlink/copy
 # force = 'true' <-- overwrite if file already exists. Valid values: true, false; unspecified defaults to false
 
-# complex managed object
 
 [[obj]]
-file = '.neomuttrs'
+file = '.neomuttrc'
 source = '~/dotfiles/.neomuttrc'
 destination = '~/.neomuttrc'
 method = 'symlink'

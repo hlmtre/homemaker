@@ -91,7 +91,7 @@ use solvent::DepGraph;
 use std::{
   collections::{HashMap, HashSet},
   fmt,
-  fs::{metadata, remove_dir_all},
+  fs::{copy, create_dir_all, metadata, remove_dir_all, remove_file},
   io::{BufRead, BufReader, Error, ErrorKind},
   path::Path,
   process::{exit, Command, Stdio},
@@ -143,11 +143,11 @@ impl fmt::Display for SneakyDepGraphImposter<String> {
 }
 
 ///
-/// Either create a symlink to a file or directory. Generally
+/// Copy our {file|directory} to the destination. Generally
 /// we'll be doing this in a tilde'd home subdirectory, so
 /// we need to be careful to get our Path right.
 ///
-pub fn symlink_file(source: String, target: String, force: bool) -> Result<(), HMError> {
+pub fn copy_item(source: String, target: String, force: bool) -> Result<(), HMError> {
   let _lsource: String = shellexpand::tilde(&source).to_string();
   let _ltarget: String = shellexpand::tilde(&target).to_string();
   let md = match metadata(_lsource.clone()) {
@@ -156,9 +156,42 @@ pub fn symlink_file(source: String, target: String, force: bool) -> Result<(), H
   };
   if force {
     if Path::new(_ltarget.as_str()).exists() {
-      remove_dir_all(_ltarget.clone())?;
+      if md.is_dir() {
+        remove_dir_all(_ltarget.clone())?;
+      } else {
+        remove_file(_ltarget.clone())?;
+      }
     }
   }
+  copy(Path::new(_lsource.as_str()), Path::new(_ltarget.as_str()))?;
+  Ok(())
+}
+
+///
+/// Either create a symlink to a file or directory. Generally
+/// we'll be doing this in a tilde'd home subdirectory, so
+/// we need to be careful to get our Path right.
+///
+pub fn symlink_item(source: String, target: String, force: bool) -> Result<(), HMError> {
+  let _lsource: String = shellexpand::tilde(&source).to_string();
+  let _ltarget: String = shellexpand::tilde(&target).to_string();
+  let md = match metadata(_lsource.clone()) {
+    Ok(a) => a,
+    Err(e) => return Err(HMError::Io(e)),
+  };
+  let lmd = metadata(_ltarget.clone());
+  if force {
+    if Path::new(_ltarget.as_str()).exists() {
+      // this is reasonably safe because if the target exists our lmd is a Result not an Err
+      if lmd.unwrap().is_dir() {
+        remove_dir_all(_ltarget.clone())?;
+      } else {
+        remove_file(_ltarget.clone())?;
+      }
+    }
+  }
+  // create all the parent directories required for the target file/directory
+  create_dir_all(Path::new(_ltarget.as_str()).parent().unwrap())?;
   if md.is_dir() {
     sd(Path::new(_lsource.as_str()), Path::new(_ltarget.as_str()))?;
   } else if md.is_file() {
@@ -381,7 +414,7 @@ fn execute_solution(solution: String) -> Result<(), HMError> {
 }
 
 ///
-/// Pretty simple. We currently support only symlinking, but copying would be trivial.
+/// Pretty simple.
 /// Hand off to the actual function that does the work.
 ///
 pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
@@ -390,7 +423,12 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
     "symlink" => {
       let source: String = mo.source;
       let destination: String = mo.destination;
-      symlink_file(source, destination, mo.force)
+      symlink_item(source, destination, mo.force)
+    }
+    "copy" => {
+      let source: String = mo.source;
+      let destination: String = mo.destination;
+      copy_item(source, destination, mo.force)
     }
     _ => {
       println!("{}", style(format!("{}", _s)).red());
