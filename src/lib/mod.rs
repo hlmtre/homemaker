@@ -73,7 +73,9 @@
 #![allow(unused_macros)]
 extern crate console;
 extern crate indicatif;
+extern crate log;
 extern crate shellexpand;
+extern crate simplelog;
 extern crate solvent;
 extern crate symlink;
 extern crate sys_info;
@@ -87,6 +89,9 @@ use hmerror::{ErrorKind as hmek, HMError};
 
 use console::{pad_str, style, Alignment};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+#[macro_use]
+use log::{info, trace, warn};
+use simplelog::{Config as slConfig, LevelFilter, WriteLogger};
 use solvent::DepGraph;
 use std::{
   collections::{HashMap, HashSet},
@@ -225,15 +230,12 @@ pub fn send_tasks_off_to_college(
       .stderr(Stdio::piped())
       .spawn()
       .unwrap();
-    //let output = c.stdout.take().unwrap();
-    //let reader = BufReader::new(output);
-    /*
-      reader
-        .lines()
-        .filter_map(|line| line.ok())
-        .for_each(|line| println!("{}", line));
-    }
-    */
+    let output = c.stdout.take().unwrap();
+    let reader = BufReader::new(output);
+    reader
+      .lines()
+      .filter_map(|line| line.ok())
+      .for_each(|line| info!("{}", line));
     //p.println(s1);
     p.set_style(
       ProgressStyle::default_spinner()

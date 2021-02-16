@@ -53,17 +53,33 @@
 #![allow(dead_code)]
 extern crate dirs;
 extern crate indicatif;
+extern crate log;
+extern crate simplelog;
 
 use ::hm::{
   config::{deserialize_file, ensure_config_dir, Config},
   do_tasks, hmerror,
 };
 use indicatif::HumanDuration;
-use std::{env, path::PathBuf, process::exit, string::String, time::Instant};
+#[macro_use]
+use log::{info, trace, warn};
+use simplelog::{Config as slConfig, ConfigBuilder, LevelFilter, WriteLogger};
+use std::{env, fs::File, path::PathBuf, process::exit, string::String, time::Instant};
 
 /// Pull apart our arguments, if they're called, get our Config, and error-check.
 /// Then work our way through the Config, executing the easy stuff, and threading off the hard.
 fn main() {
+  /*
+  let mut slc = ConfigBuilder::new();
+  slc.set_max_level(LevelFilter::Trace);
+  slc.
+  */
+  let _ = WriteLogger::init(
+    LevelFilter::Trace,
+    slConfig::default(),
+    File::create("hm-task.log").unwrap(),
+  );
+  info!("beginning hm execution...");
   let mut args: Vec<String> = env::args().collect();
   // it's a little hackish, but we don't have to bring in an external crate to do our args
   let mut verbose: bool = false;

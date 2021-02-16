@@ -16,10 +16,9 @@
 
 [[obj]]
 file = 'alacritty'
-source = '~/dotfiles/.config/alacritty/'
+source = '~/dotfiles/.config/alacritty'
 destination = '~/.config/alacritty'
 method = 'symlink'
-force = 'true'
 
 [[obj]]
 file = '.neomuttrc'
@@ -81,15 +80,35 @@ destination = '~/.config/fish'
 method = 'symlink'
 
 [[obj]]
+task = 'zt-fedora-wayland'
+solution = 'cd ~/dotfiles/zt && git pull'
+dependencies = 'grim, slurp'
+os = 'linux::fedora'
+
+[[obj]]
+task = 'grim'
+solution = 'test -e ~/src/grim || cd ~/src && git clone https://github.com/emersion/grim.git && cd grim && meson build && sudo ninja -C build install'
+method = 'execute'
+os = 'linux::fedora'
+
+[[obj]]
+task = 'slurp'
+method = 'execute'
+solution = 'test -e ~/src/slurp || cd ~/src && git clone https://github.com/emersion/slurp.git && cd slurp && meson build && sudo ninja -C build install'
+os = 'linux::fedora'
+
+[[obj]]
 task = 'zt'
 solution = 'cd ~/dotfiles/zt && git pull'
 dependencies = 'maim, slop'
+os = 'linux::debian'
 
 [[obj]]
 task = 'slop'
 source = '~/dotfiles/zt/slop'
 solution = 'cd ~/dotfiles/zt/slop; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 method = 'execute'
+os = 'linux::debian'
 
 [[obj]]
 task = 'maim'
@@ -97,6 +116,7 @@ source = '~/dotfiles/zt/maim'
 solution = 'cd ~/dotfiles/zt/maim; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 method = 'execute'
 dependencies = 'maim_dependencies'
+os = 'linux::debian'
 
 [[obj]]
 task = 'maim_dependencies'
@@ -126,5 +146,5 @@ os = "linux::fedora"
 
 [[obj]]
 task = 'playerctl install'
-solution = 'mkdir -p ~/src; cd ~/src/; git clone https://github.com/altdesktop/playerctl.git ; cd playerctl; meson -Dgtk-doc=false mesonbuild && sudo ninja -C mesonbuild install'
+solution = 'test -e ~/src/playerctl || mkdir -p ~/src; cd ~/src/; git clone https://github.com/altdesktop/playerctl.git ; cd playerctl; meson -Dgtk-doc=false mesonbuild && sudo ninja -C mesonbuild install'
 dependencies = 'playerctl dependencies'
