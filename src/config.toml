@@ -15,6 +15,13 @@
 
 
 [[obj]]
+file = 'alacritty'
+source = '~/dotfiles/.config/alacritty/'
+destination = '~/.config/alacritty'
+method = 'symlink'
+force = 'true'
+
+[[obj]]
 file = '.neomuttrc'
 source = '~/dotfiles/.neomuttrc'
 destination = '~/.neomuttrc'
