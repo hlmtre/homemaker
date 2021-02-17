@@ -51,6 +51,7 @@
 //!  indicatif
 //!  console
 #![allow(dead_code)]
+extern crate chrono;
 extern crate dirs;
 extern crate indicatif;
 extern crate log;
@@ -63,7 +64,8 @@ use ::hm::{
 use indicatif::HumanDuration;
 #[macro_use]
 use log::{info, trace, warn};
-use simplelog::{Config as slConfig, ConfigBuilder, LevelFilter, WriteLogger};
+use chrono::prelude::*;
+use simplelog::{Config as slConfig, LevelFilter, WriteLogger};
 use std::{env, fs::File, path::PathBuf, process::exit, string::String, time::Instant};
 
 /// Pull apart our arguments, if they're called, get our Config, and error-check.
@@ -74,10 +76,23 @@ fn main() {
   slc.set_max_level(LevelFilter::Trace);
   slc.
   */
+  let l = Local::now();
+  let mut p = "./logs/".to_string();
+  let mut log_file_name = String::from("hm-task-");
+  // we don't really care if we can make the directory. if we can, great.
+  match std::fs::create_dir("./logs/") {
+    Ok(_) => {}
+    Err(_) => {
+      warn!("couldn't create log directory :(")
+    }
+  };
+  log_file_name.push_str(l.to_string().as_str());
+  log_file_name.push_str(".log");
+  p.push_str(log_file_name.as_str());
   let _ = WriteLogger::init(
     LevelFilter::Trace,
     slConfig::default(),
-    File::create("hm-task.log").unwrap(),
+    File::create(p).unwrap(),
   );
   info!("beginning hm execution...");
   let mut args: Vec<String> = env::args().collect();
