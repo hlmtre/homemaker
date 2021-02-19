@@ -230,13 +230,16 @@ pub fn send_tasks_off_to_college(
       .stderr(Stdio::piped())
       .spawn()
       .unwrap();
-    let output = c.stdout.take().unwrap();
-    let reader = BufReader::new(output);
-    reader
-      .lines()
-      .filter_map(|line| line.ok())
-      .for_each(|line| info!("{}", line));
-    //p.println(s1);
+    let output: std::process::ChildStdout = c.stdout.take().unwrap();
+    let reader: BufReader<std::process::ChildStdout> = BufReader::new(output);
+    // run this in another thread or the little block of tasks draws line-by-line
+    // instead of all at once then updating as the task info gets Worker'd back
+    thread::spawn(|| {
+      reader
+        .lines()
+        .filter_map(|line| line.ok())
+        .for_each(|line| info!("{}", line));
+    });
     p.set_style(
       ProgressStyle::default_spinner()
         .template("[{elapsed:4}] {prefix:.bold.dim} {spinner} {wide_msg}"),
