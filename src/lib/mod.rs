@@ -89,9 +89,7 @@ use hmerror::{ErrorKind as hmek, HMError};
 
 use console::{pad_str, style, Alignment};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-#[macro_use]
-use log::{info, trace, warn};
-use simplelog::{Config as slConfig, LevelFilter, WriteLogger};
+use log::{info, warn};
 use solvent::DepGraph;
 use std::{
   collections::{HashMap, HashSet},
@@ -209,7 +207,8 @@ pub fn symlink_item(source: String, target: String, force: bool) -> Result<(), H
 /// Take a ManagedObject task, an mpsc tx, and a Progressbar. Execute task and regularly inform the rx
 /// (all the way over back in `main()`)about our status using config::Worker.
 ///
-/// TODO: allow the `verbose` bool to show the output of the tasks as they go.
+/// -TODO-: allow the `verbose` bool to show the output of the tasks as they go.
+/// Hey, it's done! Writes out to the logs/ directory.
 ///
 /// Return () or io::Error (something went wrong in our task).
 ///
@@ -257,26 +256,31 @@ pub fn send_tasks_off_to_college(
         completed: false,
       };
       match c.try_wait() {
+        // we check each child status...
         Ok(Some(status)) => {
           if status.success() {
+            // if we're done, send back :thumbsup:
             p.finish_with_message(console::style("✓").green().to_string().as_str());
             w.status = status.code();
             w.completed = true;
             tx1.send(w).unwrap();
             return Ok(());
           } else {
+            // or :sadface:
             drop(tx1);
+            warn!("Error within `{}`", s1);
             p.abandon_with_message(console::style("✗").red().to_string().as_str());
             return Err(HMError::Regular(hmek::SolutionError {
               solution: String::from(s1),
             }));
           }
-        }
+        } // it's sent back nothing, not error, but not done
         Ok(None) => {
           tx1.send(w).unwrap();
           thread::sleep(time::Duration::from_millis(200));
         }
         Err(_e) => {
+          // ahh send back err!
           drop(tx1);
           p.abandon_with_message(console::style("✗").red().to_string().as_str());
           return Err(HMError::Regular(hmek::SolutionError {

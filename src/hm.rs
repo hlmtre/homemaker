@@ -61,21 +61,15 @@ use ::hm::{
   config::{deserialize_file, ensure_config_dir, Config},
   do_tasks, hmerror,
 };
-use indicatif::HumanDuration;
-#[macro_use]
-use log::{info, trace, warn};
 use chrono::prelude::*;
+use indicatif::HumanDuration;
+use log::{info, warn};
 use simplelog::{Config as slConfig, LevelFilter, WriteLogger};
 use std::{env, fs::File, path::PathBuf, process::exit, string::String, time::Instant};
 
 /// Pull apart our arguments, if they're called, get our Config, and error-check.
 /// Then work our way through the Config, executing the easy stuff, and threading off the hard.
 fn main() {
-  /*
-  let mut slc = ConfigBuilder::new();
-  slc.set_max_level(LevelFilter::Trace);
-  slc.
-  */
   let l = Local::now();
   let mut p = "./logs/".to_string();
   let mut log_file_name = String::from("hm-task-");
@@ -89,6 +83,8 @@ fn main() {
   log_file_name.push_str(l.to_string().as_str());
   log_file_name.push_str(".log");
   p.push_str(log_file_name.as_str());
+  // nifty thing is we can make it here, and then we _never_
+  // have to pass it around - singleton. just info!, trace!, warn!, etc
   let _ = WriteLogger::init(
     LevelFilter::Trace,
     slConfig::default(),
@@ -168,8 +164,7 @@ fn main() {
 fn help() {
   println!(
     "usage:
-    hm [-h] | [-v] [<config>]
-    -v | verbose output
+    hm [-h] | [<config>]
     -h | this help message
     <config> and -v are not required.
     if config is not specified, default location of ~/.config/homemaker/config.toml is assumed."
