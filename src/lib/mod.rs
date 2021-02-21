@@ -264,6 +264,7 @@ pub fn send_tasks_off_to_college(
             w.status = status.code();
             w.completed = true;
             tx1.send(w).unwrap();
+            info!("Successfully completed {}.", n);
             return Ok(());
           } else {
             // or :sadface:
