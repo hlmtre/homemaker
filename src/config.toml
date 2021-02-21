@@ -52,6 +52,7 @@ file = 'tmux.conf'
 source = '~/dotfiles/.tmux.conf'
 destination = '~/.tmux.conf'
 method = 'symlink'
+post = 'git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm'
 
 [[obj]]
 file = 'gtk2'

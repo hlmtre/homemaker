@@ -71,6 +71,8 @@ use std::{env, fs::File, path::PathBuf, process::exit, string::String, time::Ins
 /// Then work our way through the Config, executing the easy stuff, and threading off the hard.
 fn main() {
   let l = Local::now();
+  let mut slc = simplelog::ConfigBuilder::new();
+  slc.set_time_to_local(true);
   let mut p = "./logs/".to_string();
   let mut log_file_name = String::from("hm-task-");
   // we don't really care if we can make the directory. if we can, great.
@@ -85,11 +87,7 @@ fn main() {
   p.push_str(log_file_name.as_str());
   // nifty thing is we can make it here, and then we _never_
   // have to pass it around - singleton. just info!, trace!, warn!, etc
-  let _ = WriteLogger::init(
-    LevelFilter::Trace,
-    slConfig::default(),
-    File::create(p).unwrap(),
-  );
+  let _ = WriteLogger::init(LevelFilter::Trace, slc.build(), File::create(p).unwrap());
   info!("beginning hm execution...");
   let mut args: Vec<String> = env::args().collect();
   // it's a little hackish, but we don't have to bring in an external crate to do our args
