@@ -78,8 +78,8 @@ fn main() {
   // we don't really care if we can make the directory. if we can, great.
   match std::fs::create_dir("./logs/") {
     Ok(_) => {}
-    Err(_) => {
-      warn!("couldn't create log directory :(")
+    Err(e) => {
+      warn!("Couldn't create log directory :( . Error: {}", e);
     }
   };
   log_file_name.push_str(l.to_string().as_str());

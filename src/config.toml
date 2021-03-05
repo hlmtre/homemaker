@@ -21,6 +21,12 @@ destination = '~/.config/alacritty'
 method = 'symlink'
 
 [[obj]]
+file = 'kitty'
+source = '~/dotfiles/.config/kitty'
+destination = '~/.config/kitty'
+method = 'symlink'
+
+[[obj]]
 file = '.neomuttrc'
 source = '~/dotfiles/.neomuttrc'
 destination = '~/.neomuttrc'
