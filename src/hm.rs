@@ -64,20 +64,22 @@ use ::hm::{
 use chrono::prelude::*;
 use indicatif::HumanDuration;
 use log::{info, warn};
-use simplelog::{Config as slConfig, LevelFilter, WriteLogger};
+use simplelog::{ConfigBuilder, LevelFilter, WriteLogger};
 use std::{env, fs::File, path::PathBuf, process::exit, string::String, time::Instant};
 
 /// Pull apart our arguments, if they're called, get our Config, and error-check.
 /// Then work our way through the Config, executing the easy stuff, and threading off the hard.
 fn main() {
   let l = Local::now();
+  let mut slc = ConfigBuilder::new();
+  slc.set_time_to_local(true);
   let mut p = "./logs/".to_string();
   let mut log_file_name = String::from("hm-task-");
   // we don't really care if we can make the directory. if we can, great.
   match std::fs::create_dir("./logs/") {
     Ok(_) => {}
-    Err(_) => {
-      warn!("couldn't create log directory :(")
+    Err(e) => {
+      warn!("Couldn't create log directory :( . Error: {}", e);
     }
   };
   log_file_name.push_str(l.to_string().as_str());
@@ -85,29 +87,31 @@ fn main() {
   p.push_str(log_file_name.as_str());
   // nifty thing is we can make it here, and then we _never_
   // have to pass it around - singleton. just info!, trace!, warn!, etc
-  let _ = WriteLogger::init(
-    LevelFilter::Trace,
-    slConfig::default(),
-    File::create(p).unwrap(),
-  );
+  let _ = WriteLogger::init(LevelFilter::Trace, slc.build(), File::create(p).unwrap());
   info!("beginning hm execution...");
   let mut args: Vec<String> = env::args().collect();
   // it's a little hackish, but we don't have to bring in an external crate to do our args
-  let mut verbose: bool = false;
   let mut i = 0;
   for a in args.clone() {
-    if a.trim() == "-v" {
-      verbose = true;
-      break;
-    }
-    if a.trim() == "-h" {
-      help();
-      break;
+    match a.as_str() {
+      "-c" | "clean" => {
+        match clean() {
+          Ok(_) => {
+            exit(0);
+          }
+          Err(e) => {
+            eprintln!("{}", e);
+            exit(1);
+          }
+        };
+      }
+      "-h" | "--help" => {
+        help();
+        args.remove(i);
+      }
+      _ => {}
     }
     i += 1;
-  }
-  if verbose {
-    args.remove(i);
   }
   /*
   accept either a config passed as arg 1 or try to open the default config location
@@ -160,13 +164,20 @@ fn main() {
   }
 }
 
+/// Clean up our logs directory.
+fn clean() -> std::io::Result<()> {
+  std::fs::remove_dir_all("./logs/")?;
+  Ok(())
+}
+
 /// Print help for the user.
 fn help() {
   println!(
     "usage:
-    hm [-h] | [<config>]
+    hm [-h] | clean | [<config>]
     -h | this help message
-    <config> and -v are not required.
+    clean | removes the contents of the log directory
+    <config> is not required.
     if config is not specified, default location of ~/.config/homemaker/config.toml is assumed."
   );
   exit(0)

@@ -21,6 +21,12 @@ destination = '~/.config/alacritty'
 method = 'symlink'
 
 [[obj]]
+file = 'kitty'
+source = '~/dotfiles/.config/kitty'
+destination = '~/.config/kitty'
+method = 'symlink'
+
+[[obj]]
 file = '.neomuttrc'
 source = '~/dotfiles/.neomuttrc'
 destination = '~/.neomuttrc'
@@ -52,7 +58,7 @@ file = 'tmux.conf'
 source = '~/dotfiles/.tmux.conf'
 destination = '~/.tmux.conf'
 method = 'symlink'
-post = "git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm"
+post = 'git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm'
 
 [[obj]]
 file = 'gtk2'
