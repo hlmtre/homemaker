@@ -251,9 +251,8 @@ impl Config {
           mo.destination = String::from(_x.as_str().unwrap());
         }
         if let Some(_x) = val.get("dependencies") {
-          let _f = _x.as_str().unwrap();
-          // thanks https://stackoverflow.com/a/37547426
-          mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
+          let _f = _x.as_array().unwrap();
+          mo.dependencies = _f.iter().map(|v| v.as_str().unwrap().to_owned()).collect();
         }
         if let Some(_x) = val.get("force") {
           // haha boolean assignment go brr
@@ -323,6 +322,7 @@ pub fn deserialize_file(file: &str) -> HMResult<Config> {
     Ok(_a) => _a,
     Err(e) => return Err(HMError::Other(e.to_string())),
   };
+
   let mut file_contents = BufReader::new(g);
   match file_contents.read_to_string(&mut contents) {
     Ok(v) => v,
@@ -331,7 +331,11 @@ pub fn deserialize_file(file: &str) -> HMResult<Config> {
   if cfg!(debug_assertions) {
     println!("file: {}", &file);
   }
-  toml::from_str(&contents).or_else(|e| Err(HMError::Other(e.to_string())))
+  deserialize_str(&contents)
+}
+
+fn deserialize_str(contents: &str) -> HMResult<Config> {
+  toml::from_str(contents).or_else(|e| Err(HMError::Other(e.to_string())))
 }
 
 /// Make sure $XDG_CONFIG_DIR exists.
@@ -391,5 +395,19 @@ mod config_test {
     mo.destination = String::from("~/.tmux.conf");
     mo.method = String::from("symlink");
     assert_eq!(mo, a.get_mo("tmux.conf").unwrap());
+  }
+
+  #[test]
+  fn dependencies_is_array() {
+    let mut a: Config = deserialize_str(
+      r#"
+[[obj]]
+task = 'zt'
+solution = 'cd ~/dotfiles/zt && git pull'
+dependencies = ['grim', 'slurp']
+    "#,
+    )
+    .unwrap();
+    assert_eq!(vec!["grim", "slurp"], a.get_mo("zt").unwrap().dependencies);
   }
 }

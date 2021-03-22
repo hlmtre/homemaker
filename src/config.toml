@@ -2,7 +2,7 @@
 # [[obj]]
 # task = 'zt' <-- like 'name' but for, uh, tasks
 # solution = 'cd ~/dotfiles/zt && git pull' <-- shell to execute
-# dependencies = 'maim, slop' <-- dependencies - do them first. Valid values: any other tasks, need not be specified before this one, comma separated.
+# dependencies = ['maim', 'slop'] <-- dependencies - do them first. Valid values: any other tasks, need not be specified before this one.
 
 # complex managed object
 # [[obj]]  <-- required `obj` header for each managed object
@@ -89,7 +89,7 @@ method = 'symlink'
 [[obj]]
 task = 'zt-fedora-wayland'
 solution = 'cd ~/dotfiles/zt && git pull'
-dependencies = 'grim, slurp'
+dependencies = ['grim', 'slurp']
 os = 'linux::fedora'
 
 [[obj]]
@@ -107,7 +107,7 @@ os = 'linux::fedora'
 [[obj]]
 task = 'zt'
 solution = 'cd ~/dotfiles/zt && git pull'
-dependencies = 'maim, slop'
+dependencies = ['maim', 'slop']
 os = 'linux::debian'
 
 [[obj]]
@@ -122,7 +122,7 @@ task = 'maim'
 source = '~/dotfiles/zt/maim'
 solution = 'cd ~/dotfiles/zt/maim; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 method = 'execute'
-dependencies = 'maim_dependencies'
+dependencies = ['maim_dependencies']
 os = 'linux::debian'
 
 [[obj]]
@@ -154,4 +154,4 @@ os = "linux::fedora"
 [[obj]]
 task = 'playerctl install'
 solution = 'test -e ~/src/playerctl || mkdir -p ~/src; cd ~/src/; git clone https://github.com/altdesktop/playerctl.git ; cd playerctl; meson -Dgtk-doc=false mesonbuild && sudo ninja -C mesonbuild install'
-dependencies = 'playerctl dependencies'
+dependencies = ['playerctl dependencies']
