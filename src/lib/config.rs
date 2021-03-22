@@ -229,86 +229,59 @@ impl Config {
   /// Convenience function that allows getting a HashMap from a `Config` of
   /// the `ManagedObject`s within.
   pub fn as_managed_objects(config: Config) -> HashMap<String, ManagedObject> {
-    let mut mos: HashMap<String, ManagedObject> = HashMap::new();
-    for _f in config.files.iter() {
-      let mut mo = ManagedObject::default();
-      mo.name = _f.0.to_owned();
-      match _f.1.get("solution") {
-        None => (),
-        Some(_x) => {
+    config
+      .files
+      .iter()
+      .map(|(name, val)| {
+        let mut mo = ManagedObject::default();
+        mo.name = name.to_owned();
+        if let Some(_x) = val.get("solution") {
           mo.solution = String::from(_x.as_str().unwrap());
         }
-      }
-      match _f.1.get("task") {
-        None => (),
-        Some(_x) => {
+        if let Some(_x) = val.get("task") {
           mo.task = String::from(_x.as_str().unwrap());
         }
-      }
-      match _f.1.get("source") {
-        None => (),
-        Some(_x) => {
+        if let Some(_x) = val.get("source") {
           mo.source = String::from(_x.as_str().unwrap());
         }
-      }
-      match _f.1.get("method") {
-        None => (),
-        Some(_x) => {
+        if let Some(_x) = val.get("method") {
           mo.method = String::from(_x.as_str().unwrap());
         }
-      }
-      match _f.1.get("destination") {
-        None => (),
-        Some(_x) => {
+        if let Some(_x) = val.get("destination") {
           mo.destination = String::from(_x.as_str().unwrap());
         }
-      }
-      match _f.1.get("dependencies") {
-        None => (),
-        Some(_x) => {
+        if let Some(_x) = val.get("dependencies") {
           let _f = _x.as_str().unwrap();
           // thanks https://stackoverflow.com/a/37547426
           mo.dependencies = _f.split(", ").map(|s| s.to_string()).collect();
         }
-      }
-      match _f.1.get("force") {
-        None => (),
-        Some(_x) => {
-          let _f = _x.as_str().unwrap();
+        if let Some(_x) = val.get("force") {
           // haha boolean assignment go brr
-          mo.force = _f == "true";
+          mo.force = _x.as_bool().unwrap();
         }
-      }
-      match _f.1.get("post") {
-        None => (),
-        Some(_x) => {
+        if let Some(_x) = val.get("post") {
           mo.post = String::from(_x.as_str().unwrap());
         }
-      }
-      //
-      // the `os =` entry in the config will be formatted either
-      // `windows` or `linux::<distro>`
-      match _f.1.get("os") {
-        None => {
-          mo.os = None;
-        }
-        Some(_x) => {
+        //
+        // the `os =` entry in the config will be formatted either
+        // `windows` or `linux::<distro>`
+        if let Some(_x) = val.get("os") {
           let _b = String::from(_x.as_str().unwrap());
           let _a: Vec<&str> = _b.split("::").collect::<Vec<&str>>();
           // TODO change this to match on strum's VariantNotFound
-          match _a.len() > 1 {
-            false => mo.os = Some(OS::from_str(_a[0].to_lowercase().as_str()).unwrap()),
-            true => {
-              mo.os = Some(OS::Linux(
-                LinuxDistro::from_str(_a[1].to_lowercase().as_str()).unwrap(),
-              ));
-            }
-          }
+          mo.os = if _a.len() > 1 {
+            Some(OS::Linux(
+              LinuxDistro::from_str(_a[1].to_lowercase().as_str()).unwrap(),
+            ))
+          } else {
+            Some(OS::from_str(_a[0].to_lowercase().as_str()).unwrap())
+          };
+        } else {
+          mo.os = None;
         }
-      }
-      mos.insert(mo.name.clone(), mo.clone());
-    }
-    return mos;
+        (mo.name.clone(), mo)
+      })
+      .collect()
   }
 }
 
