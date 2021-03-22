@@ -219,8 +219,8 @@ impl fmt::Display for Config {
 impl Config {
   /// Allows us to get a specified Managed Object by name
   #[allow(dead_code)]
-  pub fn get_mo(&mut self, _n: String) -> Option<ManagedObject> {
-    match Config::as_managed_objects(self.clone()).get(&_n) {
+  pub fn get_mo(&mut self, _n: &str) -> Option<ManagedObject> {
+    match Config::as_managed_objects(self.clone()).get(_n) {
       Some(a) => Some(a.to_owned()),
       None => None,
     }
@@ -391,6 +391,6 @@ mod config_test {
     mo.source = String::from("~/dotfiles/.tmux.conf");
     mo.destination = String::from("~/.tmux.conf");
     mo.method = String::from("symlink");
-    assert_eq!(mo, a.get_mo("tmux.conf".to_string()).unwrap());
+    assert_eq!(mo, a.get_mo("tmux.conf").unwrap());
   }
 }
