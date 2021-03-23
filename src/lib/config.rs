@@ -402,10 +402,10 @@ mod config_test {
   fn dependencies_is_array() {
     let mut a: Config = deserialize_str(
       r#"
-[[obj]]
-task = 'zt'
-solution = 'cd ~/dotfiles/zt && git pull'
-dependencies = ['grim', 'slurp']
+      [[obj]]
+      task = 'zt'
+      solution = 'cd ~/dotfiles/zt && git pull'
+      dependencies = ['grim', 'slurp']
     "#,
     )
     .unwrap();
