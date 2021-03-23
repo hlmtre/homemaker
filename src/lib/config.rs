@@ -255,6 +255,7 @@ impl Config {
           mo.dependencies = _f.iter().map(|v| v.as_str().unwrap().to_owned()).collect();
         }
         if let Some(_x) = val.get("force") {
+          let _f = _x.as_str().unwrap();
           // haha boolean assignment go brr
           mo.force = _x.as_bool().unwrap();
         }
