@@ -94,14 +94,14 @@ os = 'linux::fedora'
 
 [[obj]]
 task = 'grim'
-solution = 'test -e ~/src/grim || cd ~/src && git clone https://github.com/emersion/grim.git && cd grim && meson build && sudo ninja -C build install'
+solution = 'test -d ~/src/grim/ || (git clone https://github.com/emersion/grim.git ~/src/ && cd ~/src/grim && meson build && sudo ninja -C build install)'
 method = 'execute'
 os = 'linux::fedora'
 
 [[obj]]
 task = 'slurp'
 method = 'execute'
-solution = 'test -e ~/src/slurp || cd ~/src && git clone https://github.com/emersion/slurp.git && cd slurp && meson build && sudo ninja -C build install'
+solution = 'test -d ~/src/slurp/ || (git clone https://github.com/emersion/slurp.git ~/src/ && cd ~/src/slurp && meson build && sudo ninja -C build install)'
 os = 'linux::fedora'
 
 [[obj]]
