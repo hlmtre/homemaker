@@ -244,11 +244,8 @@ pub fn send_tasks_off_to_college(
         .template("[{elapsed:4}] {prefix:.bold.dim} {spinner} {wide_msg}"),
     );
     p.enable_steady_tick(200);
-    p.set_prefix(
-      pad_str(format!("task {}", n).as_str(), 30, Alignment::Left, None)
-        .into_owned()
-        .as_str(),
-    );
+    let x = pad_str(format!("task {}", n).as_str(), 30, Alignment::Left, None).into_owned();
+    p.set_prefix(x);
     loop {
       let mut w: Worker = Worker {
         name: n.clone(),
@@ -260,7 +257,7 @@ pub fn send_tasks_off_to_college(
         Ok(Some(status)) => {
           if status.success() {
             // if we're done, send back :thumbsup:
-            p.finish_with_message(console::style("✓").green().to_string().as_str());
+            p.finish_with_message(console::style("✓").green().to_string());
             w.status = status.code();
             w.completed = true;
             tx1.send(w).unwrap();
@@ -270,7 +267,7 @@ pub fn send_tasks_off_to_college(
             // or :sadface:
             drop(tx1);
             warn!("Error within `{}`", s1);
-            p.abandon_with_message(console::style("✗").red().to_string().as_str());
+            p.abandon_with_message(console::style("✗").red().to_string());
             return Err(HMError::Regular(hmek::SolutionError {
               solution: String::from(s1),
             }));
@@ -283,7 +280,7 @@ pub fn send_tasks_off_to_college(
         Err(_e) => {
           // ahh send back err!
           drop(tx1);
-          p.abandon_with_message(console::style("✗").red().to_string().as_str());
+          p.abandon_with_message(console::style("✗").red().to_string());
           return Err(HMError::Regular(hmek::SolutionError {
             solution: String::from(s1),
           }));
