@@ -255,9 +255,10 @@ impl Config {
           mo.dependencies = _f.iter().map(|v| v.as_str().unwrap().to_owned()).collect();
         }
         if let Some(_x) = val.get("force") {
-          let _f = _x.as_str().unwrap();
-          // haha boolean assignment go brr
-          mo.force = _x.as_bool().unwrap();
+          mo.force = match _x.as_str().unwrap() {
+            "true" => true,
+            _ => false,
+          }
         }
         if let Some(_x) = val.get("post") {
           mo.post = String::from(_x.as_str().unwrap());
