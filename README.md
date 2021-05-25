@@ -66,6 +66,9 @@ why homemaker?
   * `homemaker` complains if the dependency tree cannot be solved, and hopefully shows you a handy explanation why.
   ![dep graph](doc/dep_graph.png)
 
+homemaker unknowingly clobbers an existing dotfile manager written in Go some time ago. Linked [here](https://github.com/FooSoft/homemaker).
+============================================================================================================================================
+
 [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org)
 
 thanks to actual good code:\
