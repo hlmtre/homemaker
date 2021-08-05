@@ -69,6 +69,7 @@
 //!  solvent
 //!  indicatif
 //!  console
+#![allow(clippy::many_single_char_names)]
 #![allow(dead_code)]
 #![allow(unused_macros)]
 extern crate console;
@@ -119,8 +120,9 @@ impl fmt::Display for SneakyDepGraphImposter<String> {
     for n in self.nodes.clone() {
       if self.dependencies.get(&i).is_some() {
         let _ = write!(f, "[ {} -> ", n);
+        #[allow(clippy::for_loops_over_fallibles)]
         for d in self.dependencies.get(&i) {
-          if d.len() == 0 {
+          if d.is_empty() {
             write!(f, "<no deps> ")?;
           }
           let mut j: usize = 1;
@@ -157,13 +159,11 @@ pub fn copy_item(source: String, target: String, force: bool) -> Result<(), HMEr
     Ok(a) => a,
     Err(e) => return Err(HMError::Io(e)),
   };
-  if force {
-    if Path::new(_ltarget.as_str()).exists() {
-      if md.is_dir() {
-        remove_dir_all(_ltarget.clone())?;
-      } else {
-        remove_file(_ltarget.clone())?;
-      }
+  if force && Path::new(_ltarget.as_str()).exists() {
+    if md.is_dir() {
+      remove_dir_all(_ltarget.clone())?;
+    } else {
+      remove_file(_ltarget.clone())?;
     }
   }
   copy(Path::new(_lsource.as_str()), Path::new(_ltarget.as_str()))?;
@@ -183,14 +183,12 @@ pub fn symlink_item(source: String, target: String, force: bool) -> Result<(), H
     Err(e) => return Err(HMError::Io(e)),
   };
   let lmd = metadata(_ltarget.clone());
-  if force {
-    if Path::new(_ltarget.as_str()).exists() {
-      // this is reasonably safe because if the target exists our lmd is a Result not an Err
-      if lmd.unwrap().is_dir() {
-        remove_dir_all(_ltarget.clone())?;
-      } else {
-        remove_file(_ltarget.clone())?;
-      }
+  if force && Path::new(_ltarget.as_str()).exists() {
+    // this is reasonably safe because if the target exists our lmd is a Result not an Err
+    if lmd.unwrap().is_dir() {
+      remove_dir_all(_ltarget.clone())?;
+    } else {
+      remove_file(_ltarget.clone())?;
     }
   }
   // create all the parent directories required for the target file/directory
