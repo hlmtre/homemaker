@@ -24,7 +24,7 @@ use super::hmerror::{HMError, Result as HMResult};
 ///
 /// Allow us to communicate meaningfully back to `main()` thread.
 ///
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone)]
 pub struct Worker {
   pub name: String,
   pub status: Option<i32>,
@@ -137,7 +137,7 @@ impl ManagedObject {
   pub fn is_task(&self) -> bool {
     return !self.solution.is_empty();
   }
-  pub fn set_satisfied(&mut self) -> () {
+  pub fn set_satisfied(&mut self) {
     self.satisfied = true;
   }
 }
