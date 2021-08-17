@@ -85,6 +85,7 @@ file = 'fish'
 source = '~/dotfiles/.config/fish'
 destination = '~/.config/fish'
 method = 'symlink'
+force = 'true'
 
 [[obj]]
 task = 'zt-fedora-wayland'
@@ -94,14 +95,14 @@ os = 'linux::fedora'
 
 [[obj]]
 task = 'grim'
-solution = 'test -d ~/src/grim/ || (git clone https://github.com/emersion/grim.git ~/src/ && cd ~/src/grim && meson build && sudo ninja -C build install)'
+solution = 'test -d ~/src/grim/ || (git clone https://github.com/emersion/grim.git ~/src && cd ~/src/grim && meson build && sudo ninja -C build install)'
 method = 'execute'
 os = 'linux::fedora'
 
 [[obj]]
 task = 'slurp'
 method = 'execute'
-solution = 'test -d ~/src/slurp/ || (git clone https://github.com/emersion/slurp.git ~/src/ && cd ~/src/slurp && meson build && sudo ninja -C build install)'
+solution = 'test -d ~/src/slurp/ || (git clone https://github.com/emersion/slurp.git ~/src && cd ~/src/slurp && meson build && sudo ninja -C build install)'
 os = 'linux::fedora'
 
 [[obj]]
@@ -122,7 +123,7 @@ task = 'maim'
 source = '~/dotfiles/zt/maim'
 solution = 'cd ~/dotfiles/zt/maim; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 method = 'execute'
-dependencies = ['maim_dependencies']
+dependencies = ['maim_dependencies', 'slop']
 os = 'linux::debian'
 
 [[obj]]
@@ -148,10 +149,37 @@ solution = 'echo HI'
 
 [[obj]]
 task = 'playerctl dependencies'
-solution = 'sudo dnf -y install meson'
+solution = 'sudo pip3 install meson'
 os = "linux::fedora"
 
 [[obj]]
 task = 'playerctl install'
-solution = 'test -e ~/src/playerctl || mkdir -p ~/src; cd ~/src/; git clone https://github.com/altdesktop/playerctl.git ; cd playerctl; meson -Dgtk-doc=false mesonbuild && sudo ninja -C mesonbuild install'
+solution = 'test -e ~/src/playerctl || mkdir -p ~/src; cd ~/src/; git clone https://github.com/altdesktop/playerctl.git ; cd playerctl; meson -Dgtk-doc=false -Dintrospection=false mesonbuild && sudo ninja -C mesonbuild install'
 dependencies = ['playerctl dependencies']
+
+[[obj]]
+task = 'clone wlroots'
+solution = 'git clone https://github.com/swaywm/wlroots ~/src/sway/subprojects/wlroots'
+dependencies = ['clone swaywm']
+os = "linux::fedora"
+
+[[obj]]
+task = 'clone swaywm'
+solution = 'git clone https://github.com/swaywm/swaywm ~/src/sway; mkdir ~/src/sway/subprojects'
+os = "linux::fedora"
+
+[[obj]]
+task = 'swaywm'
+solution = 'meson build && sudo ninja -C build/ install'
+dependencies = ['swaywm_dependencies_fedora', 'clone swaywm']
+os = "linux::fedora"
+
+[[obj]]
+task = 'swaywm_dependencies_fedora'
+solution = 'sudo dnf install -y libxkbcommon-devel cmake mesa-libgbm-devel libdrm-devel wayland-devel systemd-devel pixman-devel wayland-protocols-devel libxcb-devel xcb-util-devel ffmpeg-devel libxkbcommon-devel mesa-libgbm-devel libdrm-devel wayland-devel ffmpeg-devel'
+os = "linux::fedora"
+
+[[obj]]
+task = 'redshift deps'
+solution = 'sudo dnf install -y gettext-devel libtool autoconf automake'
+os = "linux::fedora"
