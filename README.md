@@ -1,6 +1,6 @@
 Have a dotfiles directory with all your stuff in it? Have homemaker put everything in its right place.
 
-Check out the [changelog](changelog)
+Check out the [changelog](changelog.md)
 =====================================
 
 **homemaker in action**
