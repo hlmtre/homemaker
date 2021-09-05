@@ -220,10 +220,9 @@ impl Config {
   /// Allows us to get a specified Managed Object by name
   #[allow(dead_code)]
   pub fn get_mo(&mut self, _n: &str) -> Option<ManagedObject> {
-    match Config::as_managed_objects(self.clone()).get(_n) {
-      Some(a) => Some(a.to_owned()),
-      None => None,
-    }
+    Config::as_managed_objects(self.clone())
+      .get(_n)
+      .map(|a| a.to_owned())
   }
 
   /// Convenience function that allows getting a HashMap from a `Config` of
@@ -255,10 +254,7 @@ impl Config {
           mo.dependencies = _f.iter().map(|v| v.as_str().unwrap().to_owned()).collect();
         }
         if let Some(_x) = val.get("force") {
-          mo.force = match _x.as_str().unwrap() {
-            "true" => true,
-            _ => false,
-          }
+          mo.force = matches!(_x.as_str().unwrap(), "true");
         }
         if let Some(_x) = val.get("post") {
           mo.post = String::from(_x.as_str().unwrap());
@@ -337,7 +333,7 @@ pub fn deserialize_file(file: &str) -> HMResult<Config> {
 }
 
 fn deserialize_str(contents: &str) -> HMResult<Config> {
-  toml::from_str(contents).or_else(|e| Err(HMError::Other(e.to_string())))
+  toml::from_str(contents).map_err(|e| HMError::Other(e.to_string()))
 }
 
 /// Make sure $XDG_CONFIG_DIR exists.
@@ -367,13 +363,13 @@ pub fn ensure_config_dir() -> Result<PathBuf, &'static str> {
         ```
         sort of as a pseudocodey example
          */
-        Ok(()) => return Ok(PathBuf::from(&whole_path.join("config.toml"))),
-        Err(_e) => return Err("Couldn't create config dir!"),
+        Ok(()) => Ok(PathBuf::from(&whole_path.join("config.toml"))),
+        Err(_e) => Err("Couldn't create config dir!"),
       }
     }
     // if dirs::config_path() call doesn't return anything
-    None => return Err("Couldn't get config directory from $XDG"),
-  };
+    None => Err("Couldn't get config directory from $XDG"),
+  }
 }
 
 #[cfg(test)]

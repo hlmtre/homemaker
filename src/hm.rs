@@ -96,7 +96,7 @@ fn main() {
   for i in 0..args.len() {
     match args[i].as_str() {
       "-t" | "--task" => {
-        if args.len() >= i + 1 && !args[i + 1].starts_with("-") {
+        if args.len() > i && !args[i + 1].starts_with("-") {
           // ensure the next arg is not a flag
           // assume the next one is the named task to complete
           target_task = Some(args[i + 1].clone());

@@ -215,9 +215,9 @@ pub fn send_tasks_off_to_college(
   tx: &Sender<Worker>,
   p: ProgressBar,
 ) -> Result<(), Error> {
-  let s: String = mo.solution.clone().to_string();
-  let s1: String = mo.solution.clone().to_string();
-  let n: String = mo.name.clone().to_string();
+  let s: String = mo.solution.clone();
+  let s1: String = mo.solution.clone();
+  let n: String = mo.name.clone();
   let tx1: Sender<Worker> = Sender::clone(tx);
   let _: thread::JoinHandle<Result<(), HMError>> = thread::spawn(move || {
     let mut c = Command::new("bash")
@@ -266,9 +266,7 @@ pub fn send_tasks_off_to_college(
             drop(tx1);
             warn!("Error within `{}`", s1);
             p.abandon_with_message(console::style("✗").red().to_string());
-            return Err(HMError::Regular(hmek::SolutionError {
-              solution: String::from(s1),
-            }));
+            return Err(HMError::Regular(hmek::SolutionError { solution: s1 }));
           }
         } // it's sent back nothing, not error, but not done
         Ok(None) => {
@@ -279,9 +277,7 @@ pub fn send_tasks_off_to_college(
           // ahh send back err!
           drop(tx1);
           p.abandon_with_message(console::style("✗").red().to_string());
-          return Err(HMError::Regular(hmek::SolutionError {
-            solution: String::from(s1),
-          }));
+          return Err(HMError::Regular(hmek::SolutionError { solution: s1 }));
         }
       }
     }
@@ -319,15 +315,14 @@ pub fn send_tasks_off_to_college(
 /// ```
 ///
 pub fn get_task_batches(
-  nodes: HashMap<String, ManagedObject>,
+  mut nodes: HashMap<String, ManagedObject>,
   target_task: Option<String>,
 ) -> Result<Vec<Vec<ManagedObject>>, HMError> {
   let our_os = config::determine_os();
-  let mut our_nodes = nodes.clone();
   let mut depgraph: DepGraph<String> = DepGraph::new();
   let mut nodes_to_remove: Vec<String> = Vec::new();
   let mut wrong_platforms: HashMap<String, config::OS> = HashMap::new();
-  for (name, node) in &our_nodes {
+  for (name, node) in &nodes {
     if node.os.is_none() || node.os.clone().unwrap() == our_os {
       depgraph.register_dependencies(name.to_owned(), node.dependencies.clone());
     } else {
@@ -336,7 +331,7 @@ pub fn get_task_batches(
     }
   }
   for n in nodes_to_remove {
-    our_nodes.remove(&n);
+    nodes.remove(&n);
   }
   let mut tasks: Vec<Vec<ManagedObject>> = Vec::new();
   let mut _dedup: HashSet<String> = HashSet::new();
@@ -345,8 +340,7 @@ pub fn get_task_batches(
     and don't need to go through our entire config to solve for each.
     just the subtree involved in our target.
   */
-  if target_task.is_some() {
-    let tt_name = target_task.unwrap();
+  if let Some(tt_name) = target_task {
     // TODO: break out getting our tasklist into its own function
     // de-dup me!
     let mut qtdg: Vec<ManagedObject> = Vec::new();
@@ -354,14 +348,14 @@ pub fn get_task_batches(
       Ok(i) => i,
       Err(_) => {
         return Err(HMError::Regular(hmek::DependencyUndefinedError {
-          dependency: String::from(tt_name),
+          dependency: tt_name,
         }));
       }
     };
     for n in tdg {
       match n {
         Ok(r) => {
-          let mut a = match our_nodes.get(r) {
+          let mut a = match nodes.get(r) {
             Some(a) => a,
             None => {
               /*
@@ -400,16 +394,18 @@ pub fn get_task_batches(
     }
     tasks.push(qtdg);
   } else {
-    for (name, _node) in &our_nodes {
+    // not doing target task
+    // we're doing the entire config
+    for name in nodes.keys() {
       let mut q: Vec<ManagedObject> = Vec::new();
-      let dg: solvent::DepGraphIterator<String> = depgraph.dependencies_of(&name).unwrap();
+      let dg: solvent::DepGraphIterator<String> = depgraph.dependencies_of(name).unwrap();
       for n in dg {
         match n {
           Ok(r) => {
             let c = String::from(r.as_str());
             // returns true if the set DID NOT have c in it already
             if _dedup.insert(c) {
-              let mut a = match our_nodes.get(r) {
+              let mut a = match nodes.get(r) {
                 Some(a) => a,
                 None => {
                   /*
@@ -498,7 +494,7 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
       copy_item(source, destination, mo.force)
     }
     _ => {
-      println!("{}", style(format!("{}", _s)).red());
+      println!("{}", style(_s.to_string()).red());
       Ok(())
     }
   }
@@ -518,7 +514,7 @@ pub fn do_tasks(
   target_task: Option<String>,
 ) -> Result<(), HMError> {
   let mut complex_operations = a.clone();
-  let mut simple_operations = a.clone();
+  let mut simple_operations = a;
   complex_operations.retain(|_, v| v.is_task()); // all the things that aren't just symlink/copy
   simple_operations.retain(|_, v| !v.is_task()); // all the things that are quick (don't need to thread off)
   if target_task.is_some() {
@@ -539,7 +535,7 @@ pub fn do_tasks(
     });
     if a.is_ok() {
       hmerror::happy_print(format!("Successfully performed operation on {:#?}", _name).as_str());
-      if p.len() > 0 {
+      if !p.is_empty() {
         println!("↳ Executing post {} for {}... ", p, _name);
         let _ = execute_solution(p);
       }
@@ -548,7 +544,7 @@ pub fn do_tasks(
   let (tx, rx) = mpsc::channel();
   let mp: MultiProgress = MultiProgress::new();
   let mut t: HashSet<String> = HashSet::new();
-  let _v = get_task_batches(complex_operations, target_task.clone()).unwrap_or_else(|er| {
+  let _v = get_task_batches(complex_operations, target_task).unwrap_or_else(|er| {
     hmerror::error(
       "Error occurred attempting to get task batches",
       format!("{}{}", "\n", er.to_string().as_str()).as_str(),
@@ -589,7 +585,7 @@ pub fn do_tasks(
 /// Let's take a reference, because we're only reading, and don't need ownership.
 ///
 fn all_workers_done(workers: &HashMap<String, config::Worker>) -> bool {
-  for (_n, w) in workers {
+  for w in workers.values() {
     if !w.completed {
       return false;
     }
