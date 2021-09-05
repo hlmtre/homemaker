@@ -309,7 +309,7 @@ pub fn send_tasks_off_to_college(
 /// let nodes: HashMap<String, ManagedObject> = HashMap::new();
 /// let (tx, rx) = mpsc::channel();
 /// let mp: MultiProgress = MultiProgress::new();
-/// let v: Vec<Vec<ManagedObject>> = get_task_batches(nodes).unwrap();
+/// let v: Vec<Vec<ManagedObject>> = get_task_batches(nodes, None).unwrap();
 /// for a in v {
 ///   for b in a {
 ///     let _p: ProgressBar = mp.add(ProgressBar::new_spinner());
@@ -320,6 +320,7 @@ pub fn send_tasks_off_to_college(
 ///
 pub fn get_task_batches(
   nodes: HashMap<String, ManagedObject>,
+  target_task: Option<String>,
 ) -> Result<Vec<Vec<ManagedObject>>, HMError> {
   let our_os = config::determine_os();
   let mut our_nodes = nodes.clone();
@@ -339,40 +340,51 @@ pub fn get_task_batches(
   }
   let mut tasks: Vec<Vec<ManagedObject>> = Vec::new();
   let mut _dedup: HashSet<String> = HashSet::new();
-  for (name, _node) in &our_nodes {
-    let mut q: Vec<ManagedObject> = Vec::new();
-    let dg: solvent::DepGraphIterator<String> = depgraph.dependencies_of(&name).unwrap();
-    for n in dg {
+  /*
+    ok. we've got a target task. we can get the depgraph for ONLY that task,
+    and don't need to go through our entire config to solve for each.
+    just the subtree involved in our target.
+  */
+  if target_task.is_some() {
+    let tt_name = target_task.unwrap();
+    // TODO: break out getting our tasklist into its own function
+    // de-dup me!
+    let mut qtdg: Vec<ManagedObject> = Vec::new();
+    let tdg: solvent::DepGraphIterator<String> = match depgraph.dependencies_of(&tt_name) {
+      Ok(i) => i,
+      Err(_) => {
+        return Err(HMError::Regular(hmek::DependencyUndefinedError {
+          dependency: String::from(tt_name),
+        }));
+      }
+    };
+    for n in tdg {
       match n {
         Ok(r) => {
-          let c = String::from(r.as_str());
-          // returns true if the set DID NOT have c in it already
-          if _dedup.insert(c) {
-            let mut a = match our_nodes.get(r) {
-              Some(a) => a,
-              None => {
-                /*
-                if we have a dependency, but it can't be solved because it's for the incorrect platform,
-                let's complain about it.
-                doing it this way is necessary because we DO still want our dependency graph to get run.
-                */
-                if wrong_platforms.contains_key(r) {
-                  return Err(HMError::Regular(hmek::IncorrectPlatformError {
-                    dependency: String::from(r),
-                    platform: our_os,
-                    target_platform: wrong_platforms.get(r).cloned().unwrap(),
-                  }));
-                } else {
-                  return Err(HMError::Regular(hmek::DependencyUndefinedError {
-                    dependency: String::from(r),
-                  }));
-                }
+          let mut a = match our_nodes.get(r) {
+            Some(a) => a,
+            None => {
+              /*
+              if we have a dependency, but it can't be solved because it's for the incorrect platform,
+              let's complain about it.
+              doing it this way is necessary because we DO still want our dependency graph to get run.
+              */
+              if wrong_platforms.contains_key(r) {
+                return Err(HMError::Regular(hmek::IncorrectPlatformError {
+                  dependency: String::from(r),
+                  platform: our_os,
+                  target_platform: wrong_platforms.get(r).cloned().unwrap(),
+                }));
+              } else {
+                return Err(HMError::Regular(hmek::DependencyUndefinedError {
+                  dependency: String::from(r),
+                }));
               }
             }
-            .to_owned();
-            a.set_satisfied();
-            q.push(a);
           }
+          .to_owned();
+          a.set_satisfied();
+          qtdg.push(a);
         }
         Err(_e) => unsafe {
           // we'll just borrow this for a second
@@ -386,7 +398,57 @@ pub fn get_task_batches(
         },
       }
     }
-    tasks.push(q);
+    tasks.push(qtdg);
+  } else {
+    for (name, _node) in &our_nodes {
+      let mut q: Vec<ManagedObject> = Vec::new();
+      let dg: solvent::DepGraphIterator<String> = depgraph.dependencies_of(&name).unwrap();
+      for n in dg {
+        match n {
+          Ok(r) => {
+            let c = String::from(r.as_str());
+            // returns true if the set DID NOT have c in it already
+            if _dedup.insert(c) {
+              let mut a = match our_nodes.get(r) {
+                Some(a) => a,
+                None => {
+                  /*
+                  if we have a dependency, but it can't be solved because it's for the incorrect platform,
+                  let's complain about it.
+                  doing it this way is necessary because we DO still want our dependency graph to get run.
+                  */
+                  if wrong_platforms.contains_key(r) {
+                    return Err(HMError::Regular(hmek::IncorrectPlatformError {
+                      dependency: String::from(r),
+                      platform: our_os,
+                      target_platform: wrong_platforms.get(r).cloned().unwrap(),
+                    }));
+                  } else {
+                    return Err(HMError::Regular(hmek::DependencyUndefinedError {
+                      dependency: String::from(r),
+                    }));
+                  }
+                }
+              }
+              .to_owned();
+              a.set_satisfied();
+              q.push(a);
+            }
+          }
+          Err(_e) => unsafe {
+            // we'll just borrow this for a second
+            // just to look
+            // i'm not gonna touch it i promise
+            let my_sneaky_depgraph: SneakyDepGraphImposter<String> = std::mem::transmute(depgraph);
+            return Err(HMError::Regular(hmek::CyclicalDependencyError {
+              // we can do this because we've implemented fmt::Display for SneakyDepGraphImposter
+              dependency_graph: my_sneaky_depgraph.to_string(),
+            }));
+          },
+        }
+      }
+      tasks.push(q);
+    }
   }
   Ok(tasks)
 }
@@ -451,11 +513,21 @@ pub fn perform_operation_on(mo: ManagedObject) -> Result<(), HMError> {
 /// For complex ones we get a list of list of MOs that we can do in some order that
 /// satisfies their dependencies, then we hand them off to send_tasks_off_to_college().
 ///
-pub fn do_tasks(a: HashMap<String, config::ManagedObject>) -> Result<(), HMError> {
+pub fn do_tasks(
+  a: HashMap<String, config::ManagedObject>,
+  target_task: Option<String>,
+) -> Result<(), HMError> {
   let mut complex_operations = a.clone();
   let mut simple_operations = a.clone();
   complex_operations.retain(|_, v| v.is_task()); // all the things that aren't just symlink/copy
   simple_operations.retain(|_, v| !v.is_task()); // all the things that are quick (don't need to thread off)
+  if target_task.is_some() {
+    let tt_name = target_task.clone().unwrap();
+    // only keep the target task, if it's in here...
+    // we can't do this with complex tasks, because the target may have deps we want
+    // we'll handle that later in get_task_batches
+    simple_operations.retain(|_, v| v.name == tt_name);
+  }
   for (_name, _mo) in simple_operations.into_iter() {
     // lol postmaclone
     let p = _mo.post.clone();
@@ -476,7 +548,7 @@ pub fn do_tasks(a: HashMap<String, config::ManagedObject>) -> Result<(), HMError
   let (tx, rx) = mpsc::channel();
   let mp: MultiProgress = MultiProgress::new();
   let mut t: HashSet<String> = HashSet::new();
-  let _v = get_task_batches(complex_operations).unwrap_or_else(|er| {
+  let _v = get_task_batches(complex_operations, target_task.clone()).unwrap_or_else(|er| {
     hmerror::error(
       "Error occurred attempting to get task batches",
       format!("{}{}", "\n", er.to_string().as_str()).as_str(),

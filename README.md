@@ -1,6 +1,7 @@
 Have a dotfiles directory with all your stuff in it? Have homemaker put everything in its right place.
 
-
+Check out the (changelog)[changelog].
+=====================================
 
 **homemaker in action**
 
@@ -12,7 +13,7 @@ installation
 * from github (may be in some state of flux): `cargo install --git https://github.com/hlmtre/homemaker`
 * cloned locally: `cargo install --path .`
 
-1. create a `config.toml` file either anywhere (and specify it when you run `hm`) or in `~/.config/homemaker/`.
+1. create a `config.toml` file either anywhere (and specify `-c` when you run `hm`) or in `~/.config/homemaker/`.
 2. enter things to do things to in the file.
 example:
 ```
@@ -52,7 +53,7 @@ source = '~/dotfiles/zt/slop'
 solution = 'cd ~/dotfiles/zt/slop; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 method = 'execute'
 ```
-3. `hm ~/path/to/your/config.toml`
+3. `hm -c ~/path/to/your/config.toml`
 
 why homemaker?
 ==============
@@ -65,16 +66,12 @@ why homemaker?
   * `zt` has two dependencies: `maim` and `slop`. `hm` will complete the entire dependency tree below `zt` before atttempting `zt`.
   * `homemaker` complains if the dependency tree cannot be solved, and hopefully shows you a handy explanation why.
   ![dep graph](doc/dep_graph.png)
+  * allows for specifying portions of the config to be executed (target tasks). only wanna run one task? `-t <taskname>`
 
 homemaker unknowingly clobbers an existing dotfile manager written in Go some time ago. Linked [here](https://github.com/FooSoft/homemaker).
 ============================================================================================================================================
 
 [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org)
+and neovim.
 
-thanks to actual good code:\
-serde\
-toml\
-symlink\
-solvent\
-indicatif\
-console
+Could not be made without [rust-analyzer](https://github.com/rust-analyzer/rust-analyzer).

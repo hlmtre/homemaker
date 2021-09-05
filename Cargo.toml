@@ -1,6 +1,6 @@
 [package]
 name = "hm"
-version = "0.6.7"
+version = "0.7.0"
 authors = ["Matt Weller <hellmitre@gmail.com>"]
 edition = "2018"
 description = "homemaker. Slightly more than yet another dotfile manager."
@@ -8,7 +8,7 @@ license = "Apache-2.0"
 repository = "https://github.com/hlmtre/homemaker"
 keywords = ["dotfiles", "management", "dotfile"]
 categories = ["command-line-utilities", "filesystem"]
-include = ["src/**/*", "LICENSE", "README.md"]
+include = ["src/**/*", "LICENSE", "README.md", "changelog.md"]
 
 [lib]
 name = "hm"

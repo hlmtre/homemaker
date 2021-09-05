@@ -9,7 +9,7 @@ fn criterion_benchmark(c: &mut Criterion) {
   let a: Config = deserialize_file("./benches/config.toml").unwrap();
   let nodes: HashMap<String, ManagedObject> = Config::as_managed_objects(a);
   c.bench_function("get_task_batches", |b| {
-    b.iter(|| get_task_batches(nodes.clone()))
+    b.iter(|| get_task_batches(nodes.clone(), None))
   });
 }
 

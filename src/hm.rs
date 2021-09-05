@@ -89,12 +89,26 @@ fn main() {
   // have to pass it around - singleton. just info!, trace!, warn!, etc
   let _ = WriteLogger::init(LevelFilter::Trace, slc.build(), File::create(p).unwrap());
   info!("beginning hm execution...");
-  let mut args: Vec<String> = env::args().collect();
+  let args: Vec<String> = env::args().collect();
   // it's a little hackish, but we don't have to bring in an external crate to do our args
-  let mut i = 0;
-  for a in args.clone() {
-    match a.as_str() {
-      "-c" | "clean" => {
+  let mut target_task: Option<String> = None;
+  let mut arg_config: Option<String> = None;
+  for i in 0..args.len() {
+    match args[i].as_str() {
+      "-t" | "--task" => {
+        if args.len() >= i + 1 && !args[i + 1].starts_with("-") {
+          // ensure the next arg is not a flag
+          // assume the next one is the named task to complete
+          target_task = Some(args[i + 1].clone());
+        } else {
+          hmerror::error(
+            "-t flag requires specified task immediately after",
+            "No task was specified.",
+          );
+          help();
+        }
+      }
+      "clean" => {
         match clean() {
           Ok(_) => {
             exit(0);
@@ -105,18 +119,21 @@ fn main() {
           }
         };
       }
+      "-c" | "--config" => {
+        if args.len() > i + 1 {
+          arg_config = Some(args[i + 1].clone());
+        }
+      }
       "-h" | "--help" => {
         help();
-        args.remove(i);
       }
       _ => {}
     }
-    i += 1;
   }
   /*
-  accept either a config passed as arg 1 or try to open the default config location
+  accept either a config passed in specifically (with -c or --config) or try to open the default config location
    */
-  let a: Config = match args.get(1) {
+  let a: Config = match arg_config {
     Some(second) => match deserialize_file(&second) {
       Ok(c) => c,
       Err(e) => {
@@ -152,7 +169,7 @@ fn main() {
   };
   // do it here
   let started = Instant::now();
-  match do_tasks(Config::as_managed_objects(a)) {
+  match do_tasks(Config::as_managed_objects(a), target_task) {
     Ok(_) => {
       println!("Done in {}.", HumanDuration(started.elapsed()));
       exit(0);
@@ -174,10 +191,10 @@ fn clean() -> std::io::Result<()> {
 fn help() {
   println!(
     "usage:
-    hm [-h] | clean | [<config>]
-    -h | this help message
-    clean | removes the contents of the log directory
-    <config> is not required.
+    hm [-h] | --clean | [-c|--config] [<config>]
+    -h | --help             > this help message
+    --clean                 > removes the contents of the log directory
+    -c | --config [config]  > Optional.
     if config is not specified, default location of ~/.config/homemaker/config.toml is assumed."
   );
   exit(0)
