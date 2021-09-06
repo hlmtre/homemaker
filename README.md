@@ -90,6 +90,7 @@ why homemaker?
   * `homemaker` complains if the dependency tree cannot be solved, and shows you a hopefully-handy explanation why.
   ![dep graph](doc/dep_graph.png)
 * allows for specifying portions of the config to be executed (target tasks). only wanna run one task? `-t <taskname>`
+
 ![subtree](doc/subtree.png)
 
 homemaker unknowingly clobbers an existing dotfile manager written in Go some time ago. Linked [here](https://github.com/FooSoft/homemaker).
