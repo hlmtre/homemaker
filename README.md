@@ -20,40 +20,63 @@ example:
 ## config.toml
 
 [[obj]]
-file = 'tmux.conf'
+file = 'tmux.conf' # simple things - symlink or copy a file somewhere
 source = '~/dotfiles/.tmux.conf'
 destination = '~/.tmux.conf'
 method = 'symlink'
 
 [[obj]]
-task = 'zt'
+task = 'zt' # more complicated - a task.
 solution = 'cd ~/dotfiles/zt && git pull'
-dependencies = 'maim, slop'
+dependencies = ['maim, slop']
+os = 'linux::debian'
 
 [[obj]]
 task = 'maim_dependencies'
 solution = 'sudo apt install -y libxfixes-dev libglm-dev libxrandr-dev libglew-dev libegl1-mesa-dev libxcomposite-dev'
+os = 'linux::debian' # only if the platform matches.
+# valid OS values we differentiate between are:
+# linux::fedora
+# linux::debian
+# linux::ubuntu
+# windows
 
 [[obj]]
 task = 'maim'
 source = '~/dotfiles/zt/maim'
 solution = 'cd ~/dotfiles/zt/maim; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 method = 'execute'
-dependencies = 'maim_dependencies'
+dependencies = ['maim_dependencies']
 
 [[obj]]
 task = 'slop'
 source = '~/dotfiles/zt/slop'
 solution = 'cd ~/dotfiles/zt/slop; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 method = 'execute'
+os = 'linux::debian'
 
 [[obj]]
 task = 'slop'
 source = '~/dotfiles/zt/slop'
 solution = 'cd ~/dotfiles/zt/slop; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 method = 'execute'
+os = 'linux::debian'
+
+[[obj]]
+task = 'nvim'
+method = 'execute'
+solution = "test -x /usr/local/bin/nvim || (git clone https://github.com/neovim/nevim.git ~/src/ && cd ~/src/neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo CMAKE_INSTALL_PREFIX=/usr/local/ && sudo make install)" # if nvim is not there and executable, run our solution.
+dependencies = ['vim-plug']
+
+[[obj]]
+task = 'vim-plug'
+method = 'execute'
+solution = "sh -c 'curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'"
 ```
-3. `hm -c ~/path/to/your/config.toml`
+3. `hm -c /path/to/your/config.toml`
+
+* simple `file` entries either symlink or copy a file somewhere - usually a config file.
+* tasks are more complicated actions to perform - run scripts, download/compile software, etc. they can be restricted to specific platforms (differentiated values are specified above in the `maim_dependencies` task).
 
 why homemaker?
 ==============
@@ -64,9 +87,10 @@ why homemaker?
   * for example, in the sample `config.toml` (the one i use, actually), `maim` depends on having some graphics libraries installed.
   i created a task called `maim_dependencies`, and `hm` will complete `maim_dependencies` before attempting to complete `maim`.
   * `zt` has two dependencies: `maim` and `slop`. `hm` will complete the entire dependency tree below `zt` before atttempting `zt`.
-  * `homemaker` complains if the dependency tree cannot be solved, and hopefully shows you a handy explanation why.
+  * `homemaker` complains if the dependency tree cannot be solved, and shows you a hopefully-handy explanation why.
   ![dep graph](doc/dep_graph.png)
-  * allows for specifying portions of the config to be executed (target tasks). only wanna run one task? `-t <taskname>`
+* allows for specifying portions of the config to be executed (target tasks). only wanna run one task? `-t <taskname>`
+![subtree](doc/subtree.png)
 
 homemaker unknowingly clobbers an existing dotfile manager written in Go some time ago. Linked [here](https://github.com/FooSoft/homemaker).
 ============================================================================================================================================

@@ -1,3 +1,13 @@
+TODO:
+====
+
+* add ability to restrict tasks based on hostname. should be pretty simple.
+
+version 0.7.1
+=============
+
+* clippy lint cleanup
+
 version 0.7.0
 =============
 

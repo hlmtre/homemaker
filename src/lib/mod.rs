@@ -57,6 +57,7 @@
 //!  source = '~/dotfiles/zt/slop'
 //!  solution = 'cd ~/dotfiles/zt/slop; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 //!  method = 'execute'
+//!  platform = "linux::debian"
 //!  ```
 //!  3. `hm ~/path/to/your/config.toml`
 //!
