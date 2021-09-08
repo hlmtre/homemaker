@@ -79,6 +79,7 @@ file = 'nvim_config'
 source = '~/dotfiles/.config/nvim'
 destination = '~/.config/nvim'
 method = 'symlink'
+force = 'true'
 
 [[obj]]
 task = 'nvim'
