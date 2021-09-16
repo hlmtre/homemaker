@@ -84,13 +84,13 @@ force = 'true'
 [[obj]]
 task = 'nvim'
 method = 'execute'
-solution = "test -x /usr/local/bin/nvim || (git clone https://github.com/neovim/nevim.git ~/src/ && cd ~/src/neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo CMAKE_INSTALL_PREFIX=/usr/local/ && sudo make install)"
-dependencies = ['vim-plug']
+solution = "test -x /usr/local/bin/nvim || (git clone https://github.com/neovim/neovim.git ~/src/ && cd ~/src/neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo CMAKE_INSTALL_PREFIX=/usr/local/ && sudo make install)"
+dependencies = ['packer']
 
 [[obj]]
-task = 'vim-plug'
+task = 'packer'
 method = 'execute'
-solution = "sh -c 'curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'"
+solution = "git clone --depth 1 https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim"
 
 [[obj]]
 file = 'fish'

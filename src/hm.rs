@@ -96,7 +96,7 @@ fn main() {
   for i in 0..args.len() {
     match args[i].as_str() {
       "-t" | "--task" => {
-        if args.len() > i && !args[i + 1].starts_with("-") {
+        if args.len() > i && !args[i + 1].starts_with('-') {
           // ensure the next arg is not a flag
           // assume the next one is the named task to complete
           target_task = Some(args[i + 1].clone());
@@ -115,7 +115,7 @@ fn main() {
           }
           Err(e) => {
             eprintln!("{}", e);
-            exit(1);
+            exit(0);
           }
         };
       }
@@ -191,7 +191,8 @@ fn clean() -> std::io::Result<()> {
 fn help() {
   println!(
     "usage:
-    hm [-h] | --clean | [-c|--config] [<config>]
+    hm [-h] | [-t|--task] [<task>] | --clean | [-c|--config] [<config>]
+    -t | --task             > run specific named task
     -h | --help             > this help message
     --clean                 > removes the contents of the log directory
     -c | --config [config]  > Optional.
