@@ -85,13 +85,18 @@ force = 'true'
 task = 'nvim'
 method = 'execute'
 solution = "test -x /usr/local/bin/nvim || (git clone https://github.com/neovim/neovim.git ~/src/neovim && cd ~/src/neovim && make CMAKE_BUILD_TYPE=RelWithDebInfo CMAKE_INSTALL_PREFIX=/usr/local/ && sudo make install)"
-dependencies = ['packer, nvim_deps']
+dependencies = ['packer', 'nvim_deps', 'ninja-cmake']
 
 [[obj]]
 task = 'nvim_deps'
 method = 'execute'
-solution = 'pip3 install --user ninja cmake && sudo apt install ninja-build gettext libtool libtool-bin autoconf automake cmake g++ pkg-config unzip curl'
+solution = 'sudo apt install ninja-build gettext libtool libtool-bin autoconf automake cmake g++ pkg-config unzip curl gettext'
 os = 'linux::debian'
+
+[[obj]]
+task = 'ninja-cmake'
+method = 'execute'
+solution = 'pip3 install --user ninja cmake'
 
 [[obj]]
 task = 'packer'
