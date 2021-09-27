@@ -42,6 +42,13 @@ impl<'a> Worker {
     }
   }
 }
+
+impl<'a> Default for Worker {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl PartialEq for Worker {
   fn eq(&self, other: &Self) -> bool {
     self.name == other.name
@@ -135,7 +142,7 @@ pub struct ManagedObject {
 impl ManagedObject {
   /// quite simply, if we're a task, we'll have a `solution`.
   pub fn is_task(&self) -> bool {
-    return !self.solution.is_empty();
+    !self.solution.is_empty()
   }
   pub fn set_satisfied(&mut self) {
     self.satisfied = true;
@@ -232,7 +239,10 @@ impl Config {
       .files
       .iter()
       .map(|(name, val)| {
-        let mut mo = ManagedObject::default();
+        let mut mo = ManagedObject {
+          name: name.to_owned(),
+          ..Default::default()
+        };
         mo.name = name.to_owned();
         if let Some(_x) = val.get("solution") {
           mo.solution = String::from(_x.as_str().unwrap());
@@ -349,7 +359,7 @@ fn deserialize_str(contents: &str) -> HMResult<Config> {
 /// default expected location for it.
 pub fn ensure_config_dir() -> Result<PathBuf, &'static str> {
   // get /home/<username>/.config, if exists...
-  match dirs::config_dir() {
+  match dirs_next::config_dir() {
     Some(p) => {
       // if something
       // creates a PathBuf from $XDG_CONFIG_DIR

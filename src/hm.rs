@@ -52,7 +52,7 @@
 //!  console
 #![allow(dead_code)]
 extern crate chrono;
-extern crate dirs;
+extern crate dirs_next;
 extern crate indicatif;
 extern crate log;
 extern crate simplelog;
