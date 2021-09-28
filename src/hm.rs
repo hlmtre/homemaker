@@ -50,12 +50,6 @@
 //!  solvent
 //!  indicatif
 //!  console
-#![allow(dead_code)]
-extern crate chrono;
-extern crate dirs_next;
-extern crate indicatif;
-extern crate log;
-extern crate simplelog;
 
 use ::hm::{
   config::{deserialize_file, ensure_config_dir, Config},

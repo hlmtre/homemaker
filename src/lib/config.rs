@@ -158,7 +158,7 @@ impl PartialEq for ManagedObject {
     {
       return true;
     }
-    return false;
+    false
   }
 }
 
@@ -397,11 +397,13 @@ mod config_test {
   #[test]
   fn test_mo_deserialization() {
     let mut a: Config = deserialize_file("./benches/config.toml").unwrap();
-    let mut mo = ManagedObject::default();
-    mo.name = String::from("tmux.conf");
-    mo.source = String::from("~/dotfiles/.tmux.conf");
-    mo.destination = String::from("~/.tmux.conf");
-    mo.method = String::from("symlink");
+    let mo = ManagedObject {
+      name: "tmux.conf".to_string(),
+      source: "~/dotfiles/.tmux.conf".to_string(),
+      destination: "~/.tmux.conf".to_string(),
+      method: "symlink".to_string(),
+      ..Default::default()
+    };
     assert_eq!(mo, a.get_mo("tmux.conf").unwrap());
   }
 
