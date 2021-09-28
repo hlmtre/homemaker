@@ -565,11 +565,8 @@ pub fn do_tasks(
   // create a map of each Worker, and just poll them until they're done
   // the hashmap ensures we have only one of each worker
   loop {
-    match rx.try_recv() {
-      Ok(_t) => {
-        v.insert(_t.name.clone(), _t.clone());
-      }
-      Err(_) => {}
+    if let Ok(_t) = rx.try_recv() {
+      v.insert(_t.name.clone(), _t.clone());
     }
     std::thread::sleep(time::Duration::from_millis(10));
     if !all_workers_done(&v) {
