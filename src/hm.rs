@@ -113,10 +113,8 @@ fn main() {
           }
         };
       }
-      "-c" | "--config" => {
-        if args.len() > i + 1 {
-          arg_config = Some(args[i + 1].clone());
-        }
+      "-c" | "--config" if args.len() > i + 1 => {
+        arg_config = Some(args[i + 1].clone());
       }
       "-h" | "--help" => {
         help();
