@@ -34,6 +34,12 @@ method = 'symlink'
 force = 'true'
 
 [[obj]]
+file = 'starship.toml'
+source = '~/dotfiles/.config/starship.toml'
+destination = '~/.config/starship.toml'
+method = 'symlink'
+
+[[obj]]
 file = '.Xresources'
 source = '~/dotfiles/.Xresources'
 destination = '~/.Xresources'
@@ -90,7 +96,7 @@ dependencies = ['packer', 'nvim_deps', 'ninja-cmake']
 [[obj]]
 task = 'nvim_deps'
 method = 'execute'
-solution = 'sudo apt install ninja-build gettext libtool libtool-bin autoconf automake cmake g++ pkg-config unzip curl gettext'
+solution = 'sudo apt install -y ninja-build gettext libtool libtool-bin autoconf automake cmake g++ pkg-config unzip curl gettext'
 os = 'linux::debian'
 
 [[obj]]
@@ -179,6 +185,7 @@ os = "linux::fedora"
 task = 'playerctl install'
 solution = 'test -e ~/src/playerctl || mkdir -p ~/src; cd ~/src/; git clone https://github.com/altdesktop/playerctl.git ; cd playerctl; meson -Dgtk-doc=false -Dintrospection=false mesonbuild && sudo ninja -C mesonbuild install'
 dependencies = ['playerctl dependencies']
+os = "linux::fedora"
 
 [[obj]]
 task = 'clone wlroots'
