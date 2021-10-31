@@ -53,18 +53,27 @@
 
 use ::hm::{
   config::{deserialize_file, ensure_config_dir, Config},
-  do_tasks, hmerror,
+  hmerror,
 };
 use chrono::prelude::*;
-use hm::app;
+use hm::app::{self, APP};
+use hm::task::do_tasks;
 use indicatif::HumanDuration;
 use log::{info, warn};
 use simplelog::{ConfigBuilder, LevelFilter, WriteLogger};
+use std::io;
 use std::{env, fs::File, path::PathBuf, process::exit, string::String, time::Instant};
-use std::{io, sync::RwLock};
-use tui::backend::CrosstermBackend;
-use tui::widgets::{Block, Borders, Widget};
-use tui::Terminal;
+use tui::{
+  backend::CrosstermBackend,
+  layout::Alignment,
+  style::{Color, Style},
+  widgets::Paragraph,
+};
+use tui::{style::Modifier, Terminal};
+use tui::{
+  text::Span,
+  widgets::{Block, Borders, Wrap},
+};
 
 use tui::layout::{Constraint, Direction, Layout};
 
@@ -90,7 +99,8 @@ fn main() {
   // have to pass it around - singleton. just info!, trace!, warn!, etc
   let _ = WriteLogger::init(LevelFilter::Trace, slc.build(), File::create(p).unwrap());
   info!("beginning hm execution...");
-  app::tui_element_append_output("beginning hm execution...".to_string());
+  let mut a = APP.write().unwrap();
+  a.append_summary("beginning hm execution...");
   let args: Vec<String> = env::args().collect();
   // it's a little hackish, but we don't have to bring in an external crate to do our args
   let mut target_task: Option<String> = None;
@@ -133,7 +143,7 @@ fn main() {
   /*
   accept either a config passed in specifically (with -c or --config) or try to open the default config location
    */
-  let a: Config = match arg_config {
+  let config: Config = match arg_config {
     Some(second) => match deserialize_file(&second) {
       Ok(c) => c,
       Err(e) => {
@@ -192,14 +202,34 @@ fn main() {
           .as_ref(),
         )
         .split(f.size());
+      let create_block = |title| {
+        Block::default()
+          .borders(Borders::ALL)
+          .style(Style::default())
+          .title(Span::styled(
+            title,
+            Style::default().add_modifier(Modifier::BOLD),
+          ))
+      };
       let block = Block::default().title("hm").borders(Borders::ALL);
+      let mut a = APP.write().unwrap();
+      a.append_summary("HELLO THERE GENERAL KENOBI".to_string());
+      //let b = APP.read().unwrap();
+      //let paragraph = Paragraph::new(b.hm_task_summary().get(0).unwrap().clone())
+      let paragraph = Paragraph::new("WAZZZZAPPPP".to_string())
+        .style(Style::default())
+        .block(create_block("tasks"))
+        .alignment(Alignment::Left)
+        .wrap(Wrap { trim: true });
       f.render_widget(block, chunks[0]);
-      let block = Block::default().borders(Borders::ALL);
+      let block = Block::default().title("task output").borders(Borders::ALL);
+      f.render_widget(paragraph, chunks[0]);
       f.render_widget(block, chunks[1]);
     });
     // end tui
     let started = Instant::now();
-    match do_tasks(Config::as_managed_objects(a), target_task) {
+    println!("app: {:?}", APP.read().unwrap());
+    match do_tasks(Config::as_managed_objects(config), target_task) {
       Ok(_) => {
         println!("Done in {}.", HumanDuration(started.elapsed()));
         exit(0);
@@ -210,7 +240,6 @@ fn main() {
       }
     }
   }
-  // end tui thing
 }
 
 /// Clean up our logs directory.
