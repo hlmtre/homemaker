@@ -73,15 +73,8 @@
 #![allow(clippy::many_single_char_names)]
 #![allow(dead_code)]
 #![allow(unused_macros)]
-extern crate console;
-extern crate indicatif;
-extern crate log;
-extern crate shellexpand;
-extern crate simplelog;
-extern crate solvent;
-extern crate symlink;
-extern crate sys_info;
 
+pub mod app;
 pub mod config;
 mod hm_macro;
 pub mod hmerror;
@@ -535,6 +528,7 @@ pub fn do_tasks(
       )
     });
     if a.is_ok() {
+      app::tui_element_append_output("Success!".to_string());
       hmerror::happy_print(format!("Successfully performed operation on {:#?}", _name).as_str());
       if !p.is_empty() {
         println!("↳ Executing post {} for {}... ", p, _name);

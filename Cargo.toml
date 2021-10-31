@@ -1,8 +1,8 @@
 [package]
 name = "hm"
-version = "0.7.3"
+version = "0.8.0"
 authors = ["Matt Weller <hellmitre@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "homemaker. Slightly more than yet another dotfile manager."
 license = "Apache-2.0"
 repository = "https://github.com/hlmtre/homemaker"
@@ -41,3 +41,6 @@ strum_macros = "0.22.0"
 log = "0.4.14"
 simplelog = "^0.10.2"
 chrono = "0.4"
+crossterm = "0.20"
+tui = { version = "0.16", default-features = false, features = ['crossterm']}
+lazy_static = "1.4.0"

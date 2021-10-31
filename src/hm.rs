@@ -56,10 +56,17 @@ use ::hm::{
   do_tasks, hmerror,
 };
 use chrono::prelude::*;
+use hm::app;
 use indicatif::HumanDuration;
 use log::{info, warn};
 use simplelog::{ConfigBuilder, LevelFilter, WriteLogger};
 use std::{env, fs::File, path::PathBuf, process::exit, string::String, time::Instant};
+use std::{io, sync::RwLock};
+use tui::backend::CrosstermBackend;
+use tui::widgets::{Block, Borders, Widget};
+use tui::Terminal;
+
+use tui::layout::{Constraint, Direction, Layout};
 
 /// Pull apart our arguments, if they're called, get our Config, and error-check.
 /// Then work our way through the Config, executing the easy stuff, and threading off the hard.
@@ -83,6 +90,7 @@ fn main() {
   // have to pass it around - singleton. just info!, trace!, warn!, etc
   let _ = WriteLogger::init(LevelFilter::Trace, slc.build(), File::create(p).unwrap());
   info!("beginning hm execution...");
+  app::tui_element_append_output("beginning hm execution...".to_string());
   let args: Vec<String> = env::args().collect();
   // it's a little hackish, but we don't have to bring in an external crate to do our args
   let mut target_task: Option<String> = None;
@@ -160,17 +168,49 @@ fn main() {
     }
   };
   // do it here
-  let started = Instant::now();
-  match do_tasks(Config::as_managed_objects(a), target_task) {
-    Ok(_) => {
-      println!("Done in {}.", HumanDuration(started.elapsed()));
-      exit(0);
-    }
-    Err(e) => {
-      hmerror::error(format!("{}", e).as_str(), "poooooop");
-      exit(3);
+
+  // tui creation
+  // you'll probably have to change all your prints
+  // to print INSIDE the box
+  // you'll be showing progress of the tasks on the left,
+  // and task stdout output on the right in (presumably larger) box
+  let stdout = io::stdout();
+  let backend = CrosstermBackend::new(stdout);
+  let mut terminal = Terminal::new(backend).unwrap();
+
+  loop {
+    let _ = terminal.draw(|f| {
+      let chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .margin(1)
+        .constraints(
+          [
+            Constraint::Percentage(40),
+            Constraint::Percentage(50),
+            Constraint::Percentage(10),
+          ]
+          .as_ref(),
+        )
+        .split(f.size());
+      let block = Block::default().title("hm").borders(Borders::ALL);
+      f.render_widget(block, chunks[0]);
+      let block = Block::default().borders(Borders::ALL);
+      f.render_widget(block, chunks[1]);
+    });
+    // end tui
+    let started = Instant::now();
+    match do_tasks(Config::as_managed_objects(a), target_task) {
+      Ok(_) => {
+        println!("Done in {}.", HumanDuration(started.elapsed()));
+        exit(0);
+      }
+      Err(e) => {
+        hmerror::error(format!("{}", e).as_str(), "poooooop");
+        exit(3);
+      }
     }
   }
+  // end tui thing
 }
 
 /// Clean up our logs directory.

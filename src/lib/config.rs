@@ -2,10 +2,6 @@
 //! Implement how to take the `config.toml` and turn it into a `Config { files: Vec<ManagedObject> }`.
 //! Describes the `Worker` object, which is how we communicate back to our `main()` thread
 //! about how our `task` is going.
-extern crate serde;
-extern crate strum_macros;
-extern crate toml;
-
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::str::FromStr;
