@@ -99,8 +99,10 @@ fn main() {
   // have to pass it around - singleton. just info!, trace!, warn!, etc
   let _ = WriteLogger::init(LevelFilter::Trace, slc.build(), File::create(p).unwrap());
   info!("beginning hm execution...");
-  let mut a = APP.write().unwrap();
-  a.append_summary("beginning hm execution...");
+  /*
+   let mut a = APP.write().unwrap();
+   a.append_summary("beginning hm execution...".to_string());
+  */
   let args: Vec<String> = env::args().collect();
   // it's a little hackish, but we don't have to bring in an external crate to do our args
   let mut target_task: Option<String> = None;
@@ -214,13 +216,15 @@ fn main() {
       let block = Block::default().title("hm").borders(Borders::ALL);
       let mut a = APP.write().unwrap();
       a.append_summary("HELLO THERE GENERAL KENOBI".to_string());
-      //let b = APP.read().unwrap();
-      //let paragraph = Paragraph::new(b.hm_task_summary().get(0).unwrap().clone())
-      let paragraph = Paragraph::new("WAZZZZAPPPP".to_string())
+      drop(a);
+      let b = APP.read().unwrap();
+      let paragraph = Paragraph::new(b.hm_task_summary().get(0).unwrap().clone())
+        //let paragraph = Paragraph::new("WAZZZZAPPPP".to_string())
         .style(Style::default())
         .block(create_block("tasks"))
         .alignment(Alignment::Left)
         .wrap(Wrap { trim: true });
+      drop(b);
       f.render_widget(block, chunks[0]);
       let block = Block::default().title("task output").borders(Borders::ALL);
       f.render_widget(paragraph, chunks[0]);

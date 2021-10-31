@@ -15,7 +15,8 @@ use std::{
 use strum_macros::EnumString;
 use toml::value;
 
-use super::hmerror::{HMError, Result as HMResult};
+use crate::app::APP;
+use crate::hmerror::{HMError, Result as HMResult};
 
 ///
 /// Allow us to communicate meaningfully back to `main()` thread.
@@ -333,7 +334,9 @@ pub fn deserialize_file(file: &str) -> HMResult<Config> {
     Err(_e) => 0,
   };
   if cfg!(debug_assertions) {
-    println!("file: {}", &file);
+    let mut _a = APP.write().unwrap();
+    _a.append_summary(format!("file: {}", &file));
+    drop(_a);
   }
   deserialize_str(&contents)
 }

@@ -456,7 +456,9 @@ pub fn do_tasks(
       )
     });
     if a.is_ok() {
-      app::tui_element_append_output("Success!".to_string());
+      let mut a = APP.write().unwrap();
+      a.append_output("Success!".to_string());
+      //app::tui_element_append_output("Success!".to_string());
       hmerror::happy_print(format!("Successfully performed operation on {:#?}", _name).as_str());
       if !p.is_empty() {
         println!("↳ Executing post {} for {}... ", p, _name);
