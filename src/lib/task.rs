@@ -24,7 +24,7 @@ use symlink::{symlink_dir as sd, symlink_file as sf};
 /// I just wanna borrow one to look at it for a minute.
 /// use me with std::mem::transmute()
 /// absolutely not pub struct. don't look at me.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 struct SneakyDepGraphImposter<String> {
   nodes: Vec<String>,
   dependencies: HashMap<usize, HashSet<usize>>,
@@ -513,4 +513,27 @@ fn all_workers_done(workers: &HashMap<String, Worker>) -> bool {
     }
   }
   true
+}
+
+#[cfg(test)]
+mod task_test {
+  use super::*;
+  use solvent::DepGraph;
+
+  #[test]
+  // make sure solvent hasn't changed their struct too much
+  fn test_depgraph_transmute() {
+    let mut depgraph: DepGraph<String> = DepGraph::new();
+    let a = "dependent_a";
+    let deps = ["dependency_a".to_string(), "dependency_b".to_string()].to_vec();
+    depgraph.register_dependencies(a.to_string(), deps);
+    let mut my_sneaky_depgraph: SneakyDepGraphImposter<String> =
+      unsafe { std::mem::transmute(depgraph.clone()) };
+    let tdg: solvent::DepGraphIterator<String> = depgraph.dependencies_of(&a.to_string()).unwrap();
+    let mut v: Vec<String> = Vec::new();
+    for e in tdg {
+      v.push(e.unwrap().to_string());
+    }
+    assert_eq!(v.sort(), my_sneaky_depgraph.nodes.sort());
+  }
 }

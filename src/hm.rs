@@ -56,19 +56,14 @@ use ::hm::{
   hmerror,
 };
 use chrono::prelude::*;
-use hm::app::{self, APP};
+use hm::app::APP;
 use hm::task::do_tasks;
 use indicatif::HumanDuration;
 use log::{info, warn};
 use simplelog::{ConfigBuilder, LevelFilter, WriteLogger};
 use std::io;
 use std::{env, fs::File, path::PathBuf, process::exit, string::String, time::Instant};
-use tui::{
-  backend::CrosstermBackend,
-  layout::Alignment,
-  style::{Color, Style},
-  widgets::Paragraph,
-};
+use tui::{backend::CrosstermBackend, layout::Alignment, style::Style, widgets::Paragraph};
 use tui::{style::Modifier, Terminal};
 use tui::{
   text::Span,
