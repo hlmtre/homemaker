@@ -14,12 +14,11 @@
 //! * SolutionError: Something went wrong in our script.
 //! * ConfigError: Something is wrong with how you wrote the `config.toml`.
 //! * Other: Other.
-extern crate console;
-extern crate serde;
 use console::style;
 use std::fmt;
 use std::io;
 
+use crate::app;
 use crate::config;
 
 #[derive(Debug)]
@@ -95,7 +94,9 @@ impl fmt::Display for HMError {
 }
 
 pub fn happy_print(jubilation: &str) {
-  println!("{}!", style(jubilation).green().bold())
+  let mut _a = app::APP.write().unwrap();
+  _a.append_output(format!("{}!", style(jubilation).green().bold()));
+  drop(_a);
 }
 
 /// Easy formatting for errors as they come in.

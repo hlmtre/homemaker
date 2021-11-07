@@ -190,6 +190,13 @@ fn main() {
   let backend = CrosstermBackend::new(stdout);
   let mut terminal = Terminal::new(backend).unwrap();
 
+  let some_output = "some output".to_string();
+  let some_summary = "some_summary".to_string();
+  let mut _a = APP.write().unwrap();
+  _a.append_output(some_output);
+  _a.append_summary(some_summary);
+  drop(_a);
+
   loop {
     let _ = terminal.draw(|f| {
       let chunks = Layout::default()
@@ -214,22 +221,36 @@ fn main() {
           ))
       };
       let block = Block::default().title("hm").borders(Borders::ALL);
-      let mut a = APP.write().unwrap();
-      a.append_summary("HELLO THERE GENERAL KENOBI".to_string());
-      drop(a);
       let b = APP.read().unwrap();
-      let paragraph = Paragraph::new(b.hm_task_summary().get(0).unwrap().clone())
+
+      let tob = b.hm_task_output().join("\n");
+
+      let task_output_block = Paragraph::new(tob)
         //let paragraph = Paragraph::new("WAZZZZAPPPP".to_string())
         .style(Style::default())
         .block(create_block("tasks"))
         .alignment(Alignment::Left)
         .wrap(Wrap { trim: true });
-      drop(b);
       f.render_widget(block, chunks[0]);
-      let block = Block::default().title("task output").borders(Borders::ALL);
-      f.render_widget(paragraph, chunks[0]);
-      f.render_widget(block, chunks[1]);
+
+      let tsb = b.hm_task_summary().join("\n");
+      let task_summary_block = Paragraph::new(tsb)
+        .style(Style::default())
+        .block(create_block("task output"))
+        .alignment(Alignment::Left)
+        .wrap(Wrap { trim: true });
+
+      f.render_widget(task_output_block, chunks[0]);
+      f.render_widget(task_summary_block, chunks[1]);
+      drop(b); // release the reader
     });
+    // just keep stuffing output in to see what it looks like
+    let some_output = "some output".to_string();
+    let some_summary = "some_summary".to_string();
+    let mut _a = APP.write().unwrap();
+    _a.append_output(some_output);
+    _a.append_summary(some_summary);
+    drop(_a);
     // end tui
     let started = Instant::now();
     println!("app: {:?}", APP.read().unwrap());

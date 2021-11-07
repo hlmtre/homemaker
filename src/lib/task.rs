@@ -381,20 +381,20 @@ fn execute_solution(solution: String) -> Result<(), HMError> {
       .spawn()?
       .stdout
       .ok_or_else(|| Error::new(ErrorKind::Other, "Couldn't capture stdout"))?;
-    if cfg!(debug_assertions) {
-      let reader = BufReader::new(output);
-      reader
-        .lines()
-        .filter_map(|line| line.ok())
-        .for_each(|line| {
-          let mut a = APP.write().unwrap();
-          a.append_summary(line);
-        });
-    }
+    let reader = BufReader::new(output);
+    reader
+      .lines()
+      .filter_map(|line| line.ok())
+      .for_each(|line| {
+        let mut a = APP.write().unwrap();
+        a.append_summary(line);
+        drop(a);
+      });
     Ok(())
   });
   let mut a = APP.write().unwrap();
   a.append_summary("HELLO THERE GENERAL KENOBI".to_string());
+  drop(a);
   child.join().unwrap()
 }
 
@@ -461,7 +461,9 @@ pub fn do_tasks(
       //app::tui_element_append_output("Success!".to_string());
       hmerror::happy_print(format!("Successfully performed operation on {:#?}", _name).as_str());
       if !p.is_empty() {
-        println!("↳ Executing post {} for {}... ", p, _name);
+        let mut _a = APP.write().unwrap();
+        _a.append_output(format!("↳ Executing post {} for {}... ", p, _name));
+        drop(_a);
         let _ = execute_solution(p);
       }
     }
