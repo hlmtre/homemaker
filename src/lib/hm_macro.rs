@@ -1,5 +1,5 @@
 /// equivalent of __func__ for stacktrace/debugging
-/// see https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust
+/// see <https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust>
 #[macro_export]
 macro_rules! function {
   () => {{

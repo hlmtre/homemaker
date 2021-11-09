@@ -144,6 +144,9 @@ pub fn send_tasks_off_to_college(
       .stderr(Stdio::piped())
       .spawn()
       .unwrap();
+    let mut _a = APP.write().unwrap();
+    _a.append_summary(&"i do tasks and i'm ok".to_string());
+    drop(_a);
     let output: std::process::ChildStdout = c.stdout.take().unwrap();
     let reader: BufReader<std::process::ChildStdout> = BufReader::new(output);
     // run this in another thread or the little block of tasks draws line-by-line
@@ -152,7 +155,12 @@ pub fn send_tasks_off_to_college(
       reader
         .lines()
         .filter_map(|line| line.ok())
-        .for_each(|line| info!("{}", line));
+        .for_each(|line| {
+          let mut _a = APP.write().unwrap();
+          _a.append_output(&line);
+          drop(_a);
+          info!("{}", line)
+        });
     });
     p.set_style(
       ProgressStyle::default_spinner()
@@ -176,6 +184,9 @@ pub fn send_tasks_off_to_college(
             w.status = status.code();
             w.completed = true;
             tx1.send(w).unwrap();
+            let mut _a = APP.write().unwrap();
+            _a.append_summary(&format!("Successfully completed {}.", n));
+            drop(_a);
             info!("Successfully completed {}.", n);
             return Ok(());
           } else {
@@ -387,13 +398,13 @@ fn execute_solution(solution: String) -> Result<(), HMError> {
       .filter_map(|line| line.ok())
       .for_each(|line| {
         let mut a = APP.write().unwrap();
-        a.append_summary(line);
+        a.append_summary(&line);
         drop(a);
       });
     Ok(())
   });
   let mut a = APP.write().unwrap();
-  a.append_summary("HELLO THERE GENERAL KENOBI".to_string());
+  a.append_summary(&"HELLO THERE GENERAL KENOBI".to_string());
   drop(a);
   child.join().unwrap()
 }
@@ -457,15 +468,16 @@ pub fn do_tasks(
     });
     if a.is_ok() {
       let mut a = APP.write().unwrap();
-      a.append_output("Success!".to_string());
+      a.append_summary(&"Success!".to_string());
       //app::tui_element_append_output("Success!".to_string());
       hmerror::happy_print(format!("Successfully performed operation on {:#?}", _name).as_str());
       if !p.is_empty() {
         let mut _a = APP.write().unwrap();
-        _a.append_output(format!("↳ Executing post {} for {}... ", p, _name));
+        _a.append_output(&format!("↳ Executing post {} for {}... ", p, _name));
         drop(_a);
         let _ = execute_solution(p);
       }
+      drop(a);
     }
   }
   let (tx, rx) = mpsc::channel();
@@ -536,6 +548,7 @@ mod task_test {
     for e in tdg {
       v.push(e.unwrap().to_string());
     }
+    // they have the same contents but comparison tests order of elements too
     assert_eq!(v.sort(), my_sneaky_depgraph.nodes.sort());
   }
 }

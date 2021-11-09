@@ -8,29 +8,10 @@
 //! use, and those are often built from source. So rather than manually install
 //! all dependency libraries, then build each dependent piece, then finally the
 //! top-level dependent program, I built hm.
-//! It also provides functionality to thread off heavier operations
-//! into task threads, which regularly report back their status with
-//! Worker objects over a `std::sync::mpsc`.
+
 //!
-//! `hm` can also perform dependency resolution, thanks to the solvent crate. You can
-//! provide a big ol' list of tasks to complete, each with their own dependencies, and
-//! as long as you have a solveable dependency graph, you can get workable batches from
-//! get_task_batches(). They will be in *some* order that will resolve your dependencies,
-//! but that order is non-deterministic - if there's multiple ways to solve a graph,
-//! you'll probably get all those different ways back if you run it multiple times.
 //!
-//! The crate provides this library, which is in turn used by the bin `hm` (in `src/bin/main.rs`).
-//! `hm` is a commandline program to help with dotfile (and more) management.
-//!
-//! It can handle putting configuration files where they should go, but its real
-//! strength lies in the solutions it'll execute - shell scripts, usually - to
-//! pull a git repository, compile something from source, etc.
-//!
-//! `hm` exists because I bring along a few utilities to all Linux boxes I regularly
-//! use, and those are often built from source. So rather than manually install
-//! all dependency libraries, then build each dependent piece, then finally the
-//! top-level dependent program, I built hm.
-//!
+//! have a dotfiles directory with all your stuff in it? have homemaker put everything in its right place.
 //!
 //! [gfycat of it in action](https://gfycat.com/skinnywarmheartedafricanpiedkingfisher)
 //!
@@ -46,30 +27,24 @@
 //!  source = '~/dotfiles/.tmux.conf'
 //!  destination = '~/.tmux.conf'
 //!  method = 'symlink'
+//!  os = 'linux::fedora'
 //!
 //!  [[obj]]
 //!  task = 'zt'
 //!  solution = 'cd ~/dotfiles/zt && git pull'
-//!  dependencies = 'maim, slop'
+//!  dependencies = ['maim, slop']
 //!
 //!  [[obj]]
 //!  task = 'slop'
 //!  source = '~/dotfiles/zt/slop'
 //!  solution = 'cd ~/dotfiles/zt/slop; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 //!  method = 'execute'
-//!  platform = "linux::debian"
+//!  os = 'linux::debian'
 //!  ```
-//!  3. `hm ~/path/to/your/config.toml`
+//!  3. `hm --config ~/path/to/your/config.toml`
 //!
-//!  [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org)
-//!
-//!  thanks to actual good code:
-//!  serde
-//!  toml
-//!  symlink
-//!  solvent
-//!  indicatif
-//!  console
+//!  [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org) and neovim.
+
 pub mod app;
 pub mod config;
 mod hm_macro;

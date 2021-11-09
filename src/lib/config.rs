@@ -214,7 +214,7 @@ impl Default for Config {
 
 impl fmt::Display for Config {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let mos = Config::as_managed_objects(self.clone());
+    let mos = Config::as_managed_objects(self);
     write!(f, "{:#?}", mos)
   }
 }
@@ -224,14 +224,14 @@ impl Config {
   /// Allows us to get a specified Managed Object by name
   #[allow(dead_code)]
   pub fn get_mo(&mut self, _n: &str) -> Option<ManagedObject> {
-    Config::as_managed_objects(self.clone())
+    Config::as_managed_objects(self)
       .get(_n)
       .map(|a| a.to_owned())
   }
 
   /// Convenience function that allows getting a HashMap from a `Config` of
   /// the `ManagedObject`s within.
-  pub fn as_managed_objects(config: Config) -> HashMap<String, ManagedObject> {
+  pub fn as_managed_objects(config: &Config) -> HashMap<String, ManagedObject> {
     config
       .files
       .iter()
@@ -335,7 +335,7 @@ pub fn deserialize_file(file: &str) -> HMResult<Config> {
   };
   if cfg!(debug_assertions) {
     let mut _a = APP.write().unwrap();
-    _a.append_summary(format!("file: {}", &file));
+    _a.append_summary(&format!("file: {}", &file));
     drop(_a);
   }
   deserialize_str(&contents)

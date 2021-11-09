@@ -27,29 +27,23 @@
 //!  source = '~/dotfiles/.tmux.conf'
 //!  destination = '~/.tmux.conf'
 //!  method = 'symlink'
+//!  os = 'linux::fedora'
 //!
 //!  [[obj]]
 //!  task = 'zt'
 //!  solution = 'cd ~/dotfiles/zt && git pull'
-//!  dependencies = 'maim, slop'
+//!  dependencies = ['maim, slop']
 //!
 //!  [[obj]]
 //!  task = 'slop'
 //!  source = '~/dotfiles/zt/slop'
 //!  solution = 'cd ~/dotfiles/zt/slop; make clean; cmake -DCMAKE_INSTALL_PREFIX="/usr" ./ && make && sudo make install'
 //!  method = 'execute'
+//!  os = 'linux::debian'
 //!  ```
-//!  3. `hm ~/path/to/your/config.toml`
+//!  3. `hm --config ~/path/to/your/config.toml`
 //!
-//!  [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org)
-//!
-//!  thanks to actual good code:
-//!  serde
-//!  toml
-//!  symlink
-//!  solvent
-//!  indicatif
-//!  console
+//!  [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org) and neovim.
 
 use ::hm::{
   config::{deserialize_file, ensure_config_dir, Config},
@@ -188,8 +182,8 @@ fn main() {
   let some_output = "some output".to_string();
   let some_summary = "some_summary".to_string();
   let mut _a = APP.write().unwrap();
-  _a.append_output(some_output);
-  _a.append_summary(some_summary);
+  _a.append_output(&some_output);
+  _a.append_summary(&some_summary);
   drop(_a);
 
   loop {
@@ -199,9 +193,9 @@ fn main() {
         .margin(1)
         .constraints(
           [
+            Constraint::Percentage(20),
             Constraint::Percentage(40),
-            Constraint::Percentage(50),
-            Constraint::Percentage(10),
+            Constraint::Percentage(40),
           ]
           .as_ref(),
         )
@@ -215,10 +209,11 @@ fn main() {
             Style::default().add_modifier(Modifier::BOLD),
           ))
       };
-      let block = Block::default().title("hm").borders(Borders::ALL);
+      //let block = Block::default().title("hm").borders(Borders::ALL);
       let b = APP.read().unwrap();
-
       let tob = b.hm_task_output().join("\n");
+      let tsb = b.hm_task_summary().join("\n");
+      drop(b); // release the reader
 
       let task_output_block = Paragraph::new(tob)
         //let paragraph = Paragraph::new("WAZZZZAPPPP".to_string())
@@ -226,37 +221,26 @@ fn main() {
         .block(create_block("tasks"))
         .alignment(Alignment::Left)
         .wrap(Wrap { trim: true });
-      f.render_widget(block, chunks[0]);
-
-      let tsb = b.hm_task_summary().join("\n");
+      //f.render_widget(block, chunks[0]);
       let task_summary_block = Paragraph::new(tsb)
         .style(Style::default())
         .block(create_block("task output"))
         .alignment(Alignment::Left)
         .wrap(Wrap { trim: true });
 
-      f.render_widget(task_output_block, chunks[0]);
       f.render_widget(task_summary_block, chunks[1]);
-      drop(b); // release the reader
+      f.render_widget(task_output_block, chunks[2]);
     });
     // just keep stuffing output in to see what it looks like
-    let some_output = "some output".to_string();
-    let some_summary = "some_summary".to_string();
-    let mut _a = APP.write().unwrap();
-    _a.append_output(some_output);
-    _a.append_summary(some_summary);
-    drop(_a);
     // end tui
     let started = Instant::now();
-    println!("app: {:?}", APP.read().unwrap());
-    match do_tasks(Config::as_managed_objects(config), target_task) {
+    //println!("app: {:?}", APP.read().unwrap());
+    match do_tasks(Config::as_managed_objects(&config), target_task.to_owned()) {
       Ok(_) => {
         println!("Done in {}.", HumanDuration(started.elapsed()));
-        exit(0);
       }
       Err(e) => {
         hmerror::error(format!("{}", e).as_str(), "poooooop");
-        exit(3);
       }
     }
   }

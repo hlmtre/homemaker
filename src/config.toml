@@ -100,6 +100,12 @@ solution = 'sudo apt install -y ninja-build gettext libtool libtool-bin autoconf
 os = 'linux::debian'
 
 [[obj]]
+task = 'nvim_deps'
+method = 'execute'
+solution = 'sudo dnf install -y ninja-build gettext libtool libtool-bin autoconf automake cmake g++ pkg-config unzip curl gettext'
+os = 'linux::fedora'
+
+[[obj]]
 task = 'ninja-cmake'
 method = 'execute'
 solution = 'pip3 install --user ninja cmake'

@@ -95,7 +95,7 @@ impl fmt::Display for HMError {
 
 pub fn happy_print(jubilation: &str) {
   let mut _a = app::APP.write().unwrap();
-  _a.append_output(format!("{}!", style(jubilation).green().bold()));
+  _a.append_output(&format!("{}!", style(jubilation).green().bold()));
   drop(_a);
 }
 
@@ -113,7 +113,13 @@ pub fn happy_print(jubilation: &str) {
 /// );
 /// ```
 pub fn error(complaint: &str, er: &str) {
-  eprintln!("{}:\n ↳ Error: {}", style(complaint).red().bold(), er)
+  let mut _a = app::APP.write().unwrap();
+  _a.append_summary(&format!(
+    "{}:\n ↳ Error: {}",
+    style(complaint).red().bold(),
+    er
+  ));
+  drop(_a);
 }
 
 pub type Result<T> = std::result::Result<T, HMError>;
