@@ -44,6 +44,7 @@
 //!  3. `hm --config ~/path/to/your/config.toml`
 //!
 //!  [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org) and neovim.
+//!
 
 use ::hm::{
   config::{deserialize_file, ensure_config_dir, Config},
@@ -69,6 +70,7 @@ use tui::layout::{Constraint, Direction, Layout};
 /// Pull apart our arguments, if they're called, get our Config, and error-check.
 /// Then work our way through the Config, executing the easy stuff, and threading off the hard.
 fn main() {
+  let mut CONTINUE_LOOP: bool = false;
   let l = Local::now();
   let mut slc = ConfigBuilder::new();
   slc.set_time_to_local(true);
@@ -231,17 +233,23 @@ fn main() {
       f.render_widget(task_summary_block, chunks[1]);
       f.render_widget(task_output_block, chunks[2]);
     });
-    // just keep stuffing output in to see what it looks like
     // end tui
     let started = Instant::now();
-    //println!("app: {:?}", APP.read().unwrap());
     match do_tasks(Config::as_managed_objects(&config), target_task.to_owned()) {
       Ok(_) => {
         println!("Done in {}.", HumanDuration(started.elapsed()));
+        CONTINUE_LOOP = false;
       }
       Err(e) => {
         hmerror::error(format!("{}", e).as_str(), "poooooop");
+        return;
       }
+    }
+    let mut _z = APP.write().unwrap();
+    _z.append_output("loop-o");
+    drop(_z);
+    if !CONTINUE_LOOP {
+      break;
     }
   }
 }

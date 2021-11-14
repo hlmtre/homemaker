@@ -1,9 +1,8 @@
 #![allow(clippy::many_single_char_names)]
-use crate::hmerror::{self, ErrorKind as hmek, HMError};
-use crate::{app, config};
 use crate::{
   app::APP,
-  config::{ManagedObject, Worker},
+  config::{self, ManagedObject, Worker},
+  hmerror::{self, ErrorKind as hmek, HMError},
 };
 
 use console::{pad_str, style, Alignment};
@@ -145,7 +144,7 @@ pub fn send_tasks_off_to_college(
       .spawn()
       .unwrap();
     let mut _a = APP.write().unwrap();
-    _a.append_summary(&"i do tasks and i'm ok".to_string());
+    _a.append_summary(&format!("task {} and i'm ok", &n));
     drop(_a);
     let output: std::process::ChildStdout = c.stdout.take().unwrap();
     let reader: BufReader<std::process::ChildStdout> = BufReader::new(output);
@@ -512,7 +511,7 @@ pub fn do_tasks(
     }
     break;
   }
-  mp.join().unwrap();
+  mp.join_and_clear().unwrap();
   Ok(())
 }
 
@@ -549,6 +548,8 @@ mod task_test {
       v.push(e.unwrap().to_string());
     }
     // they have the same contents but comparison tests order of elements too
-    assert_eq!(v.sort(), my_sneaky_depgraph.nodes.sort());
+    v.sort();
+    my_sneaky_depgraph.nodes.sort();
+    assert_eq!(v, my_sneaky_depgraph.nodes);
   }
 }

@@ -8,11 +8,11 @@ pub struct App {
 }
 
 impl App {
-  pub fn append_output(&mut self, output: &String) {
+  pub fn append_output(&mut self, output: &str) {
     self.hm_task_output.push(output.to_string());
   }
 
-  pub fn append_summary(&mut self, summary: &String) {
+  pub fn append_summary(&mut self, summary: &str) {
     self.hm_task_summary.push(summary.to_string());
   }
 
@@ -50,10 +50,10 @@ lazy_static! {
   pub static ref APP: RwLock<App> = RwLock::new(App::default());
 }
 
-fn tui_element_append_output(output: &String) {
+fn tui_element_append_output(output: &str) {
   APP.write().unwrap().append_output(output);
 }
 
-fn tui_element_append_summary(summary: &String) {
+fn tui_element_append_summary(summary: &str) {
   APP.write().unwrap().append_summary(summary);
 }
