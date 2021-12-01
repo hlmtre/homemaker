@@ -655,9 +655,9 @@ dependencies = [
 
 [[package]]
 name = "solvent"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89ad4183bade6e878d8ae18f9cf8e6a1625fe0ef29bfca8d55891eeb5e0a2776"
+checksum = "14a50198e546f29eb0a4f977763c8277ec2184b801923c3be71eeaec05471f16"
 
 [[package]]
 name = "strum"
