@@ -40,6 +40,12 @@ destination = '~/.config/starship.toml'
 method = 'symlink'
 
 [[obj]]
+file = 'waybar'
+source = '~/dotfiles/.config/waybar'
+destination = '~/.config/waybar'
+method = 'symlink'
+
+[[obj]]
 file = '.Xresources'
 source = '~/dotfiles/.Xresources'
 destination = '~/.Xresources'
@@ -100,6 +106,12 @@ solution = 'sudo apt install -y ninja-build gettext libtool libtool-bin autoconf
 os = 'linux::debian'
 
 [[obj]]
+task = 'nvim_deps'
+method = 'execute'
+solution = 'sudo yum -y install ninja-build libtool autoconf automake cmake gcc gcc-c++ make pkgconfig unzip patch gettext curl'
+os = 'linux::fedora'
+
+[[obj]]
 task = 'ninja-cmake'
 method = 'execute'
 solution = 'pip3 install --user ninja cmake'
@@ -124,14 +136,14 @@ os = 'linux::fedora'
 
 [[obj]]
 task = 'grim'
-solution = 'test -d ~/src/grim/ || (git clone https://github.com/emersion/grim.git ~/src && cd ~/src/grim && meson build && sudo ninja -C build install)'
+solution = 'test -d ~/src/grim/ || (git clone https://github.com/emersion/grim.git ~/src/grim && cd ~/src/grim && meson build && sudo ninja -C build install)'
 method = 'execute'
 os = 'linux::fedora'
 
 [[obj]]
 task = 'slurp'
 method = 'execute'
-solution = 'test -d ~/src/slurp/ || (git clone https://github.com/emersion/slurp.git ~/src && cd ~/src/slurp && meson build && sudo ninja -C build install)'
+solution = 'test -d ~/src/slurp/ || (git clone https://github.com/emersion/slurp.git ~/src/slurp && cd ~/src/slurp && meson build && sudo ninja -C build install)'
 os = 'linux::fedora'
 
 [[obj]]
@@ -189,24 +201,42 @@ os = "linux::fedora"
 
 [[obj]]
 task = 'clone wlroots'
-solution = 'git clone https://github.com/swaywm/wlroots ~/src/sway/subprojects/wlroots'
+solution = 'test -d ~/src/sway/subprojects/wlroots || git clone https://gitlab.freedesktop.org/wlroots/wlroots.git ~/src/sway/subprojects/wlroots'
 dependencies = ['clone swaywm']
 os = "linux::fedora"
 
 [[obj]]
+task = 'clone wayland-protocols'
+solution = 'test -d ~/src/sway/subprojects/wayland-protocols || git clone https://gitlab.freedesktop.org/wayland/wayland-protocols.git ~/src/sway/subprojects/wayland-protocols' 
+[[obj]]
+task = 'clone seatd'
+solution='test -d ~/src/sway/subprojects/seatd || git clone https://git.sr.ht/~kennylevinsen/seatd ~/src/sway/subprojects/seatd'
+
+[[obj]]
 task = 'clone swaywm'
-solution = 'git clone https://github.com/swaywm/swaywm ~/src/sway; mkdir ~/src/sway/subprojects'
+solution = 'test -d ~/src/sway || git clone https://github.com/swaywm/sway.git ~/src/sway; mkdir ~/src/sway/subprojects'
+os = "linux::fedora"
+
+[[obj]]
+task = 'rpmfusion'
+solution = 'sudo dnf -y install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm && sudo dnf -y install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm'
 os = "linux::fedora"
 
 [[obj]]
 task = 'swaywm'
-solution = 'meson build && sudo ninja -C build/ install'
-dependencies = ['swaywm_dependencies_fedora', 'clone swaywm']
+solution = 'cd ~/src/sway && meson build && sudo ninja -C build/ install'
+dependencies = ['swaywm_dependencies_fedora', 'clone swaywm', 'clone wlroots', 'clone wayland-protocols', 'clone seatd']
+os = "linux::fedora"
+
+[[obj]]
+task = 'fedora deps'
+solution = "sudo dnf install -y light network-manager-applet"
 os = "linux::fedora"
 
 [[obj]]
 task = 'swaywm_dependencies_fedora'
-solution = 'sudo dnf install -y libxkbcommon-devel cmake mesa-libgbm-devel libdrm-devel wayland-devel systemd-devel pixman-devel wayland-protocols-devel libxcb-devel xcb-util-devel ffmpeg-devel libxkbcommon-devel mesa-libgbm-devel libdrm-devel wayland-devel ffmpeg-devel'
+solution = 'sudo dnf install -y libxkbcommon-devel cmake mesa-libgbm-devel libdrm-devel wayland-devel systemd-devel pixman-devel wayland-protocols-devel libxcb-devel xcb-util-devel ffmpeg-devel libxkbcommon-devel mesa-libgbm-devel libdrm-devel wayland-devel ffmpeg-devel json-c-devel pango-devel libdevdev-devel libglvnd-devel libinput-devel xorg-x11-server-Xwayland-devel xcb-util-wm-devel pulseaudio-utils libnl-devel libappindicator-devel libappindicator-gtk3-devel pulseaudio-libs-devel'
+dependencies = ["rpmfusion"]
 os = "linux::fedora"
 
 [[obj]]
