@@ -229,13 +229,23 @@ dependencies = ['swaywm_dependencies_fedora', 'clone swaywm', 'clone wlroots', '
 os = "linux::fedora"
 
 [[obj]]
+task = 'waybar deps'
+solution = 'sudo dnf install -y pulseaudio-libs-devel libappindicator-devel libappindicator-gtk3-devel pulseaudio-libs-devel libdbusmenu libdbusmenu-devel libdbusmenu-gtk3-devel'
+os = "linux::fedora"
+
+[[obj]]
 task = 'fedora deps'
 solution = "sudo dnf install -y light network-manager-applet"
 os = "linux::fedora"
 
 [[obj]]
+task = 'sleep kill ssh'
+solution = 'sudo cp ~/dotfiles/sleep.service && sudo systemctl enable sleep'
+os = "linux::fedora"
+
+[[obj]]
 task = 'swaywm_dependencies_fedora'
-solution = 'sudo dnf install -y libxkbcommon-devel cmake mesa-libgbm-devel libdrm-devel wayland-devel systemd-devel pixman-devel wayland-protocols-devel libxcb-devel xcb-util-devel ffmpeg-devel libxkbcommon-devel mesa-libgbm-devel libdrm-devel wayland-devel ffmpeg-devel json-c-devel pango-devel libdevdev-devel libglvnd-devel libinput-devel xorg-x11-server-Xwayland-devel xcb-util-wm-devel pulseaudio-utils libnl-devel libappindicator-devel libappindicator-gtk3-devel pulseaudio-libs-devel'
+solution = 'sudo dnf install -y libxkbcommon-devel cmake mesa-libgbm-devel libdrm-devel wayland-devel systemd-devel pixman-devel wayland-protocols-devel libxcb-devel xcb-util-devel ffmpeg-devel libxkbcommon-devel mesa-libgbm-devel libdrm-devel wayland-devel ffmpeg-devel json-c-devel pango-devel libdevdev-devel libglvnd-devel libinput-devel xorg-x11-server-Xwayland-devel xcb-util-wm-devel pulseaudio-utils libnl-devel'
 dependencies = ["rpmfusion"]
 os = "linux::fedora"
 
