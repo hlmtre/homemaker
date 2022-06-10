@@ -66,7 +66,7 @@ use std::{env, fs::File, path::PathBuf, process::exit, string::String, time::Ins
 fn main() {
   let l = Local::now();
   let mut slc = ConfigBuilder::new();
-  slc.set_time_to_local(true);
+  let _ = slc.set_time_offset_to_local();
   let mut p = "./logs/".to_string();
   let mut log_file_name = String::from("hm-task-");
   // we don't really care if we can make the directory. if we can, great.
