@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use std::sync::RwLock;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct App {
   hm_task_output: Vec<String>,
   hm_task_summary: Vec<String>,
@@ -37,6 +37,7 @@ impl App {
   }
 }
 
+/*
 impl Default for App {
   fn default() -> App {
     App {
@@ -45,6 +46,7 @@ impl Default for App {
     }
   }
 }
+*/
 
 lazy_static! {
   pub static ref APP: RwLock<App> = RwLock::new(App::default());

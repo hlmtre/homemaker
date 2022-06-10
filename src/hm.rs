@@ -51,8 +51,7 @@ use ::hm::{
   hmerror,
 };
 use chrono::prelude::*;
-use hm::app::APP;
-use hm::task::do_tasks;
+use hm::{app::APP, task::do_tasks};
 use indicatif::HumanDuration;
 use log::{info, warn};
 use simplelog::{ConfigBuilder, LevelFilter, WriteLogger};
@@ -70,7 +69,8 @@ use tui::layout::{Constraint, Direction, Layout};
 /// Pull apart our arguments, if they're called, get our Config, and error-check.
 /// Then work our way through the Config, executing the easy stuff, and threading off the hard.
 fn main() {
-  let mut CONTINUE_LOOP: bool = false;
+  #[allow(non_snake_case, unused_assignments)]
+  let mut CONTINUE_LOOP: bool = true;
   let l = Local::now();
   let mut slc = ConfigBuilder::new();
   slc.set_time_to_local(true);
