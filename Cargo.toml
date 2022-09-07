@@ -30,7 +30,7 @@ harness = false
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.5"
 dirs-next = "2.0"
-shellexpand = "2.1.0"
+shellexpand = "2.1.2"
 symlink = "0.1.0"
 solvent = "0.8.3"
 indicatif = "0.16.2"
