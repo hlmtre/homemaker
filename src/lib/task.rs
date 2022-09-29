@@ -403,7 +403,7 @@ fn execute_solution(solution: String) -> Result<(), HMError> {
     Ok(())
   });
   let mut a = APP.write().unwrap();
-  a.append_summary(&"HELLO THERE GENERAL KENOBI".to_string());
+  a.append_summary("HELLO THERE GENERAL KENOBI");
   drop(a);
   child.join().unwrap()
 }
@@ -467,7 +467,7 @@ pub fn do_tasks(
     });
     if a.is_ok() {
       let mut a = APP.write().unwrap();
-      a.append_summary(&"Success!".to_string());
+      a.append_summary("Success!");
       //app::tui_element_append_output("Success!".to_string());
       hmerror::happy_print(format!("Successfully performed operation on {:#?}", _name).as_str());
       if !p.is_empty() {
