@@ -203,17 +203,19 @@ impl Default for ManagedObject {
 
 /// Represents just the file `config.toml` and contains a vector of things
 /// that shall become `ManagedObject`s.
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Default)]
 pub struct Config {
   #[serde(rename = "obj", deserialize_with = "deserialize_files")]
   pub files: Vec<(String, value::Value)>,
 }
 
+/*
 impl Default for Config {
   fn default() -> Self {
     Config { files: Vec::new() }
   }
 }
+*/
 
 impl fmt::Display for Config {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
