@@ -64,31 +64,16 @@ use std::{env, fs::File, path::PathBuf, process::exit, string::String, time::Ins
 /// Pull apart our arguments, if they're called, get our Config, and error-check.
 /// Then work our way through the Config, executing the easy stuff, and threading off the hard.
 fn main() {
-  let l = Local::now();
-  let mut slc = ConfigBuilder::new();
-  let _ = slc.set_time_offset_to_local();
-  let mut p = "./logs/".to_string();
-  let mut log_file_name = String::from("hm-task-");
-  // we don't really care if we can make the directory. if we can, great.
-  match std::fs::create_dir("./logs/") {
-    Ok(_) => {}
-    Err(e) => {
-      warn!("Couldn't create log directory :( . Error: {}", e);
-    }
-  };
-  log_file_name.push_str(l.to_string().as_str());
-  log_file_name.push_str(".log");
-  p.push_str(log_file_name.as_str());
-  // nifty thing is we can make it here, and then we _never_
-  // have to pass it around - singleton. just info!, trace!, warn!, etc
-  let _ = WriteLogger::init(LevelFilter::Trace, slc.build(), File::create(p).unwrap());
-  info!("beginning hm execution...");
   let args: Vec<String> = env::args().collect();
   // it's a little hackish, but we don't have to bring in an external crate to do our args
   let mut target_task: Option<String> = None;
   let mut arg_config: Option<String> = None;
   for i in 0..args.len() {
     match args[i].as_str() {
+      "log" | "logs" => {
+        println!("{}", recent_log_path());
+        exit(0)
+      }
       "-t" | "--task" => {
         if args.len() > i && !args[i + 1].starts_with('-') {
           // ensure the next arg is not a flag
@@ -102,7 +87,7 @@ fn main() {
           help();
         }
       }
-      "clean" => {
+      "clean" | "--clean" => {
         match clean() {
           Ok(_) => {
             exit(0);
@@ -122,6 +107,25 @@ fn main() {
       _ => {}
     }
   }
+  let l = Local::now();
+  let mut slc = ConfigBuilder::new();
+  let _ = slc.set_time_offset_to_local();
+  let mut p = "./logs/".to_string();
+  let mut log_file_name = String::from("hm-task-");
+  // we don't really care if we can make the directory. if we can, great.
+  match std::fs::create_dir("./logs/") {
+    Ok(_) => {}
+    Err(e) => {
+      warn!("Couldn't create log directory :( . Error: {}", e);
+    }
+  };
+  log_file_name.push_str(l.to_string().as_str());
+  log_file_name.push_str(".log");
+  p.push_str(log_file_name.as_str());
+  // nifty thing is we can make it here, and then we _never_
+  // have to pass it around - singleton. just info!, trace!, warn!, etc
+  let _ = WriteLogger::init(LevelFilter::Trace, slc.build(), File::create(p).unwrap());
+  info!("beginning hm execution...");
   /*
   accept either a config passed in specifically (with -c or --config) or try to open the default config location
    */
@@ -173,6 +177,35 @@ fn main() {
   }
 }
 
+fn recent_log_path() -> String {
+  let contents: Vec<PathBuf> = std::fs::read_dir("./logs/")
+    .map(|res| res.map(|e| e.expect("AIYEEEE").path()))
+    .expect("FURTHER AIYEEE")
+    .collect::<Vec<_>>();
+
+  /*
+  we use a btreemap instead of a hashmap because it's out of the box sorted,
+  which makes getting our last item possible
+  on fedora 35 as of Sat 08 Oct 2022 09:12:47 AM PDT it comes out ordered properly from read_dir
+  but it isn't guaranteed
+  */
+
+  let mut files: std::collections::BTreeMap<std::time::SystemTime, &PathBuf> =
+    std::collections::BTreeMap::new();
+  for item in &contents {
+    let m = item.metadata();
+    files.insert(m.unwrap().accessed().unwrap(), item);
+  }
+  files
+    .iter()
+    .next_back()
+    .unwrap()
+    .1
+    .as_os_str()
+    .to_string_lossy()
+    .to_string()
+}
+
 /// Clean up our logs directory.
 fn clean() -> std::io::Result<()> {
   std::fs::remove_dir_all("./logs/")?;
@@ -186,7 +219,8 @@ fn help() {
     hm [-h] | [-t|--task] [<task>] | --clean | [-c|--config] [<config>]
     -t | --task             > run specific named task
     -h | --help             > this help message
-    --clean                 > removes the contents of the log directory
+    clean                   > removes the contents of the log directory
+    log                     > return the path of the most recent log file (use with your editor - `nvr (hm log)`)
     -c | --config [config]  > Optional.
     if config is not specified, default location of ~/.config/homemaker/config.toml is assumed."
   );
