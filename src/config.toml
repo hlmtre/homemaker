@@ -147,6 +147,12 @@ solution = 'test -d ~/src/slurp/ || (git clone https://github.com/emersion/slurp
 os = 'linux::fedora'
 
 [[obj]]
+task = 'wofi'
+method = 'execute'
+solution = 'test -d ~/src/wofi/ || (hg clone https://hg.sr.ht/~scoopta/wofi ~/src/wofi && cd ~/src/wofi && meson build && sudo ninja -C build install)'
+os = 'linux::fedora'
+
+[[obj]]
 task = 'zt'
 solution = 'cd ~/dotfiles/zt && git pull'
 dependencies = ['maim', 'slop']

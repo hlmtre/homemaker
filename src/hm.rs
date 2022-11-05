@@ -4,7 +4,7 @@
 //! strength lies in the solutions it'll execute - shell scripts, usually - to
 //! pull a git repository, compile something from source, etc.
 //!
-//! hm exists because I bring along a few utilities to all Linux boxes I regularly
+//! `hm` exists because I bring along a few utilities to all Linux boxes I regularly
 //! use, and those are often built from source. So rather than manually install
 //! all dependency libraries, then build each dependent piece, then finally the
 //! top-level dependent program, I built hm.
@@ -41,7 +41,7 @@
 //!  ```
 //!  3. `hm ~/path/to/your/config.toml`
 //!
-//!  [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org)
+//!  [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org) and neovim.
 //!
 //!  thanks to actual good code:
 //!  serde
@@ -186,8 +186,8 @@ fn recent_log_path() -> String {
   /*
   we use a btreemap instead of a hashmap because it's out of the box sorted,
   which makes getting our last item possible
-  on fedora 35 as of Sat 08 Oct 2022 09:12:47 AM PDT it comes out ordered properly from read_dir
-  but it isn't guaranteed
+  on fedora 35 as of Sat 08 Oct 2022 09:12:47 AM PDT it comes out ordered properly from read_dir,
+  so a hashmap would have been fine, but it isn't guaranteed
   */
 
   let mut files: std::collections::BTreeMap<std::time::SystemTime, &PathBuf> =
