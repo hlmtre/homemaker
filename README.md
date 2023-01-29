@@ -16,9 +16,10 @@ installation
 * cloned locally: `cargo install --path .`
 
 1. create a `config.toml` file either anywhere (and specify `-c` when you run `hm`) or in `~/.config/homemaker/`.
-2. enter things to do things to in the file.
+2. enter things to do in `config.toml`.
+
 example:
-```
+``` toml
 ## config.toml
 
 [[obj]]
