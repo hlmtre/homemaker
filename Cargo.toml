@@ -1,6 +1,6 @@
 [package]
 name = "hm"
-version = "0.7.3"
+version = "0.7.5"
 authors = ["Matt Weller <hellmitre@gmail.com>"]
 edition = "2018"
 description = "homemaker. Slightly more than yet another dotfile manager."
@@ -19,7 +19,7 @@ name = "hm"
 path = "src/hm.rs"
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = "0.5"
 
 [[bench]]
 name = "benchy_bench"
@@ -28,13 +28,13 @@ harness = false
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
-toml = "0.5"
+toml = "0.7"
 dirs-next = "2.0"
-shellexpand = "2.1.2"
+shellexpand = "3.1.0"
 symlink = "0.1.0"
 solvent = "0.8.3"
 indicatif = "0.16.2"
-console = "0.15.1"
+console = "0.15.7"
 sys-info = "0.9.1"
 strum = "0.24.1"
 strum_macros = "0.24.3"

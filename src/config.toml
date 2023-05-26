@@ -147,6 +147,12 @@ solution = 'test -d ~/src/slurp/ || (git clone https://github.com/emersion/slurp
 os = 'linux::fedora'
 
 [[obj]]
+task = 'wofi'
+method = 'execute'
+solution = 'test -d ~/src/wofi/ || (hg clone https://hg.sr.ht/~scoopta/wofi ~/src/wofi && cd ~/src/wofi && meson build && sudo ninja -C build install)'
+os = 'linux::fedora'
+
+[[obj]]
 task = 'zt'
 solution = 'cd ~/dotfiles/zt && git pull'
 dependencies = ['maim', 'slop']
@@ -199,6 +205,17 @@ solution = 'test -e ~/src/playerctl || mkdir -p ~/src; cd ~/src/; git clone http
 dependencies = ['playerctl dependencies']
 os = "linux::fedora"
 
+
+# BUILDING SWAY
+# build libdrm ~/src/drm
+# build wlroots ~/src/sway/subprojects/wlroots
+# build sway ~/src/sway
+
+[[obj]]
+task = 'libdrm'
+solution = '(test -d ~/src/drm || git clone --recursive https://gitlab.freedesktop.org/mesa/drm.git ~/src/drm) && cd ~/src/drm && meson build && ninja -C build'
+os = "linux::fedora"
+
 [[obj]]
 task = 'clone wlroots'
 solution = 'test -d ~/src/sway/subprojects/wlroots || git clone https://gitlab.freedesktop.org/wlroots/wlroots.git ~/src/sway/subprojects/wlroots'
@@ -206,15 +223,29 @@ dependencies = ['clone swaywm']
 os = "linux::fedora"
 
 [[obj]]
-task = 'clone wayland-protocols'
-solution = 'test -d ~/src/sway/subprojects/wayland-protocols || git clone https://gitlab.freedesktop.org/wayland/wayland-protocols.git ~/src/sway/subprojects/wayland-protocols' 
-[[obj]]
-task = 'clone seatd'
-solution='test -d ~/src/sway/subprojects/seatd || git clone https://git.sr.ht/~kennylevinsen/seatd ~/src/sway/subprojects/seatd'
+task = 'build wlroots'
+solution = 'cd ~/src/sway/subprojects/wlroots/ ; meson build && ninja -C build'
+dependencies = ['clone wlroots', 'clone swaywm']
+os = "linux::fedora"
 
 [[obj]]
 task = 'clone swaywm'
-solution = 'test -d ~/src/sway || git clone https://github.com/swaywm/sway.git ~/src/sway; mkdir ~/src/sway/subprojects'
+solution = '((test -d ~/src/sway && cd ~/src/sway && git -C ~/src/sway rev-parse 2>/dev/null && git pull) || echo "cloning sway..." ; git clone --recursive https://github.com/swaywm/sway.git ~/src/sway) && (test -d ~/src/sway/subprojects || mkdir ~/src/sway/subprojects)'
+os = "linux::fedora"
+
+[[obj]]
+task = 'clone wayland-protocols'
+solution = 'test -d ~/src/sway/subprojects/wayland-protocols || git clone https://gitlab.freedesktop.org/wayland/wayland-protocols.git ~/src/sway/subprojects/wayland-protocols' 
+dependencies = ['clone swaywm']
+
+[[obj]]
+task = 'clone seatd'
+solution='test -d ~/src/sway/subprojects/seatd || git clone https://git.sr.ht/~kennylevinsen/seatd ~/src/sway/subprojects/seatd'
+dependencies = ['clone swaywm']
+
+[[obj]]
+task = 'clone and build wlsunset'
+solution = 'test -e /usr/local/bin/wlsunset || (mkdir -p ~/src; git clone --recursive https://git.sr.ht/~kennylevinsen/wlsunset ~/src/wlsunset ; cd ~/src/wlsunset ; meson build && ninja -C build)'
 os = "linux::fedora"
 
 [[obj]]

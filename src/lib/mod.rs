@@ -1,10 +1,10 @@
-//! hm is a commandline program to help with dotfile (and more) management.
+//! `hm` is a commandline program to help with dotfile (and more) management.
 //!
 //! It can handle putting configuration files where they should go, but its real
 //! strength lies in the solutions it'll execute - shell scripts, usually - to
 //! pull a git repository, compile something from source, etc.
 //!
-//! hm exists because I bring along a few utilities to all Linux boxes I regularly
+//! `hm` exists because I bring along a few utilities to all Linux boxes I regularly
 //! use, and those are often built from source. So rather than manually install
 //! all dependency libraries, then build each dependent piece, then finally the
 //! top-level dependent program, I built hm.
@@ -21,16 +21,6 @@
 //!
 //! The crate provides this library, which is in turn used by the bin `hm` (in `src/bin/main.rs`).
 //! `hm` is a commandline program to help with dotfile (and more) management.
-//!
-//! It can handle putting configuration files where they should go, but its real
-//! strength lies in the solutions it'll execute - shell scripts, usually - to
-//! pull a git repository, compile something from source, etc.
-//!
-//! `hm` exists because I bring along a few utilities to all Linux boxes I regularly
-//! use, and those are often built from source. So rather than manually install
-//! all dependency libraries, then build each dependent piece, then finally the
-//! top-level dependent program, I built hm.
-//!
 //!
 //! [gfycat of it in action](https://gfycat.com/skinnywarmheartedafricanpiedkingfisher)
 //!
@@ -61,7 +51,7 @@
 //!  ```
 //!  3. `hm ~/path/to/your/config.toml`
 //!
-//!  [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org)
+//!  [![built with spacemacs](https://cdn.rawgit.com/syl20bnr/spacemacs/442d025779da2f62fc86c2082703697714db6514/assets/spacemacs-badge.svg)](http://spacemacs.org) and neovim
 //!
 //!  thanks to actual good code:
 //!  serde
