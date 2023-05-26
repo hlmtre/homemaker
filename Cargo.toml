@@ -19,7 +19,7 @@ name = "hm"
 path = "src/hm.rs"
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = "0.5"
 
 [[bench]]
 name = "benchy_bench"
